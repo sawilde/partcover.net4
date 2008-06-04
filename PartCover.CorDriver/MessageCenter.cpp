@@ -22,7 +22,7 @@ HRESULT MessageCenter::Open() {
 
     // create pipe name
     TCHAR buffer[128];
-    _stprintf(buffer, _T("%s.%d.%d"), MESS_PIPID, GetCurrentProcessId(), GetTickCount());
+	_stprintf_s(buffer, 128, _T("%s.%d.%d"), MESS_PIPID, GetCurrentProcessId(), GetTickCount());
     m_pipename = buffer;
 
     m_pipe = CreateNamedPipe(buffer, 
@@ -107,14 +107,24 @@ HRESULT MessageCenter::WaitForOption( Message* option ) {
     size_t value_size = 0;
     if(FAILED(hr = ReceiveData((LPBYTE)&value_size, sizeof value_size)))
         return hr;
-    option->value.resize(value_size);
-    // receive value
-#pragma warning(push)
-#pragma warning(disable : 4267)
+
     STATIC_ASSERT(sizeof(size_t) == sizeof(DWORD));
-    if(FAILED(hr = ReceiveData((LPBYTE)&option->value.front(), value_size)))
-        return hr;
-#pragma warning(pop)
+
+	Message::byte_array::value_type buffer[1024];
+
+    // receive value
+	option->value.reserve(value_size);
+	do
+	{
+		Message::byte_array::size_type toReceive = min(1024, value_size);
+		value_size -= toReceive;
+
+		hr = ReceiveData(buffer, toReceive);
+
+		option->value.insert(option->value.end(), buffer, buffer + toReceive);
+		
+	} while (value_size > 0 && !FAILED(hr));
+
     return S_OK;
 }
 
@@ -146,13 +156,25 @@ HRESULT MessageCenter::SendOption( const Message& option ) {
     if(FAILED(hr = SendData((LPCBYTE)&valueSize, sizeof valueSize)))
         return hr;
     // send value
-#pragma warning(push)
-#pragma warning(disable : 4267)
     STATIC_ASSERT(sizeof(size_t) == sizeof(DWORD));
-    if(FAILED(hr = SendData(&*option.value.begin(), option.value.size())))
-        return hr;
-#pragma warning(pop)
-    return S_OK;
+
+	hr = S_OK;
+	Message::byte_array::value_type buffer[1024];
+	Message::byte_array::const_iterator value_it = option.value.begin();
+	Message::byte_array::size_type value_size = option.value.size();
+
+	do {
+		Message::byte_array::size_type toCopy = min(value_size, 1024);
+		value_size -= toCopy;
+
+		std::copy(value_it, value_it + toCopy, buffer);
+		value_it += toCopy;
+
+		hr = SendData(buffer, toCopy);
+
+	} while(value_size > 0 && !FAILED(hr));
+
+    return hr;
 }
 
 HRESULT MessageCenter::SendOption( const Message::option_type& code ) {

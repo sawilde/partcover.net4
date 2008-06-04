@@ -9,7 +9,8 @@
     helpstring("CorDriver.CorProfiler Class"),
     version(DRIVER_CORPROFILER_VER)
 ]
-class CorProfiler : public ICorProfilerCallback
+class CorProfiler : 
+	public ICorProfilerCallback2
 {
     static CorProfiler* m_currentInstance;
 public:
@@ -336,4 +337,48 @@ public:
     STDMETHOD( ExceptionCLRCatcherExecute( void) )
     { return S_OK; }
 
+    STDMETHOD( ThreadNameChanged(
+        /* [in] */ ThreadID threadId,
+        /* [in] */ ULONG cchName,
+        /* [in] */ WCHAR name[  ]) )
+    { return S_OK; }
+
+        
+    STDMETHOD( GarbageCollectionStarted( 
+        /* [in] */ int cGenerations,
+        /* [length_is][size_is][in] */ BOOL generationCollected[  ],
+        /* [in] */ COR_PRF_GC_REASON reason) )
+    { return S_OK; }
+
+    STDMETHOD( SurvivingReferences( 
+        /* [in] */ ULONG cSurvivingObjectIDRanges,
+        /* [size_is][in] */ ObjectID objectIDRangeStart[  ],
+        /* [size_is][in] */ ULONG cObjectIDRangeLength[  ]) )
+    { return S_OK; }
+        
+    STDMETHOD( GarbageCollectionFinished( void) )
+    { return S_OK; }
+        
+    STDMETHOD( FinalizeableObjectQueued( 
+        /* [in] */ DWORD finalizerFlags,
+        /* [in] */ ObjectID objectID) )
+    { return S_OK; }
+        
+    STDMETHOD( RootReferences2( 
+        /* [in] */ ULONG cRootRefs,
+        /* [size_is][in] */ ObjectID rootRefIds[  ],
+        /* [size_is][in] */ COR_PRF_GC_ROOT_KIND rootKinds[  ],
+        /* [size_is][in] */ COR_PRF_GC_ROOT_FLAGS rootFlags[  ],
+        /* [size_is][in] */ UINT_PTR rootIds[  ]) )
+    { return S_OK; }
+        
+    STDMETHOD( HandleCreated( 
+        /* [in] */ GCHandleID handleId,
+        /* [in] */ ObjectID initialObjectId) )
+    { return S_OK; }
+        
+    STDMETHOD( HandleDestroyed( 
+        /* [in] */ GCHandleID handleId) )
+    { return S_OK; }
+        
 };

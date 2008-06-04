@@ -354,9 +354,6 @@ namespace PartCover.Coverage.Browser
                 } catch (Exception ex) {
                     ShowError("Cannot get report! (" + ex.Message + ")");
                     return;
-                } catch {
-                    ShowError("Cannot get report! (unknown exception)");
-                    return;
                 }
                 
             }

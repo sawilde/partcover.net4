@@ -174,9 +174,9 @@ namespace PartCover.Coverage.Browser
                 Report = connector.BlockWalker.Report;
 
                 EndGeneration(true);
-            } catch (Exception ex){
-                EndGeneration(false);
-            } catch {
+            } 
+            catch 
+            {
                 EndGeneration(false);
             }
         }
