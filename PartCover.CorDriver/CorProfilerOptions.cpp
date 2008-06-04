@@ -15,12 +15,13 @@ CorProfilerOptions::~CorProfilerOptions(void)
 }
 
 void CorProfilerOptions::InitializeFromEnvironment() {
-    LPCTSTR logFile = Environment::GetEnvironmentStringOption(OPTION_LOGFILE);
+	DWORD dwSize;
+    LPCTSTR logFile = Environment::GetEnvironmentStringOption(OPTION_LOGFILE, &dwSize);
     if ( logFile != 0 ) {
-        LPCTSTR verboseLevel = Environment::GetEnvironmentStringOption(OPTION_VERBOSE);
+        LPCTSTR verboseLevel = Environment::GetEnvironmentStringOption(OPTION_VERBOSE, &dwSize);
         if (verboseLevel != 0) {
             int level;
-            if(1 == sscanf(verboseLevel, "%d", &level) && level > 0) {
+            if(1 == sscanf_s(verboseLevel, "%d", &level) && level > 0) {
                 m_logLevel.set(level);
                 m_logFile.set(logFile);
                 DriverLog::get().SetInfoLevel(level);

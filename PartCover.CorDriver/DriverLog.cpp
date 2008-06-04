@@ -40,7 +40,7 @@ void DriverLog::WriteLine(LPCTSTR message, ...) {
     m_cs.Enter();
     if( Active() && message != 0 ) {
         static TCHAR lineStart[512];
-        int lineStartSize = _stprintf(lineStart, "[%4d][%6d]", ::GetCurrentThreadId(), ::GetTickCount() - startTick);
+        int lineStartSize = _stprintf_s(lineStart, 512, "[%4d][%6d]", ::GetCurrentThreadId(), ::GetTickCount() - startTick);
         WriteBuffer(lineStart, lineStartSize + 1);
 
         va_list args;
@@ -49,7 +49,7 @@ void DriverLog::WriteLine(LPCTSTR message, ...) {
         int characters = _vsctprintf(message, args);
         if (characters != -1) {
             LPTSTR buffer = new TCHAR[characters + 5];
-            if(-1 != _vstprintf(buffer, message, args)) {
+            if(-1 != _vstprintf_s(buffer, characters + 5, message, args)) {
                 buffer[characters] = _T('\r');
                 buffer[characters + 1] = _T('\n');
                 WriteBuffer(buffer, characters + 2);
@@ -65,7 +65,7 @@ void DriverLog::WriteError(LPCTSTR className, LPCTSTR methodName, LPCTSTR messag
     m_cs.Enter();
     if( Active() && message != 0 ) {
         static TCHAR lineStart[512];
-        int lineStartSize = _stprintf(lineStart, _T("[%4d][%6d][ERROR]<%s.%s> "), ::GetCurrentThreadId(), ::GetTickCount() - startTick, className, methodName);
+        int lineStartSize = _stprintf_s(lineStart, 512, _T("[%4d][%6d][ERROR]<%s.%s> "), ::GetCurrentThreadId(), ::GetTickCount() - startTick, className, methodName);
         WriteBuffer(lineStart, lineStartSize + 1);
 
         va_list args;
@@ -74,7 +74,7 @@ void DriverLog::WriteError(LPCTSTR className, LPCTSTR methodName, LPCTSTR messag
         int characters = _vsctprintf(message, args);
         if (characters != -1) {
             LPTSTR buffer = new TCHAR[characters + 5];
-            if(-1 != _vstprintf(buffer, message, args)) {
+            if(-1 != _vstprintf_s(buffer, characters + 5, message, args)) {
                 buffer[characters] = _T('\r');
                 buffer[characters + 1] = _T('\n');
                 WriteBuffer(buffer, characters + 2);
@@ -93,7 +93,7 @@ void DriverLog::WriteInfo(int infoLevel, LPCTSTR message, ...) {
     m_cs.Enter();
     if (CanWrite(infoLevel) && message != 0 ) {
         static TCHAR lineStart[32];
-        int lineStartSize = _stprintf(lineStart, _T("[%4d][%6d] "), ::GetCurrentThreadId(), ::GetTickCount() - startTick);
+        int lineStartSize = _stprintf_s(lineStart, 32, _T("[%4d][%6d] "), ::GetCurrentThreadId(), ::GetTickCount() - startTick);
         if (lineStartSize != -1)
             WriteBuffer(lineStart, lineStartSize);
 
@@ -103,7 +103,7 @@ void DriverLog::WriteInfo(int infoLevel, LPCTSTR message, ...) {
         int characters = _vsctprintf(message, args);
         if (characters != -1) {
             LPTSTR buffer = new TCHAR[characters + 5];
-            if(-1 != _vstprintf(buffer, message, args)) {
+            if(-1 != _vstprintf_s(buffer, characters + 5, message, args)) {
                 buffer[characters] = _T('\r');
                 buffer[characters + 1] = _T('\n');
                 WriteBuffer(buffer, characters + 2);

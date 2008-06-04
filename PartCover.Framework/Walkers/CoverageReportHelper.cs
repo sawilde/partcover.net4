@@ -272,7 +272,7 @@ namespace PartCover.Framework.Walkers
             XmlAttribute verAttribute = root.Attributes["ver"];
             if (verAttribute == null ) throw new ReportException("Wrong report format");
 #if !DEBUG
-            if (IsEqual(GetHelperAssembly().GetName().Version, verAttribute.Value)) throw new ReportException("Wrong report format");
+            if (!IsEqual(GetHelperAssembly().GetName().Version, verAttribute.Value)) throw new ReportException("Wrong report format");
 #endif
 
 

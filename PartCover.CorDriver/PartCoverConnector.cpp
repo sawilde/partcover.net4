@@ -74,10 +74,10 @@ LPTSTR CreateEnvironment(const StringMap& env) {
     LPTSTR buffer_data = buffer;
     // copy data
     for(StringMap::const_iterator it = env.begin(); it != env.end(); ++it) {
-        _stprintf(buffer, _T("%s"), it->first.c_str());
+        _stprintf_s(buffer, buffer_size, _T("%s"), it->first.c_str());
         buffer += it->first.length();
         *buffer++ = _T('=');
-        _stprintf(buffer, _T("%s"), it->second.c_str());
+        _stprintf_s(buffer, buffer_size - it->first.length() - 1, _T("%s"), it->second.c_str());
         buffer += it->second.length();
         *buffer++ = 0;
     }
@@ -119,9 +119,9 @@ STDMETHODIMP PartCoverConnector::StartTarget(
         DWORD curLength = ::GetCurrentDirectory(0, NULL);
         DynamicArray<TCHAR> curBuffer(curLength + 25);
         if (curLength = ::GetCurrentDirectory(curLength + 1, curBuffer)) {
-            _stprintf(curBuffer + curLength, DRIVER_LOG_FILENAME);
+            _stprintf_s(curBuffer + curLength, 25, DRIVER_LOG_FILENAME);
             env[OPTION_LOGFILE] = curBuffer;
-            _stprintf(curBuffer, _T("%d"), m_driverLogging);
+            _stprintf_s(curBuffer, 2, _T("%d"), m_driverLogging);
             env[OPTION_VERBOSE] = curBuffer;
         }
     }
@@ -144,7 +144,7 @@ STDMETHODIMP PartCoverConnector::StartTarget(
     ZeroMemory(&pi, sizeof(pi));
 
     DynamicArray<TCHAR> args(targetArguments.length() + 1);
-    _tcscpy(args, targetArguments);
+    _tcscpy_s(args, targetArguments.length() + 1, targetArguments);
 
     BOOL created = ::CreateProcess(
                         NULL, // Application

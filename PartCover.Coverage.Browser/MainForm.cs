@@ -9,6 +9,7 @@ using System.ComponentModel;
 using System.Windows.Forms;
 using System.Data;
 using PartCover.Framework.Walkers;
+using System.Collections.Generic;
 
 namespace PartCover.Coverage.Browser
 {
@@ -52,8 +53,8 @@ namespace PartCover.Coverage.Browser
         /// </summary>
         private void InitializeComponent() {
             this.components = new System.ComponentModel.Container();
-            System.Resources.ResourceManager resources = new System.Resources.ResourceManager(typeof(MainForm));
-            this.mm = new System.Windows.Forms.MainMenu();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
+            this.mm = new System.Windows.Forms.MainMenu(this.components);
             this.mmFile = new System.Windows.Forms.MenuItem();
             this.mmRunTarget = new System.Windows.Forms.MenuItem();
             this.mmSep2 = new System.Windows.Forms.MenuItem();
@@ -72,18 +73,18 @@ namespace PartCover.Coverage.Browser
             // mm
             // 
             this.mm.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
-                                                                               this.mmFile});
+            this.mmFile});
             // 
             // mmFile
             // 
             this.mmFile.Index = 0;
             this.mmFile.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
-                                                                                   this.mmRunTarget,
-                                                                                   this.mmSep2,
-                                                                                   this.mmFileOpen,
-                                                                                   this.mmFileSaveAs,
-                                                                                   this.mmSep1,
-                                                                                   this.mmFileExit});
+            this.mmRunTarget,
+            this.mmSep2,
+            this.mmFileOpen,
+            this.mmFileSaveAs,
+            this.mmSep1,
+            this.mmFileExit});
             this.mmFile.Text = "&File";
             // 
             // mmRunTarget
@@ -124,14 +125,16 @@ namespace PartCover.Coverage.Browser
             // 
             // dlgOpen
             // 
-            this.dlgOpen.Filter = "PartCover report|*.xml";
+            this.dlgOpen.Filter = "PartCover report (*.xml)|*.xml";
             // 
             // tvItems
             // 
             this.tvItems.Dock = System.Windows.Forms.DockStyle.Left;
+            this.tvItems.ImageIndex = 0;
             this.tvItems.ImageList = this.treeImg;
             this.tvItems.Location = new System.Drawing.Point(0, 0);
             this.tvItems.Name = "tvItems";
+            this.tvItems.SelectedImageIndex = 0;
             this.tvItems.Size = new System.Drawing.Size(208, 485);
             this.tvItems.Sorted = true;
             this.tvItems.TabIndex = 0;
@@ -139,9 +142,41 @@ namespace PartCover.Coverage.Browser
             // 
             // treeImg
             // 
-            this.treeImg.ImageSize = new System.Drawing.Size(16, 16);
             this.treeImg.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("treeImg.ImageStream")));
             this.treeImg.TransparentColor = System.Drawing.Color.Transparent;
+            this.treeImg.Images.SetKeyName(0, "");
+            this.treeImg.Images.SetKeyName(1, "");
+            this.treeImg.Images.SetKeyName(2, "");
+            this.treeImg.Images.SetKeyName(3, "");
+            this.treeImg.Images.SetKeyName(4, "");
+            this.treeImg.Images.SetKeyName(5, "");
+            this.treeImg.Images.SetKeyName(6, "");
+            this.treeImg.Images.SetKeyName(7, "");
+            this.treeImg.Images.SetKeyName(8, "");
+            this.treeImg.Images.SetKeyName(9, "");
+            this.treeImg.Images.SetKeyName(10, "");
+            this.treeImg.Images.SetKeyName(11, "");
+            this.treeImg.Images.SetKeyName(12, "");
+            this.treeImg.Images.SetKeyName(13, "");
+            this.treeImg.Images.SetKeyName(14, "");
+            this.treeImg.Images.SetKeyName(15, "");
+            this.treeImg.Images.SetKeyName(16, "");
+            this.treeImg.Images.SetKeyName(17, "");
+            this.treeImg.Images.SetKeyName(18, "");
+            this.treeImg.Images.SetKeyName(19, "");
+            this.treeImg.Images.SetKeyName(20, "");
+            this.treeImg.Images.SetKeyName(21, "");
+            this.treeImg.Images.SetKeyName(22, "");
+            this.treeImg.Images.SetKeyName(23, "");
+            this.treeImg.Images.SetKeyName(24, "");
+            this.treeImg.Images.SetKeyName(25, "");
+            this.treeImg.Images.SetKeyName(26, "");
+            this.treeImg.Images.SetKeyName(27, "");
+            this.treeImg.Images.SetKeyName(28, "");
+            this.treeImg.Images.SetKeyName(29, "");
+            this.treeImg.Images.SetKeyName(30, "");
+            this.treeImg.Images.SetKeyName(31, "");
+            this.treeImg.Images.SetKeyName(32, "");
             // 
             // splTree
             // 
@@ -158,6 +193,10 @@ namespace PartCover.Coverage.Browser
             this.pnBlockInfo.Name = "pnBlockInfo";
             this.pnBlockInfo.Size = new System.Drawing.Size(469, 485);
             this.pnBlockInfo.TabIndex = 2;
+            // 
+            // dlgSave
+            // 
+            this.dlgSave.Filter = "PartCover report (*.xml)|*.xml";
             // 
             // MainForm
             // 
@@ -200,6 +239,15 @@ namespace PartCover.Coverage.Browser
             this.Close();
         }
 
+        enum MdSpecial
+        { 
+            Unknown,
+            Get,
+            Set,
+            Add,
+            Remove
+        }
+
         private void ShowReport() {
             tvItems.BeginUpdate();
             tvItems.Nodes.Clear();
@@ -217,14 +265,50 @@ namespace PartCover.Coverage.Browser
 
                     namespaceNode.Nodes.Add(classNode);
 
+                    Dictionary<string, PropertyTreeNode> props = new Dictionary<string, PropertyTreeNode>();
+                        
                     foreach(CoverageReport.MethodDescriptor md in dType.methods) {
-                        MethodTreeNode mNode = new MethodTreeNode(md);
-                        classNode.Nodes.Add(mNode);
-
-                        if (md.insBlocks.Length > 1) {
-                            foreach(CoverageReport.InnerBlockData bData in md.insBlocks)
-                                mNode.Nodes.Add(new BlockVariantTreeNode(bData));
+                        if ((md.flags & 0x0800) == 0)
+                        {
+                            AddMethodTreeNode(classNode, md);
+                            continue;
                         }
+
+                        //has special meaning
+                        MdSpecial mdSpecial = DefineMdSpecial(md.methodName);
+                        string propName = ExtractProperty(mdSpecial, md.methodName);
+
+                        if (mdSpecial == MdSpecial.Unknown) {
+                            AddMethodTreeNode(classNode, md);
+                            continue;
+                        }
+
+                        PropertyTreeNode propertyNode;
+                        if (!props.TryGetValue(propName, out propertyNode))
+                        {
+                            propertyNode = new PropertyTreeNode(propName);
+                            props[propName] = propertyNode;
+                            classNode.Nodes.Add(propertyNode);
+                        }
+
+                        MethodTreeNode mdNode = new MethodTreeNode(md);
+                        switch (mdSpecial)
+                        { 
+                            case MdSpecial.Get:
+                            case MdSpecial.Remove:
+                                propertyNode.Getter = mdNode;
+                                break;
+                            case MdSpecial.Set:
+                            case MdSpecial.Add:
+                                propertyNode.Setter = mdNode;
+                                break;
+                        }
+                    }
+
+                    foreach(KeyValuePair<string,PropertyTreeNode> kv in props)
+                    {
+                        if (kv.Value.Getter != null) kv.Value.Nodes.Add(kv.Value.Getter);
+                        if (kv.Value.Setter != null) kv.Value.Nodes.Add(kv.Value.Setter);
                     }
                 }
 
@@ -232,6 +316,42 @@ namespace PartCover.Coverage.Browser
             }
 
             tvItems.EndUpdate();
+        }
+
+        private string ExtractProperty(MdSpecial msSpecial, string name)
+        {
+            switch (msSpecial)
+            { 
+                case MdSpecial.Add:
+                case MdSpecial.Get:
+                case MdSpecial.Set:
+                    return name.Substring(4);
+                case MdSpecial.Remove:
+                    return name.Substring(7);
+                default:
+                    return name;
+            }
+        }
+
+        private MdSpecial DefineMdSpecial(string name)
+        {
+            if (name.StartsWith("set_")) return MdSpecial.Set;
+            if (name.StartsWith("get_")) return MdSpecial.Get;
+            if (name.StartsWith("add_")) return MdSpecial.Add;
+            if (name.StartsWith("remove_")) return MdSpecial.Remove;
+            return MdSpecial.Unknown;
+        }
+
+        private static void AddMethodTreeNode(ClassTreeNode classNode, CoverageReport.MethodDescriptor md)
+        {
+            MethodTreeNode mNode = new MethodTreeNode(md);
+            classNode.Nodes.Add(mNode);
+
+            if (md.insBlocks.Length > 1)
+            {
+                foreach (CoverageReport.InnerBlockData bData in md.insBlocks)
+                    mNode.Nodes.Add(new BlockVariantTreeNode(bData));
+            }
         }
 
         private TreeNode GetNamespaceNode(TreeNode asmNode, string typedefName) {
