@@ -13,7 +13,7 @@
 //#define DUMP_TYPEDEFS
 //#define DUMP_METHODDEFS
 //#define DUMP_SYM_SEQUENCE_POINTS
-#define DUMP_INSTRUMENT_RESULT
+//#define DUMP_INSTRUMENT_RESULT
 
 void DumpTypeDef(DriverLog& log, DWORD typeDefFlags, LPCWSTR typedefName);
 void DumpMethodDef(DriverLog& log, DWORD flags, LPCWSTR methoddefName, DWORD implFlag);
@@ -66,12 +66,14 @@ void Instrumentator::InstrumentModule(ModuleID module, LPCWSTR moduleName, ICorP
     }
 
     CComPtr<IMetaDataImport> mdImport;
-    if(FAILED(hr = profilerInfo->GetModuleMetaData(module, ofRead, IID_IMetaDataImport, (IUnknown**) &mdImport))) {
+	hr = profilerInfo->GetModuleMetaData(module, ofRead, IID_IMetaDataImport, (IUnknown**) &mdImport);
+    if(S_OK != hr) 
+	{
         LOGINFO3(INSTRUMENT_METHOD, "Cannot instrument module %X '%S' (error %X on get meta data import)", module, moduleName, hr);
         Unlock();
         return;
     }
-
+	
     if(binder) {
         ULONG searchPolicy = AllowRegistryAccess|AllowSymbolServerAccess|AllowOriginalPathAccess|AllowReferencePathAccess;
         binder->GetReaderForFile2(mdImport, desc.moduleName.c_str(), NULL, searchPolicy, &desc.symReader);

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="windows-1251"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="8.00"
 	Name="PartCover.CorDriver"
 	ProjectGUID="{D179C0D8-461A-4FF1-8119-40CC73C520DB}"
 	RootNamespace="PartCover.CorDriver"
@@ -289,6 +289,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\sigparser.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\stdafx.cpp"
 				>
 				<FileConfiguration
@@ -388,6 +392,10 @@
 			</File>
 			<File
 				RelativePath=".\Rules.h"
+				>
+			</File>
+			<File
+				RelativePath=".\sigparser.h"
 				>
 			</File>
 			<File

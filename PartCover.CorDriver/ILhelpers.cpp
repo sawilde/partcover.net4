@@ -120,7 +120,7 @@ namespace ILHelpers {
     ILop GetFullForm(const ILop& ilop) {
         char buffer[32] = {0};
         size_t mnsize = _tcsclen(ilop.mnemonic) - 2;
-        _tcsncpy(buffer, ilop.mnemonic, mnsize);
+        _tcsncpy_s(buffer, 32, ilop.mnemonic, mnsize);
         buffer[mnsize] = 0;
         return ILopMapContainer.FindILOpByMnemonic(buffer);
     }

@@ -3,7 +3,9 @@
 
 namespace Environment {
 
-    LPCTSTR GetEnvironmentStringOption(LPCTSTR optionName) {
+    LPCTSTR GetEnvironmentStringOption(LPCTSTR optionName, DWORD* size) {
+		*size = 0;
+
         LPTSTR buffer = 0;
         DWORD returnSize = GetEnvironmentVariable(optionName, buffer, 0);
         if (returnSize > 0) {
@@ -13,6 +15,8 @@ namespace Environment {
                 buffer = 0;
             }
         }
+
+		*size = returnSize;
         return buffer;
     }
 

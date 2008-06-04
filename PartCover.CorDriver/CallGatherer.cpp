@@ -154,22 +154,22 @@ void CallGatherer::OnTailcall(FunctionID funcId) {
 
 void CallGatherer::Walk(ICallWalker* walker) {
     for(ThreadCallTreeIterator it = m_threads.begin(); it != m_threads.end(); ++it) {
-        if (FAILED(walker->EnterThread(it->first)))
+        if (S_OK != walker->EnterThread(it->first))
             return;
 
         ThreadCallTree& tree = it->second;
         for(CallTreeAtomIterator trit = tree.m_calls.begin(); trit != tree.m_calls.end(); ++trit) {
             CallTreeAtom& atom = *trit;
             if (eEnter == atom.reason) {
-                if(FAILED(walker->EnterFunction(atom.function, atom.ticks)))
+                if(S_OK != walker->EnterFunction(atom.function, atom.ticks))
                     return;
             }
             else if (eLeave == atom.reason) {
-                if(FAILED(walker->LeaveFunction(atom.function, atom.ticks)))
+                if(S_OK != walker->LeaveFunction(atom.function, atom.ticks))
                     return;
             }
             else if (eTailcall == atom.reason) {
-                if(FAILED(walker->TailcallFunction(atom.function, atom.ticks)))
+                if(S_OK != walker->TailcallFunction(atom.function, atom.ticks))
                     return;
             }
         }

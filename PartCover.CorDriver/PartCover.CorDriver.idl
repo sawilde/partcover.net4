@@ -3,7 +3,7 @@ import "D:\Program Files\Microsoft Visual Studio 8\SDK\v2.0\include\corprof.idl"
 import "docobj.idl";
 
 
-[ version(0.1), uuid(03671C9F-E46B-4E79-BE3E-4E07EE6749CB), helpstring("PartCover module") ]
+[ version(2.0), uuid(7D0E6AAB-C5FC-4103-AAD4-8BF3112A56C4), helpstring("PartCover module") ]
 library PartCover
 {
 	importlib("stdole2.tlb");
@@ -54,9 +54,9 @@ library PartCover
 	};
 
 	[
-		uuid(89FC4679-2C1E-439d-A9E1-56B817C4C656),
+		uuid(717FF691-2ADF-4ac0-985F-1DD3C42FDF90),
 		helpstring("CorDriver.CorProfiler Class"),
-		version(0.1)
+		version(2.0)
 	] 
 #line 12 "e:\\programming\\_delete\\partcover\\partcover.cordriver\\corprofiler.h"
 	coclass CorProfiler {
@@ -84,9 +84,9 @@ library PartCover
 	};
 
 	[
-		uuid(15225ABF-81EE-4351-B336-AB38E5B95FD7),
+		uuid(6F6225EA-0897-41fa-B1EF-8B4D3E15325E),
 		helpstring("CorDriver.PartCoverConnector Class"),
-		version(0.1)
+		version(2.0)
 	] 
 #line 39 "e:\\programming\\_delete\\partcover\\partcover.cordriver\\partcoverconnector.h"
 	coclass PartCoverConnector {

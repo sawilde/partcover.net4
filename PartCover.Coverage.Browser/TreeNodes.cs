@@ -45,7 +45,7 @@ namespace PartCover.Coverage.Browser
 
     interface ICoverageInfo {
         UInt32 GetCodeSize();
-        UInt32 GetCOveredCodeSize();
+        UInt32 GetCoveredCodeSize();
         void UpdateCoverageInfo();
     }
 
@@ -67,7 +67,7 @@ namespace PartCover.Coverage.Browser
         private UInt32 coveredCodeSize = 0;
 
         public UInt32 GetCodeSize() { return codeSize; }
-        public UInt32 GetCOveredCodeSize() { return coveredCodeSize; }
+        public UInt32 GetCoveredCodeSize() { return coveredCodeSize; }
 
         public void UpdateCoverageInfo() {
             codeSize = 0;
@@ -76,7 +76,7 @@ namespace PartCover.Coverage.Browser
             foreach(ICoverageInfo iInfo in Nodes) {
                 iInfo.UpdateCoverageInfo();
                 codeSize += iInfo.GetCodeSize();
-                coveredCodeSize += iInfo.GetCOveredCodeSize();
+                coveredCodeSize += iInfo.GetCoveredCodeSize();
             }
             float percent = codeSize == 0? 0 : coveredCodeSize / (float) codeSize * 100;
             this.Text = string.Format("{0} ({1:#0}%)", assemblyName, percent);
@@ -101,7 +101,7 @@ namespace PartCover.Coverage.Browser
         private UInt32 coveredCodeSize = 0;
 
         public UInt32 GetCodeSize() { return codeSize; }
-        public UInt32 GetCOveredCodeSize() { return coveredCodeSize; }
+        public UInt32 GetCoveredCodeSize() { return coveredCodeSize; }
 
         public void UpdateCoverageInfo() {
             codeSize = 0;
@@ -110,7 +110,7 @@ namespace PartCover.Coverage.Browser
             foreach(ICoverageInfo iInfo in Nodes) {
                 iInfo.UpdateCoverageInfo();
                 codeSize += iInfo.GetCodeSize();
-                coveredCodeSize += iInfo.GetCOveredCodeSize();
+                coveredCodeSize += iInfo.GetCoveredCodeSize();
             }
             float percent = codeSize == 0? 0 : coveredCodeSize / (float) codeSize * 100;
             this.Text = string.Format("{0} ({1:#0}%)", Namespace, percent);
@@ -137,16 +137,17 @@ namespace PartCover.Coverage.Browser
         private UInt32 coveredCodeSize = 0;
 
         public UInt32 GetCodeSize() { return codeSize; }
-        public UInt32 GetCOveredCodeSize() { return coveredCodeSize; }
+        public UInt32 GetCoveredCodeSize() { return coveredCodeSize; }
 
         public void UpdateCoverageInfo() {
             codeSize = 0;
             coveredCodeSize = 0;
 
-            foreach(ICoverageInfo iInfo in Nodes) {
+            foreach (ICoverageInfo iInfo in Nodes) 
+            {
                 iInfo.UpdateCoverageInfo();
                 codeSize += iInfo.GetCodeSize();
-                coveredCodeSize += iInfo.GetCOveredCodeSize();
+                coveredCodeSize += iInfo.GetCoveredCodeSize();
             }
             float percent = codeSize == 0? 0 : coveredCodeSize / (float) codeSize * 100;
             this.Text = string.Format("{0} ({1:#0}%)", CoverageReportHelper.GetTypeDefName(dType.typeName), percent);
@@ -156,7 +157,58 @@ namespace PartCover.Coverage.Browser
         #endregion
     }
 
-    internal class MethodTreeNode : TreeNodeBase, ICoverageInfo {
+    internal class PropertyTreeNode : TreeNodeBase, ICoverageInfo
+    {
+        string _property;
+        MethodTreeNode _setter;
+        MethodTreeNode _getter;
+
+        public PropertyTreeNode(string text) : base(text)
+        {
+            _property = text;
+            ImageIndex = NodeImageIndex.PublicMethod;
+            SelectedImageIndex = ImageIndex;
+        }
+
+        public MethodTreeNode Setter {
+            get { return _setter; }
+            set { _setter = value; }
+        }
+        public MethodTreeNode Getter {
+            get { return _getter; }
+            set { _getter = value; }
+        }
+
+        public uint GetCodeSize()
+        {
+            uint size = 0;
+            if (Setter != null) size += Setter.GetCodeSize();
+            if (Getter != null) size += Getter.GetCodeSize();
+            return size;
+        }
+
+        public uint GetCoveredCodeSize()
+        {
+            uint size = 0;
+            if (Setter != null) size += Setter.GetCoveredCodeSize();
+            if (Getter != null) size += Getter.GetCoveredCodeSize();
+            return size;
+        }
+
+        public void UpdateCoverageInfo()
+        {
+            if (Setter != null) Setter.UpdateCoverageInfo();
+            if (Getter != null) Getter.UpdateCoverageInfo();
+
+            float percent = GetCodeSize() == 0 ? 0 : GetCoveredCodeSize() / (float)GetCodeSize() * 100;
+
+            Text = string.Format("{0} ({1:#0}%)", _property, percent);
+            ForeColor = Helpers.ColorProvider.GetForeColorForPercent(percent);
+        }
+    }
+
+    internal class MethodTreeNode : TreeNodeBase, ICoverageInfo
+    {
         CoverageReport.MethodDescriptor md;
         public CoverageReport.MethodDescriptor Descriptor {
             get { return md; }
@@ -173,7 +225,7 @@ namespace PartCover.Coverage.Browser
         private UInt32 coveredCodeSize = 0;
 
         public UInt32 GetCodeSize() { return codeSize; }
-        public UInt32 GetCOveredCodeSize() { return coveredCodeSize; }
+        public UInt32 GetCoveredCodeSize() { return coveredCodeSize; }
 
         public void UpdateCoverageInfo() {
             foreach(ICoverageInfo iInfo in Nodes)
@@ -193,7 +245,7 @@ namespace PartCover.Coverage.Browser
         #endregion
     }
 
-    internal class BlockVariantTreeNode : TreeNodeBase {
+    internal class BlockVariantTreeNode : TreeNodeBase, ICoverageInfo {
         CoverageReport.InnerBlockData bData;
         public CoverageReport.InnerBlockData BlockData {
             get { return bData; }
@@ -210,14 +262,14 @@ namespace PartCover.Coverage.Browser
         private UInt32 coveredCodeSize = 0;
 
         public UInt32 GetCodeSize() { return codeSize; }
-        public UInt32 GetCOveredCodeSize() { return coveredCodeSize; }
+        public UInt32 GetCoveredCodeSize() { return coveredCodeSize; }
 
         public void UpdateCoverageInfo() {
             codeSize = CoverageReportHelper.GetBlockCodeSize(BlockData);
             coveredCodeSize = CoverageReportHelper.GetBlockCoveredCodeSize(BlockData);
 
             float percent = codeSize == 0? 0 : coveredCodeSize / (float) codeSize * 100;
-            this.Text = string.Format("Block Data ({1:#0}%)", percent);
+            this.Text = string.Format("Block Data ({0:#0}%)", percent);
             this.ForeColor = Helpers.ColorProvider.GetForeColorForPercent(percent);
         }
 

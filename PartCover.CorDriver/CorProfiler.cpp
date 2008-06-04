@@ -40,7 +40,8 @@ STDMETHODIMP CorProfiler::Initialize( /* [in] */ IUnknown *pICorProfilerInfoUnk 
     m_currentInstance = this;
     m_options.InitializeFromEnvironment();
 
-    LPCTSTR messageCenterOption = Environment::GetEnvironmentStringOption(OPTION_MESSOPT);
+	DWORD dwSize;
+    LPCTSTR messageCenterOption = Environment::GetEnvironmentStringOption(OPTION_MESSOPT, &dwSize);
     if(FAILED(hr = m_center.Connect(messageCenterOption))) {
         Environment::FreeStringResource(messageCenterOption);
         return hr;
