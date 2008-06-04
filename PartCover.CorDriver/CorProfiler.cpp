@@ -27,11 +27,14 @@ void CorProfiler::FinalizeInstance() {
         m_currentInstance->Shutdown();
 }
 
-CorProfiler::CorProfiler() : m_instrumentator(m_rules) {}
+CorProfiler::CorProfiler() : m_instrumentator(m_rules) {
+    ATLTRACE("CorProfiler::CorProfiler");
+}
 
 STDMETHODIMP CorProfiler::Initialize( /* [in] */ IUnknown *pICorProfilerInfoUnk )
 {
     HRESULT hr;
+
     ATLTRACE("CorProfiler::Initialize");
 
     m_currentInstance = this;
@@ -136,7 +139,7 @@ HRESULT CoCreateInstanceWithoutModel( REFCLSID rclsid, REFIID riid, void **ppv )
     StringFromGUID2( rclsid, guidString, NumItems( guidString ) );
     WideCharToMultiByte( CP_ACP, 0, guidString, -1, szID, sizeof( szID ), NULL, NULL );
 
-    _stprintf( keyString, _T("CLSID\\%s\\InprocServer32"), szID );
+    _stprintf_s( keyString, 1024, _T("CLSID\\%s\\InprocServer32"), szID );
 
     // Lets grab the DLL name now.
     result = RegOpenKeyEx( HKEY_CLASSES_ROOT, keyString, 0, KEY_READ, &key );
