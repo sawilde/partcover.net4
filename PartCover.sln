@@ -1,0 +1,59 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PartCover.Console", "PartCover.Console\PartCover.Console.csproj", "{7BF61BD2-84D9-4EFB-B6D8-3B851C8935A6}"
+	ProjectSection(ProjectDependencies) = postProject
+		{18D29461-7890-4EB6-8A8C-DAC5E6AB4B57} = {18D29461-7890-4EB6-8A8C-DAC5E6AB4B57}
+		{D179C0D8-461A-4FF1-8119-40CC73C520DB} = {D179C0D8-461A-4FF1-8119-40CC73C520DB}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PartCover.CorDriver", "PartCover.CorDriver\PartCover.CorDriver.vcproj", "{D179C0D8-461A-4FF1-8119-40CC73C520DB}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PartCover.Framework", "PartCover.Framework\PartCover.Framework.csproj", "{18D29461-7890-4EB6-8A8C-DAC5E6AB4B57}"
+	ProjectSection(ProjectDependencies) = postProject
+		{D179C0D8-461A-4FF1-8119-40CC73C520DB} = {D179C0D8-461A-4FF1-8119-40CC73C520DB}
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PartCover.Coverage.Browser", "PartCover.Coverage.Browser\PartCover.Coverage.Browser.csproj", "{482B7B52-E92B-49EF-B4B5-57F2A1AFAFD3}"
+	ProjectSection(ProjectDependencies) = postProject
+		{D179C0D8-461A-4FF1-8119-40CC73C520DB} = {D179C0D8-461A-4FF1-8119-40CC73C520DB}
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+		Release = Release
+		Setup = Setup
+		Test = Test
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{7BF61BD2-84D9-4EFB-B6D8-3B851C8935A6}.Debug.ActiveCfg = Debug|.NET
+		{7BF61BD2-84D9-4EFB-B6D8-3B851C8935A6}.Debug.Build.0 = Debug|.NET
+		{7BF61BD2-84D9-4EFB-B6D8-3B851C8935A6}.Release.ActiveCfg = Release|.NET
+		{7BF61BD2-84D9-4EFB-B6D8-3B851C8935A6}.Release.Build.0 = Release|.NET
+		{7BF61BD2-84D9-4EFB-B6D8-3B851C8935A6}.Setup.ActiveCfg = Release|.NET
+		{7BF61BD2-84D9-4EFB-B6D8-3B851C8935A6}.Test.ActiveCfg = Debug|.NET
+		{D179C0D8-461A-4FF1-8119-40CC73C520DB}.Debug.ActiveCfg = Debug|Win32
+		{D179C0D8-461A-4FF1-8119-40CC73C520DB}.Debug.Build.0 = Debug|Win32
+		{D179C0D8-461A-4FF1-8119-40CC73C520DB}.Release.ActiveCfg = Release|Win32
+		{D179C0D8-461A-4FF1-8119-40CC73C520DB}.Release.Build.0 = Release|Win32
+		{D179C0D8-461A-4FF1-8119-40CC73C520DB}.Setup.ActiveCfg = Release|Win32
+		{D179C0D8-461A-4FF1-8119-40CC73C520DB}.Test.ActiveCfg = Debug|Win32
+		{18D29461-7890-4EB6-8A8C-DAC5E6AB4B57}.Debug.ActiveCfg = Debug|.NET
+		{18D29461-7890-4EB6-8A8C-DAC5E6AB4B57}.Debug.Build.0 = Debug|.NET
+		{18D29461-7890-4EB6-8A8C-DAC5E6AB4B57}.Release.ActiveCfg = Release|.NET
+		{18D29461-7890-4EB6-8A8C-DAC5E6AB4B57}.Release.Build.0 = Release|.NET
+		{18D29461-7890-4EB6-8A8C-DAC5E6AB4B57}.Setup.ActiveCfg = Release|.NET
+		{18D29461-7890-4EB6-8A8C-DAC5E6AB4B57}.Test.ActiveCfg = Debug|.NET
+		{482B7B52-E92B-49EF-B4B5-57F2A1AFAFD3}.Debug.ActiveCfg = Debug|.NET
+		{482B7B52-E92B-49EF-B4B5-57F2A1AFAFD3}.Debug.Build.0 = Debug|.NET
+		{482B7B52-E92B-49EF-B4B5-57F2A1AFAFD3}.Release.ActiveCfg = Release|.NET
+		{482B7B52-E92B-49EF-B4B5-57F2A1AFAFD3}.Release.Build.0 = Release|.NET
+		{482B7B52-E92B-49EF-B4B5-57F2A1AFAFD3}.Setup.ActiveCfg = Release|.NET
+		{482B7B52-E92B-49EF-B4B5-57F2A1AFAFD3}.Test.ActiveCfg = Debug|.NET
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal
