@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 
 namespace PartCover.Framework
 {
@@ -31,11 +32,15 @@ namespace PartCover.Framework
             ExcludeItem("[mscorlib]*");
             ExcludeItem("[System*]*");
 
+            if (directory != null) directory = directory.Trim();
+            if (path != null) path = path.Trim();
+            if (args != null) args = args.Trim();
+
+            if (directory == null || directory.Length == 0)
+                directory = Directory.GetCurrentDirectory();
+
             // start target
             if (Out != null) Out.WriteLine("{0}: Start target", DateTime.Now);
-            if (path != null) path = path.Trim();
-            if (directory != null) directory = directory.Trim();
-            if (args != null) args = args.Trim();
             connector.StartTarget(path, directory, args, redirectOutput);
 
             // wait results
