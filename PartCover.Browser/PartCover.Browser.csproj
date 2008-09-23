@@ -1,0 +1,480 @@
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectType>Local</ProjectType>
+    <ProductVersion>8.0.50727</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{482B7B52-E92B-49EF-B4B5-57F2A1AFAFD3}</ProjectGuid>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ApplicationIcon>resources\app.ico</ApplicationIcon>
+    <AssemblyKeyContainerName>
+    </AssemblyKeyContainerName>
+    <AssemblyName>PartCover.Browser</AssemblyName>
+    <AssemblyOriginatorKeyFile>PartCover.Coverage.Browser.snk</AssemblyOriginatorKeyFile>
+    <DefaultClientScript>JScript</DefaultClientScript>
+    <DefaultHTMLPageLayout>Grid</DefaultHTMLPageLayout>
+    <DefaultTargetSchema>IE50</DefaultTargetSchema>
+    <DelaySign>false</DelaySign>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>PartCover.Browser</RootNamespace>
+    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
+    <StartupObject>
+    </StartupObject>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <OutputPath>bin\Debug\</OutputPath>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <BaseAddress>285212672</BaseAddress>
+    <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
+    <ConfigurationOverrideFile>
+    </ConfigurationOverrideFile>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DocumentationFile>
+    </DocumentationFile>
+    <DebugSymbols>true</DebugSymbols>
+    <FileAlignment>4096</FileAlignment>
+    <NoStdLib>false</NoStdLib>
+    <NoWarn>
+    </NoWarn>
+    <Optimize>false</Optimize>
+    <RegisterForComInterop>false</RegisterForComInterop>
+    <RemoveIntegerChecks>false</RemoveIntegerChecks>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningLevel>4</WarningLevel>
+    <DebugType>full</DebugType>
+    <ErrorReport>prompt</ErrorReport>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <OutputPath>bin\Release\</OutputPath>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <BaseAddress>285212672</BaseAddress>
+    <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
+    <ConfigurationOverrideFile>
+    </ConfigurationOverrideFile>
+    <DefineConstants>TRACE</DefineConstants>
+    <DocumentationFile>
+    </DocumentationFile>
+    <DebugSymbols>false</DebugSymbols>
+    <FileAlignment>4096</FileAlignment>
+    <NoStdLib>false</NoStdLib>
+    <NoWarn>
+    </NoWarn>
+    <Optimize>true</Optimize>
+    <RegisterForComInterop>false</RegisterForComInterop>
+    <RemoveIntegerChecks>false</RemoveIntegerChecks>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningLevel>4</WarningLevel>
+    <DebugType>none</DebugType>
+    <ErrorReport>prompt</ErrorReport>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="log4net, Version=1.2.10.0, Culture=neutral, PublicKeyToken=1b44e1d426115821, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\PartCover.Lib\log4net.dll</HintPath>
+    </Reference>
+    <Reference Include="System">
+      <Name>System</Name>
+    </Reference>
+    <Reference Include="System.Data">
+      <Name>System.Data</Name>
+    </Reference>
+    <Reference Include="System.Drawing">
+      <Name>System.Drawing</Name>
+    </Reference>
+    <Reference Include="System.Windows.Forms">
+      <Name>System.Windows.Forms</Name>
+    </Reference>
+    <Reference Include="System.Xml">
+      <Name>System.XML</Name>
+    </Reference>
+    <ProjectReference Include="..\PartCover.Browser.Api\PartCover.Browser.Api.csproj">
+      <Project>{38839D6D-42DC-43F8-9B75-25EAC5962092}</Project>
+      <Name>PartCover.Browser.Api</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PartCover.Framework\PartCover.Framework.csproj">
+      <Name>PartCover.Framework</Name>
+      <Project>{18D29461-7890-4EB6-8A8C-DAC5E6AB4B57}</Project>
+      <Package>{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</Package>
+    </ProjectReference>
+    <ProjectReference Include="..\PartViewer\PartViewer.csproj">
+      <Project>{B5ED842D-8E9D-435B-A246-614E2BE7F5E0}</Project>
+      <Name>PartViewer</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ApplicationHost.cs" />
+    <Compile Include="Features\Controls\ReportTree.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Features\Controls\ReportTree.Designer.cs">
+      <DependentUpon>ReportTree.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Dialogs\AboutForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dialogs\AboutForm.Designer.cs">
+      <DependentUpon>AboutForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Dialogs\SettingsForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dialogs\SettingsForm.Designer.cs">
+      <DependentUpon>SettingsForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FeatureSeeker.cs" />
+    <Compile Include="Features\BrowserFormFeature.cs" />
+    <Compile Include="Features\CoverageReportService.cs" />
+    <Compile Include="Features\FeatureViewRunHistory.cs" />
+    <Compile Include="Features\Views\CoverageView.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Features\Views\CoverageView.Designer.cs">
+      <DependentUpon>CoverageView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Features\FeatureReportItemSelection.cs" />
+    <Compile Include="Features\FeatureViewCoverage.cs" />
+    <Compile Include="Features\Views\RunHistoryView.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Features\Views\RunHistoryView.Designer.cs">
+      <DependentUpon>RunHistoryView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Dialogs\SmallAsyncUserForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dialogs\SmallAsyncUserForm.Designer.cs">
+      <DependentUpon>SmallAsyncUserForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Helpers\AsyncUserProcess.cs">
+    </Compile>
+    <Compile Include="Helpers\AsyncUserProcessForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Helpers\ColorProvider.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MainEntry.cs" />
+    <Compile Include="Forms\MainForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\MainForm.Designer.cs">
+      <DependentUpon>MainForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Resources\ResourceImageList.cs" />
+    <Compile Include="Forms\RunTargetForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
+    <Compile Include="Settings.cs" />
+    <Compile Include="Resources\VSImage.cs" />
+    <Compile Include="Stuff\CoverageReportRunHistory.cs" />
+    <Compile Include="Stuff\CoverageReportWrapper.cs" />
+    <Compile Include="Stuff\HistoryCollector.cs" />
+    <Compile Include="Stuff\HtmlPreview.cs" />
+    <Compile Include="Stuff\ImageSelector.cs" />
+    <Compile Include="Stuff\MethodSort.cs" />
+    <Compile Include="Stuff\MethodTreeNodeComparer.cs" />
+    <Compile Include="Stuff\ReportItems\AssemblyItem.cs" />
+    <Compile Include="Stuff\ReportItems\ClassItem.cs" />
+    <Compile Include="Stuff\ReportItems\CoveredVariantItem.cs" />
+    <Compile Include="Stuff\ReportItems\MethodItem.cs" />
+    <Compile Include="Stuff\ReportItems\NamespaceItem.cs" />
+    <Compile Include="Stuff\TargetRunner.cs" />
+    <Compile Include="Features\Controls\TreeNodes.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Stuff\TargetRunnerCallback.cs" />
+    <EmbeddedResource Include="Dialogs\AboutForm.resx">
+      <DependentUpon>AboutForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Dialogs\SmallAsyncUserForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>SmallAsyncUserForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Helpers\AsyncUserProcessForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>AsyncUserProcessForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\MainForm.resx">
+      <DependentUpon>MainForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\RunTargetForm.resx">
+      <DependentUpon>RunTargetForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <None Include="app.config" />
+    <None Include="manual\PartCover Browser Manual.rtf" />
+    <None Include="PartCover.Coverage.Browser.snk" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_ValueTypePrivate.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_Assembly.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_Class.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_ClassFriend.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_ClassPrivate.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_ClassProtected.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_ClassSealed.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_Constant.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_ConstantFriend.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_ConstantPrivate.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_ConstantProtected.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_ConstantSealed.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_Delegate.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_DelegateFriend.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_DelegatePrivate.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_DelegateProtected.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_DelegateSealed.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_Enum.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_EnumFriend.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_EnumProtected.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_EnumSealed.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_Event.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_EventFriend.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_EventPrivate.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_EventProtected.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_EventSealed.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_Field.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_FieldFriend.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_FieldPrivate.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_FieldProtected.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_FieldSealed.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_Interface.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_InterfaceFriend.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_InterfacePrivate.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_InterfaceProtected.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_InterfaceSealed.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_Method.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_MethodFriend.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_MethodPrivate.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_MethodProtected.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_MethodSealed.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_Namespace.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_NamespaceFriend.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_NamespaceSealed.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_NamespacePrivate.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_NamespaceProtected.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_Operator.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_OperatorFriend.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_OperatorPrivate.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_OperatorProtected.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_OperatorSealed.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_Properties.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_PropertiesFriend.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_PropertiesPrivate.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_PropertiesProtected.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_PropertiesSealed.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_Structure.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_StructureFriend.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_StructurePrivate.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_StructureProtected.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_StructureSealed.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_Template.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_TemplateFriend.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_TemplatePrivate.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_TemplateProtected.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_TemplateSealed.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_ValueType.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_ValueTypeFriend.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_ValueTypeProtected.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_ValueTypeSealed.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_EventAdd.bmp" />
+    <EmbeddedResource Include="Resources\VSObject\VSObject_EventRemove.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_PropertyGet.bmp" />
+    <EmbeddedResource Include="Resources\VSObject\VSObject_PropertySet.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Dialogs\SettingsForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>SettingsForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Features\Views\CoverageView.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>CoverageView.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Features\Views\RunHistoryView.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>RunHistoryView.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\VSObject\VSObject_MethodFriend_S.bmp" />
+    <EmbeddedResource Include="Resources\VSObject\VSObject_MethodPrivate_S.bmp" />
+    <EmbeddedResource Include="Resources\VSObject\VSObject_MethodProtected_S.bmp" />
+    <EmbeddedResource Include="Resources\VSObject\VSObject_MethodSealed_S.bmp" />
+    <EmbeddedResource Include="Resources\VSObject\VSObject_Method_S.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="xslt\Report By Assembly.xslt" />
+    <Content Include="xslt\Report By Class.xslt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Controls\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>
+    </PreBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
+</Project>

@@ -3,7 +3,7 @@ import "D:\Program Files\Microsoft Visual Studio 8\SDK\v2.0\include\corprof.idl"
 import "docobj.idl";
 
 
-[ version(2.0), uuid(7D0E6AAB-C5FC-4103-AAD4-8BF3112A56C4), helpstring("PartCover module") ]
+[ version(2.1), uuid(7D0E6AAB-C5FC-4103-AAD4-8BF3112A56C4), helpstring("PartCover module") ]
 library PartCover
 {
 	importlib("stdole2.tlb");
@@ -14,7 +14,7 @@ library PartCover
 		helpstring("CorDriver.IPartCoverConnector interface"),
 		custom(8AFCDA7F-33B7-3120-86A8-754D2C0C0578, "library_block")
 	] 
-#line 46 "e:\\programming\\_delete\\partcover\\partcover.cordriver\\interface.h"
+#line 25 "e:\\programming\\sf\\partcover\\svn\\trunk\\partcover.cordriver\\interface.h"
 	enum ProfilerMode {
 		COUNT_COVERAGE = 1,
 		COVERAGE_USE_CLASS_LEVEL = 4,
@@ -27,70 +27,110 @@ library PartCover
 		helpstring("CorDriver.IInstrumentedBlockWalker interface"),
 		custom(8AFCDA7F-33B7-3120-86A8-754D2C0C0578, "library_block")
 	] 
-#line 61 "e:\\programming\\_delete\\partcover\\partcover.cordriver\\interface.h"
+#line 40 "e:\\programming\\sf\\partcover\\svn\\trunk\\partcover.cordriver\\interface.h"
 	interface IInstrumentedBlockWalker : IUnknown {
 		HRESULT  BeginReport();
-#line 64 "e:\\programming\\_delete\\partcover\\partcover.cordriver\\interface.h"
+#line 43 "e:\\programming\\sf\\partcover\\svn\\trunk\\partcover.cordriver\\interface.h"
 		HRESULT  EnterTypedef([in]BSTR assemblyName, [in]BSTR typedefName, [in]DWORD flags);
 		HRESULT  EnterMethod([in]BSTR methodName, [in]BSTR methodSig, [in]DWORD flags, [in]DWORD implFlags);
 		HRESULT  MethodBlock([in]ULONG position, [in]ULONG blockLen, [in]DWORD visitCount, [in]ULONG32 fileId, [in]ULONG32 startLine, [in]ULONG32 startColumn, [in]ULONG32 endLine, [in]ULONG32 endColumn);
 		HRESULT  LeaveMethod();
 		HRESULT  LeaveTypedef();
-#line 70 "e:\\programming\\_delete\\partcover\\partcover.cordriver\\interface.h"
+#line 49 "e:\\programming\\sf\\partcover\\svn\\trunk\\partcover.cordriver\\interface.h"
 		HRESULT  RegisterFile([in]ULONG32 fileId, [in]BSTR fileUrl);
 		HRESULT  EndReport();
 	};
 
 	[
-		uuid(5B8DF888-1698-4164-84BF-DDE1A15FF5D4),
-		helpstring("CorDriver.CallReason  enum"),
+		object,
+		uuid(64845E73-9471-401d-AEB8-B6B24CF0E894),
+		helpstring("CorDriver.IConnectorCallback interface"),
 		custom(8AFCDA7F-33B7-3120-86A8-754D2C0C0578, "library_block")
 	] 
-#line 24 "e:\\programming\\_delete\\partcover\\partcover.cordriver\\callgatherer.h"
-	enum CallReason {
-		eEnter = 0,
-		eLeave = 1,
-		eTailcall = 2,
+#line 61 "e:\\programming\\sf\\partcover\\svn\\trunk\\partcover.cordriver\\interface.h"
+	interface IConnectorActionCallback : IUnknown {
+#line 63 "e:\\programming\\sf\\partcover\\svn\\trunk\\partcover.cordriver\\interface.h"
+		HRESULT  SetConnected([in]VARIANT_BOOL connected);
+#line 65 "e:\\programming\\sf\\partcover\\svn\\trunk\\partcover.cordriver\\interface.h"
+		HRESULT  MethodsReceiveBegin();
+		HRESULT  MethodsReceiveStatus();
+		HRESULT  MethodsReceiveEnd();
+#line 69 "e:\\programming\\sf\\partcover\\svn\\trunk\\partcover.cordriver\\interface.h"
+		HRESULT  InstrumentDataReceiveBegin();
+		HRESULT  InstrumentDataReceiveStatus();
+		HRESULT  InstrumentDataReceiveEnd();
+#line 73 "e:\\programming\\sf\\partcover\\svn\\trunk\\partcover.cordriver\\interface.h"
+		HRESULT  InstrumentDataReceiveFilesBegin();
+		HRESULT  InstrumentDataReceiveFilesCount([in] size_t fileCount);
+		HRESULT  InstrumentDataReceiveFilesStat([in] size_t index);
+		HRESULT  InstrumentDataReceiveFilesEnd();
+#line 78 "e:\\programming\\sf\\partcover\\svn\\trunk\\partcover.cordriver\\interface.h"
+		HRESULT  InstrumentDataReceiveCountersBegin();
+		HRESULT  InstrumentDataReceiveCountersAsmCount([in] size_t asmCount);
+		HRESULT  InstrumentDataReceiveCountersAsm([in]BSTR name, [in]BSTR mod, [in] size_t typeDefCount);
+		HRESULT  InstrumentDataReceiveCountersEnd();
+#line 83 "e:\\programming\\sf\\partcover\\svn\\trunk\\partcover.cordriver\\interface.h"
+		HRESULT  OpenMessagePipe();
+#line 85 "e:\\programming\\sf\\partcover\\svn\\trunk\\partcover.cordriver\\interface.h"
+		HRESULT  TargetSetEnvironmentVars();
+		HRESULT  TargetCreateProcess();
+		HRESULT  TargetWaitDriver();
+		HRESULT  TargetRequestShutdown();
+#line 90 "e:\\programming\\sf\\partcover\\svn\\trunk\\partcover.cordriver\\interface.h"
+		HRESULT  DriverConnected();
+		HRESULT  DriverSendRules();
+		HRESULT  DriverWaitEoIConfirm();
+#line 94 "e:\\programming\\sf\\partcover\\svn\\trunk\\partcover.cordriver\\interface.h"
+		HRESULT  FunctionsReceiveBegin();
+		HRESULT  FunctionsCount([in] size_t count);
+		HRESULT  FunctionsReceiveStat([in] size_t index);
+		HRESULT  FunctionsReceiveEnd();
 	};
 
 	[
-		uuid(717FF691-2ADF-4ac0-985F-1DD3C42FDF90),
-		helpstring("CorDriver.CorProfiler Class"),
-		version(2.0)
+		object,
+		uuid(64D5D652-8BF4-4E16-B192-80B6CE9147AD),
+		helpstring("CorDriver.IPartCoverConnector2 interface"),
+		custom(8AFCDA7F-33B7-3120-86A8-754D2C0C0578, "library_block")
 	] 
-#line 12 "e:\\programming\\_delete\\partcover\\partcover.cordriver\\corprofiler.h"
+#line 109 "e:\\programming\\sf\\partcover\\svn\\trunk\\partcover.cordriver\\interface.h"
+	interface IPartCoverConnector2 : IUnknown {
+		HRESULT  StartTarget([in] BSTR targetPath, [in] BSTR targetWorkingDir, [in] BSTR targetArguments, [in] VARIANT_BOOL redirectOutput, [in,optional] IConnectorActionCallback *callback);
+		HRESULT  SetVerbose([in] INT logLevel);
+		HRESULT  EnableOption([in] enum ProfilerMode mode);
+		HRESULT  WaitForResults([in] VARIANT_BOOL delayClose, [in,optional] IConnectorActionCallback *callback);
+		HRESULT  CloseTarget();
+#line 116 "e:\\programming\\sf\\partcover\\svn\\trunk\\partcover.cordriver\\interface.h"
+		HRESULT  WalkInstrumentedResults([in] IInstrumentedBlockWalker *walker);
+#line 118 "e:\\programming\\sf\\partcover\\svn\\trunk\\partcover.cordriver\\interface.h"
+		HRESULT  IncludeItem([in] BSTR item);
+		HRESULT  ExcludeItem([in] BSTR item);
+#line 121 "e:\\programming\\sf\\partcover\\svn\\trunk\\partcover.cordriver\\interface.h"
+		[propget] HRESULT  HasTargetExitCode([out,retval] VARIANT_BOOL *exitCode);
+		[propget] HRESULT  TargetExitCode([out,retval] INT *exitCode);
+#line 124 "e:\\programming\\sf\\partcover\\svn\\trunk\\partcover.cordriver\\interface.h"
+		[propget] HRESULT  LogFilePath([out,retval] BSTR *logFilePath);
+		[propget] HRESULT  ProcessId([out,retval] INT *pid);
+	};
+
+	[
+		uuid(717FF691-2ADF-4AC0-985F-1DD3C42FDF90),
+		helpstring("CorDriver.CorProfiler2 Class"),
+		version(2.1)
+	] 
+#line 13 "e:\\programming\\sf\\partcover\\svn\\trunk\\partcover.cordriver\\corprofiler.h"
 	coclass CorProfiler {
 		[default] interface IUnknown;
 	};
 
 	[
-		object,
-		uuid(AF8D2B08-1DDF-4AE5-986C-09EDD8326045),
-		helpstring("CorDriver.IPartCoverConnector interface"),
-		custom(8AFCDA7F-33B7-3120-86A8-754D2C0C0578, "library_block")
+		uuid(FB20430E-CDC9-45D7-8453-272268002E08),
+		helpstring("CorDriver.PartCoverConnector2 Class"),
+		version(2.1)
 	] 
-#line 15 "e:\\programming\\_delete\\partcover\\partcover.cordriver\\partcoverconnector.h"
-	interface IPartCoverConnector : IUnknown {
-		HRESULT  StartTarget([in] BSTR targetPath, [in] BSTR targetWorkingDir, [in] BSTR targetArguments, [in] VARIANT_BOOL redirectOutput);
-		HRESULT  SetVerbose([in] INT logLevel);
-		HRESULT  EnableOption([in] enum ProfilerMode mode);
-		HRESULT  WaitForResults([in] VARIANT_BOOL delayClose);
-		HRESULT  CloseTarget();
-#line 24 "e:\\programming\\_delete\\partcover\\partcover.cordriver\\partcoverconnector.h"
-		HRESULT  WalkInstrumentedResults([in] IInstrumentedBlockWalker *walker);
-#line 26 "e:\\programming\\_delete\\partcover\\partcover.cordriver\\partcoverconnector.h"
-		HRESULT  IncludeItem([in] BSTR item);
-		HRESULT  ExcludeItem([in] BSTR item);
-	};
-
-	[
-		uuid(6F6225EA-0897-41fa-B1EF-8B4D3E15325E),
-		helpstring("CorDriver.PartCoverConnector Class"),
-		version(2.0)
-	] 
-#line 39 "e:\\programming\\_delete\\partcover\\partcover.cordriver\\partcoverconnector.h"
-	coclass PartCoverConnector {
-		interface IPartCoverConnector;
+#line 13 "e:\\programming\\sf\\partcover\\svn\\trunk\\partcover.cordriver\\partcover_connector.h"
+	coclass PartCoverConnector2 {
+		interface IPartCoverConnector2;
 	};
 
 }

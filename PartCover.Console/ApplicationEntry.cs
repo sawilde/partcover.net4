@@ -1,69 +1,96 @@
 using System;
 using System.IO;
-using System.Diagnostics;
-using System.Xml;
 
 using PartCover.Framework;
 using PartCover.Framework.Walkers;
+using PartCover.Stuff;
 
 namespace PartCover
 {
-	class ApplicationEntry
-	{
+    class ApplicationEntry
+    {
         [STAThread]
-		static void Main(string[] args)
-		{
-
-            try {
+        static int Main(string[] args)
+        {
+            try
+            {
                 WorkSettings settings = new WorkSettings();
-                if(!settings.InitializeFromArgs(args)) {
-                    return;
+                if (!settings.InitializeFromCommandLine(args))
+                {
+                    return -1;
                 }
 
-                Framework.Connector connector = new Framework.Connector();
+                Connector connector = new Connector();
+                connector.Out = new ConsoleProgressCallback();
+
                 connector.SetVerbose(settings.LogLevel);
 
-                foreach(string item in settings.IncludeItems) {
-                    try {
+                foreach (string item in settings.IncludeItems)
+                {
+                    try
+                    {
                         connector.IncludeItem(item);
-                    } catch(ArgumentException) {
-                        System.Console.Error.WriteLine("Item '" + item + "' have wrong format");
+                    }
+                    catch (ArgumentException)
+                    {
+                        Console.Error.WriteLine("Item '" + item + "' have wrong format");
                     }
                 }
 
-                foreach(string item in settings.ExcludeItems) {
-                    try {
+                foreach (string item in settings.ExcludeItems)
+                {
+                    try
+                    {
                         connector.ExcludeItem(item);
-                    } catch(ArgumentException) {
-                        System.Console.Error.WriteLine("Item '" + item + "' have wrong format");
+                    }
+                    catch (ArgumentException)
+                    {
+                        Console.Error.WriteLine("Item '" + item + "' have wrong format");
                     }
                 }
 
                 connector.StartTarget(
-                    settings.TargetPath, 
-                    settings.TargetWorkingDir, 
+                    settings.TargetPath,
+                    settings.TargetWorkingDir,
                     settings.TargetArgs,
                     true,
                     false);
 
-                try {
-                    if ( settings.OutputToFile ) {
+                try
+                {
+                    if (settings.OutputToFile)
+                    {
                         StreamWriter writer = File.CreateText(settings.FileNameForReport);
                         CoverageReportHelper.WriteReport(connector.BlockWalker.Report, writer);
                         writer.Close();
-                    } else {
-                        CoverageReportHelper.WriteReport(connector.BlockWalker.Report, System.Console.Out);
                     }
-                } catch (Exception ex) {
-                    System.Console.Error.WriteLine("Can't save report (" +ex.Message + ")");
+                    else
+                    {
+                        CoverageReportHelper.WriteReport(connector.BlockWalker.Report, Console.Out);
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine("Can't save report (" + ex.Message + ")");
                 }
 
-            } catch(SettingsException ex) {
-                System.Console.Error.WriteLine(ex.Message);
-            } catch(Exception ex) {
-				System.Console.Error.WriteLine(ex.Message);
-				System.Console.Error.WriteLine(ex.StackTrace);
-			}
-		}
-	}
+                if (connector.TargetExitCode.HasValue)
+                    return connector.TargetExitCode.Value;
+            }
+            catch (SettingsException ex)
+            {
+                Console.Error.WriteLine(ex.Message);
+                return -1;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine(ex.Message);
+                Console.Error.WriteLine(ex.StackTrace);
+                return -1;
+            }
+
+            return 0;
+        }
+    }
 }

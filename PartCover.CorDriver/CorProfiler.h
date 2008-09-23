@@ -2,17 +2,19 @@
 
 [   
     coclass,
-    uuid(DRIVER_CORPROFILER_GUID),
+    uuid(DRIVER_CORPROFILER2_GUID),
     vi_progid(DRIVER_CORPROFILER_VI_PROGID),
-    progid(DRIVER_CORPROFILER_PROGID),
+    progid(DRIVER_CORPROFILER2_PROGID),
     threading(both),
-    helpstring("CorDriver.CorProfiler Class"),
-    version(DRIVER_CORPROFILER_VER)
+    helpstring("CorDriver.CorProfiler2 Class"),
+    version(DRIVER_CORPROFILER2_VER)
 ]
-class CorProfiler : 
-	public ICorProfilerCallback2
+class CorProfiler 
+	: public ICorProfilerCallback2
+	, public ITransferrableFactory
 {
     static CorProfiler* m_currentInstance;
+
 public:
     static void FinalizeInstance();
 
@@ -26,15 +28,17 @@ private:
     FunctionMap m_functions;
 
     Rules m_rules;
-    CoverageGatherer m_coverageGatherer;
-    CallGatherer m_callGatherer;
     Instrumentator m_instrumentator;
     InstrumentResults m_instrumentResults;
 
-    MessageCenter m_center;
+    MessagePipe m_center;
     CorProfilerOptions m_options;
     CComQIPtr<ICorProfilerInfo> m_profilerInfo;
     CComQIPtr<ISymUnmanagedBinder2> m_binder;
+
+public:
+	ITransferrable* create(MessageType type);
+	void destroy(ITransferrable* item);
 
     /************************************************************************/
     /* ICorProfilerCallback methods                                         */

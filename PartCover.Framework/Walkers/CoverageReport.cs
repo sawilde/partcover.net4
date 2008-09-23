@@ -6,14 +6,16 @@ using System.Xml;
 
 namespace PartCover.Framework.Walkers
 {
-	public sealed class CoverageReport
-	{
-        public struct FileDescriptor {
+    public sealed class CoverageReport
+    {
+        public struct FileDescriptor
+        {
             public UInt32 fileId;
             public string fileUrl;
         }
 
-        public class TypeDescriptor {
+        public class TypeDescriptor
+        {
             public string assemblyName;
             public string typeName;
             public UInt32 flags;
@@ -21,7 +23,8 @@ namespace PartCover.Framework.Walkers
             public MethodDescriptor[] methods = new MethodDescriptor[0];
         }
 
-        public class MethodDescriptor {
+        public class MethodDescriptor
+        {
             public string methodName;
             public string methodSig;
             public UInt32 flags;
@@ -29,16 +32,18 @@ namespace PartCover.Framework.Walkers
 
             public InnerBlockData[] insBlocks;
 
-            public UInt32 GetCodeSize(int blockIndex) {
+            public UInt32 GetCodeSize(int blockIndex)
+            {
                 UInt32 res = 0;
-                foreach(InnerBlock inner in insBlocks[blockIndex].blocks) 
+                foreach (InnerBlock inner in insBlocks[blockIndex].blocks)
                     res += inner.blockLen;
                 return res;
             }
 
-            public UInt32 GetCoveredCodeSize(int blockIndex) {
+            public UInt32 GetCoveredCodeSize(int blockIndex)
+            {
                 UInt32 res = 0;
-                foreach(InnerBlock inner in insBlocks[blockIndex].blocks) 
+                foreach (InnerBlock inner in insBlocks[blockIndex].blocks)
                     if (inner.visitCount > 0) res += inner.blockLen;
                 return res;
             }
@@ -46,14 +51,16 @@ namespace PartCover.Framework.Walkers
             public MethodDescriptor(int initialBlockSize) { SetBlockDataSize(initialBlockSize); }
             public MethodDescriptor() { SetBlockDataSize(0); }
 
-            private void SetBlockDataSize(int initialBlockSize) {
+            private void SetBlockDataSize(int initialBlockSize)
+            {
                 insBlocks = new InnerBlockData[initialBlockSize];
-                while(initialBlockSize-- > 0)
+                while (initialBlockSize-- > 0)
                     insBlocks[initialBlockSize] = new InnerBlockData();
             }
         }
 
-        public class InnerBlock {
+        public class InnerBlock
+        {
             public UInt32 position;
             public UInt32 blockLen;
             public UInt32 visitCount;
@@ -64,14 +71,16 @@ namespace PartCover.Framework.Walkers
             public UInt32 endColumn;
         }
 
-        public class InnerBlockData {
+        public class InnerBlockData
+        {
+            public readonly string uid = Guid.NewGuid().ToString("N");
             public InnerBlock[] blocks = new InnerBlock[0];
         }
 
         public TypeDescriptor[] types = new TypeDescriptor[0];
         public FileDescriptor[] files = new FileDescriptor[0];
 
-        #region Save 
+        #region Save
         /*
 
         public void Save(TextWriter writer) {
@@ -173,7 +182,7 @@ namespace PartCover.Framework.Walkers
         #endregion
 
         #region Load
-/*
+        /*
         public void Load(string fileName) {
             XmlDocument xml = new XmlDocument();
             xml.Load(fileName);
@@ -230,5 +239,19 @@ namespace PartCover.Framework.Walkers
         }
 */
         #endregion
+
+        public void forEachInnerBlock(Action<InnerBlock> action)
+        {
+            Array.ForEach(types, delegate(TypeDescriptor desc)
+            {
+                Array.ForEach(desc.methods, delegate(MethodDescriptor md)
+                {
+                    Array.ForEach(md.insBlocks, delegate(InnerBlockData ib)
+                    {
+                        Array.ForEach(ib.blocks, action);
+                    });
+                });
+            });
+        }
     }
 }

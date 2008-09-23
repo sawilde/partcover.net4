@@ -2,18 +2,17 @@
 #include "defines.h"
 #include "interface.h"
 #include "environment.h"
-#include "DriverLog.h"
+#include "logging.h"
 #include "interface.h"
-#include "MessageCenter.h"
-#include "CorProfilerOptions.h"
-#include "CoverageGatherer.h"
-#include "callgatherer.h"
-#include "FunctionMap.h"
-#include "instrumentedilbody.h"
-#include "Instrumentator.h"
-#include "InstrumentResults.h"
-#include "Rules.h"
-#include "CorProfiler.h"
+#include "message.h"
+#include "message_pipe.h"
+#include "corprofiler_options.h"
+#include "function_map.h"
+#include "il_instrumentedbody.h"
+#include "il_instrumentator.h"
+#include "instrumented_results.h"
+#include "rules.h"
+#include "corprofiler.h"
 #include "helpers.h"
 #include "corhelper.h"
 #include <conio.h>
@@ -29,6 +28,9 @@ void CorProfiler::FinalizeInstance() {
 
 CorProfiler::CorProfiler() : m_instrumentator(m_rules) {
     ATLTRACE("CorProfiler::CorProfiler");
+
+	ITransferrableFactory* list[] = { this };
+	m_center.SetMessageMap(list, ARRAYSIZE(list));
 }
 
 STDMETHODIMP CorProfiler::Initialize( /* [in] */ IUnknown *pICorProfilerInfoUnk )
@@ -50,21 +52,36 @@ STDMETHODIMP CorProfiler::Initialize( /* [in] */ IUnknown *pICorProfilerInfoUnk 
 
     DriverLog& log = DriverLog::get();
 
-    Message message;
-    ATLTRACE("CorProfiler::Initialize - wait for eBeginWork or eEnableMode");
-    while(SUCCEEDED(hr = m_center.WaitForOption(&message))) {
-        if (message.code == eBeginWork) {
-            ATLTRACE("CorProfiler::Initialize - receiving eBeginWork");
-            break;
-        } else if (message.code == eResult) {
-            ATLTRACE("CorProfiler::Initialize - receiving rules");
-            m_rules.ReceiveResults(message);
-            ATLTRACE("CorProfiler::Initialize - send eOk");
-            m_center.SendOption(eOk);
-        } else {
-            ATLTRACE("CorProfiler::Initialize - unknown startup option %d", message.code);
-        }
+	ATLTRACE("CorProfiler::Initialize - send C_RequestStart");
+	m_center.Send(Messages::Message<Messages::C_RequestStart>());
+
+    ATLTRACE("CorProfiler::Initialize - wait for C_EndOfInputs");
+	ITransferrable* message;
+
+	struct Initializer : public ITransferrableVisitor
+	{
+	public:
+		bool readyToGo;
+		Initializer() : readyToGo(false) {}
+
+		void on(MessageType type) { if (type == Messages::C_EndOfInputs) readyToGo = true; }
+		void on(FunctionMap&) {}
+		void on(Rules&) {}
+		void on(InstrumentResults &) {}
+	} messageVisitor;
+
+    while(SUCCEEDED(m_center.Wait(message))) 
+	{
+		message->visit(messageVisitor);
+
+		if (messageVisitor.readyToGo) break;
     }
+
+	if (!messageVisitor.readyToGo)
+		return E_ABORT;
+
+	ATLTRACE("CorProfiler::Initialize - send C_RequestStart");
+	m_center.Send(Messages::Message<Messages::C_RequestStart>());
 
     m_profilerInfo = pICorProfilerInfoUnk;
 
@@ -98,28 +115,70 @@ STDMETHODIMP CorProfiler::Shutdown( void )
 
     m_instrumentator.StoreResults(m_instrumentResults);
 
-    IResultContainer* results[] = {&m_functions, &m_coverageGatherer, &m_callGatherer, &m_instrumentResults};
-    for(int res_count = sizeof(results)/sizeof(results[0]); res_count > 0; --res_count) {
-        results[res_count - 1]->SendResults(m_center);
-        ATLTRACE("CorProfiler::Shutdown - wait for eOk after result");
-        m_center.WaitForOption(eOk);
+	ITransferrable* results[] = {
+		&m_functions, 
+		&m_instrumentResults
+	};
+
+    for(int res_count = ARRAYSIZE(results) - 1; res_count >= 0; --res_count) {
+        m_center.Send(*results[res_count]);
     }
 
     ATLTRACE("CorProfiler::Shutdown - send eEndOfResult");
-    m_center.SendOption(eEndOfResult);
+	m_center.Send(Messages::Message<Messages::C_EndOfResults>());
 
     ATLTRACE("CorProfiler::Shutdown - wait for eClose");
-    if (SUCCEEDED(m_center.WaitForOption(eClose))) {
-        m_currentInstance = 0;
-        LOGINFO(PROFILER_CALL_METHOD, "CorProfiler was successfully turning off");
-        ATLTRACE("CorProfiler was successfully turning off");
-        return S_OK;
+	struct Shutdowner : ITransferrableVisitor {
+	public:
+		bool readyToDown;
+		Shutdowner() : readyToDown(false) {}
+		void on(MessageType type) { if (Messages::C_RequestShutdown == type) readyToDown = true; }
+		void on(FunctionMap& value) {}
+		void on(Rules& value) {}
+		void on(InstrumentResults& value) {}
+	} shutdowner;
+
+	ITransferrable* message;
+	while(SUCCEEDED(m_center.Wait(message))) 
+	{
+		message->visit(shutdowner);
+		if (shutdowner.readyToDown) break;
     }
 
-    ATLTRACE("CorProfiler was successfully turning off (without eClose message)");
-    DriverLog::get().WriteLine(_T("CorProfiler was turning off (without eClose message)"));
     m_currentInstance = 0;
+
+	if (shutdowner.readyToDown) 
+	{
+		ATLTRACE("CorProfiler is turned off");
+	    DriverLog::get().WriteLine(_T("CorProfiler is turned off"));
+	}
+	else 
+	{
+	    ATLTRACE("CorProfiler is turned off (without eClose message)");
+		DriverLog::get().WriteLine(_T("CorProfiler is turning off (without eClose message)"));
+	}
     return S_OK; 
+}
+
+ITransferrable* CorProfiler::create(MessageType type)
+{
+	switch(type) {
+		case Messages::C_FunctionMap: return &this->m_functions; 
+		case Messages::C_Rules: return &this->m_rules;
+		case Messages::C_InstrumentResults: return &this->m_instrumentResults;
+		default: return new Messages::GenericMessage(type);
+	}
+}
+
+void CorProfiler::destroy(ITransferrable* item)
+{
+	const ITransferrable* ignore_list[] = { &m_functions, &m_rules, &m_instrumentResults };
+	const ITransferrable** lbeg = ignore_list;
+	const ITransferrable** lend = ignore_list + ARRAYSIZE(ignore_list);
+	
+	if(item == 0 || lend != std:: find(lbeg, lend, item)) return;
+	
+	delete item;
 }
 
 #define NumItems( s ) (sizeof( s ) / sizeof( s[0] ))
@@ -132,15 +191,21 @@ HRESULT CoCreateInstanceWithoutModel( REFCLSID rclsid, REFIID riid, void **ppv )
     DWORD len;
     LONG result;
     HRESULT hr = S_OK;
-    OLECHAR guidString[64];
-    char szID[64];              // the class ID to register.
-    char keyString[1024];
-    char dllName[MAX_PATH];
+    OLECHAR guidString[128];
+
+	wchar_t keyString[1024];
+    wchar_t dllName[MAX_PATH];
 
     StringFromGUID2( rclsid, guidString, NumItems( guidString ) );
-    WideCharToMultiByte( CP_ACP, 0, guidString, -1, szID, sizeof( szID ), NULL, NULL );
 
+#ifndef _UNICODE
+    wchar_t szID[64];              // the class ID to register.
+
+    WideCharToMultiByte( CP_ACP, 0, guidString, -1, szID, sizeof( szID ), NULL, NULL );
     _stprintf_s( keyString, 1024, _T("CLSID\\%s\\InprocServer32"), szID );
+#else
+    _stprintf_s( keyString, 1024, _T("CLSID\\%s\\InprocServer32"), guidString );
+#endif
 
     // Lets grab the DLL name now.
     result = RegOpenKeyEx( HKEY_CLASSES_ROOT, keyString, 0, KEY_READ, &key );
@@ -202,49 +267,49 @@ HRESULT CoCreateInstanceWithoutModel( REFCLSID rclsid, REFIID riid, void **ppv )
 }
 
 STDMETHODIMP CorProfiler::AssemblyLoadFinished(AssemblyID assemblyId, HRESULT hrStatus) {
-    std::wstring asmName = CorHelper::GetAssemblyName(m_profilerInfo, assemblyId);
-    LOGINFO2(PROFILER_CALL_METHOD, "Assembly %X loaded (%S)", assemblyId, asmName.length() == 0 ? L"noname" : asmName.c_str());
+    String asmName = CorHelper::GetAssemblyName(m_profilerInfo, assemblyId);
+    LOGINFO2(PROFILER_CALL_METHOD, "Assembly %X loaded (%s)", assemblyId, asmName.length() == 0 ? _T("noname") : asmName.c_str());
     return S_OK;
 }
 
 STDMETHODIMP CorProfiler::AssemblyUnloadStarted(AssemblyID assemblyId) {
-    std::wstring asmName = CorHelper::GetAssemblyName(m_profilerInfo, assemblyId);
-    LOGINFO2(PROFILER_CALL_METHOD, "Assembly %X unloaded (%S)", assemblyId, asmName.length() == 0 ? L"noname" : asmName.c_str());
+    String asmName = CorHelper::GetAssemblyName(m_profilerInfo, assemblyId);
+    LOGINFO2(PROFILER_CALL_METHOD, "Assembly %X unloaded (%s)", assemblyId, asmName.length() == 0 ? _T("noname") : asmName.c_str());
     return S_OK; 
 }
 
 STDMETHODIMP CorProfiler::ClassLoadFinished(ClassID classId, HRESULT hrStatus) {
-    std::wstring className = CorHelper::GetClassName(m_profilerInfo, classId);
-    LOGINFO2(PROFILER_CALL_METHOD, "Class %X loaded (%S)", classId, className.length() == 0 ? L"noname" : className.c_str());
+    String className = CorHelper::GetClassName(m_profilerInfo, classId);
+    LOGINFO2(PROFILER_CALL_METHOD, "Class %X loaded (%s)", classId, className.length() == 0 ? _T("noname") : className.c_str());
     m_instrumentator.UpdateClassCode(classId, m_profilerInfo, m_binder);
     return S_OK;
 }
 
 STDMETHODIMP CorProfiler::ClassUnloadStarted(ClassID classId) {
-    std::wstring className = CorHelper::GetClassName(m_profilerInfo, classId);
-    LOGINFO2(PROFILER_CALL_METHOD, "Class %X unloaded (%S)", classId, className.length() == 0 ? L"noname" : className.c_str());
+    String className = CorHelper::GetClassName(m_profilerInfo, classId);
+	LOGINFO2(PROFILER_CALL_METHOD, "Class %X unloaded (%s)", classId, className.length() == 0 ? _T("noname") : className.c_str());
     return S_OK;
 }
 
 STDMETHODIMP CorProfiler::ModuleLoadFinished(ModuleID moduleId, HRESULT hrStatus)  {
-    std::wstring moduleName = CorHelper::GetModuleName(m_profilerInfo, moduleId);
-    LOGINFO2(PROFILER_CALL_METHOD, "Module %X loaded (%S)", moduleId, moduleName.length() == 0 ? L"noname" : moduleName.c_str());
+    String moduleName = CorHelper::GetModuleName(m_profilerInfo, moduleId);
+    LOGINFO2(PROFILER_CALL_METHOD, "Module %X loaded (%s)", moduleId, moduleName.length() == 0 ? _T("noname") : moduleName.c_str());
     return S_OK;
 }
 
 STDMETHODIMP CorProfiler::ModuleUnloadStarted( ModuleID moduleId) {
-    std::wstring moduleName = CorHelper::GetModuleName(m_profilerInfo, moduleId);
-    LOGINFO2(PROFILER_CALL_METHOD, "Module %X unloaded (%S)", moduleId, moduleName.length() == 0 ? L"noname" : moduleName.c_str());
+    String moduleName = CorHelper::GetModuleName(m_profilerInfo, moduleId);
+    LOGINFO2(PROFILER_CALL_METHOD, "Module %X unloaded (%s)", moduleId, moduleName.length() == 0 ? _T("noname") : moduleName.c_str());
     m_instrumentator.UnloadModule(moduleId);
     return S_OK;
 }
 
 STDMETHODIMP CorProfiler::ModuleAttachedToAssembly(ModuleID module, AssemblyID assembly) {
-    std::wstring moduleName = CorHelper::GetModuleName(m_profilerInfo, module);
-    std::wstring assemblyName = CorHelper::GetAssemblyName(m_profilerInfo, assembly);
-    LOGINFO4(PROFILER_CALL_METHOD, "Module %X (%S) attached to assembly %X (%S)", 
-        module, moduleName.length() == 0 ? L"noname" : moduleName.c_str(),
-        assembly, assemblyName.length() == 0 ? L"noname" : assemblyName.c_str());
+    String moduleName = CorHelper::GetModuleName(m_profilerInfo, module);
+    String assemblyName = CorHelper::GetAssemblyName(m_profilerInfo, assembly);
+    LOGINFO4(PROFILER_CALL_METHOD, "Module %X (%s) attached to assembly %X (%s)", 
+        module, moduleName.length() == 0 ? _T("noname") : moduleName.c_str(),
+        assembly, assemblyName.length() == 0 ? _T("noname") : assemblyName.c_str());
     m_instrumentator.InstrumentModule( module, moduleName.c_str(), m_profilerInfo, m_binder );
     return S_OK;   
 }

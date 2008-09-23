@@ -87,12 +87,17 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AssemblyInfo.cs">
+    <Compile Include="Logging.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Connector.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="IProgressCallback.cs" />
+    <Compile Include="Stuff\IVisitable.cs" />
+    <Compile Include="Stuff\Methods.cs" />
+    <Compile Include="Stuff\Types.cs" />
     <Compile Include="Walkers\CoverageReport.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -108,14 +113,12 @@
     <Compile Include="WorkSettings.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Content Include="xslt\assembly.report.xslt" />
-    <Content Include="xslt\class.report.xslt" />
   </ItemGroup>
   <ItemGroup>
     <COMReference Include="PartCover">
       <Guid>{7D0E6AAB-C5FC-4103-AAD4-8BF3112A56C4}</Guid>
       <VersionMajor>2</VersionMajor>
-      <VersionMinor>0</VersionMinor>
+      <VersionMinor>1</VersionMinor>
       <Lcid>0</Lcid>
       <WrapperTool>tlbimp</WrapperTool>
       <Isolated>False</Isolated>
