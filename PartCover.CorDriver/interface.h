@@ -10,40 +10,19 @@
 
 #pragma pack(pop)
 
-class MessageCenter;
-struct Message;
-
-interface IResultContainer {
-    virtual void SendResults(MessageCenter&) = 0;
-    virtual bool ReceiveResults(Message&) = 0;
-};
-
-enum ResultHeader {
-    eRules = 0x01,
-    eFunctionMapResult,
-    eCallGathererResult,
-    eCoverageGathererResult,
-    eInstrumentatorResult
-};
-
-enum MessageCode {
-    eOk          = 0x00,
-    eEnableMode  = 0x01,
-    eBeginWork   = 0x10,
-    eResult      = 0x21,
-    eEndOfResult = 0x22,
-    eClose       = 0xFF
-};
+#ifndef REMOVE_ATTRIBUTES
+#include "defines.h"
+#endif 
 
 #ifndef REMOVE_ATTRIBUTES
 [
     export
-    ,uuid("9BC23D20-04DE-4ee7-AB24-1E890C741F78")
+    ,uuid(PROFILERMODE_GUID)
     ,helpstring("CorDriver.IPartCoverConnector interface")
     ,library_block
 ]
 #endif
-enum ProfilerMode {
+enum ProfilerMode : char {
     COUNT_COVERAGE = 0x01,
 //    COUNT_CALL_DIAGRAM = 0x02,
     COVERAGE_USE_CLASS_LEVEL = 0x04,
@@ -53,7 +32,7 @@ enum ProfilerMode {
 #ifndef REMOVE_ATTRIBUTES
 [
     object
-    ,uuid("4BAD004E-1EF9-43d2-8D3A-095963E324EF")
+    ,uuid(IINSTRUMENTEDBLOCKWALKER_GUID)
     ,helpstring("CorDriver.IInstrumentedBlockWalker interface")
     ,library_block
 ]
@@ -71,3 +50,78 @@ __interface IInstrumentedBlockWalker : IUnknown {
     HRESULT EndReport();
 };
 
+#ifndef REMOVE_ATTRIBUTES
+[
+    object
+    ,uuid(ICONNECTORACTIONCALLBACK_GUID)
+    ,helpstring("CorDriver.IConnectorCallback interface")
+    ,library_block
+]
+#endif
+__interface IConnectorActionCallback : IUnknown 
+{
+    HRESULT SetConnected(VARIANT_BOOL connected);
+
+	HRESULT MethodsReceiveBegin();
+	HRESULT MethodsReceiveStatus();
+	HRESULT MethodsReceiveEnd();
+
+	HRESULT InstrumentDataReceiveBegin();
+	HRESULT InstrumentDataReceiveStatus();
+	HRESULT InstrumentDataReceiveEnd();
+
+	HRESULT InstrumentDataReceiveFilesBegin();
+	HRESULT InstrumentDataReceiveFilesCount([in] size_t fileCount);
+	HRESULT InstrumentDataReceiveFilesStat([in] size_t index);
+	HRESULT InstrumentDataReceiveFilesEnd();
+
+	HRESULT InstrumentDataReceiveCountersBegin();
+	HRESULT InstrumentDataReceiveCountersAsmCount([in] size_t asmCount);
+	HRESULT InstrumentDataReceiveCountersAsm(BSTR name, BSTR mod, [in] size_t typeDefCount);
+	HRESULT InstrumentDataReceiveCountersEnd();
+
+	HRESULT OpenMessagePipe();
+
+	HRESULT TargetSetEnvironmentVars();
+	HRESULT TargetCreateProcess();
+	HRESULT TargetWaitDriver();
+	HRESULT TargetRequestShutdown();
+
+	HRESULT DriverConnected();
+	HRESULT DriverSendRules();
+	HRESULT DriverWaitEoIConfirm();
+
+	HRESULT FunctionsReceiveBegin();
+	HRESULT FunctionsCount([in] size_t count);
+	HRESULT FunctionsReceiveStat([in] size_t index);
+	HRESULT FunctionsReceiveEnd();
+};
+
+#ifndef REMOVE_ATTRIBUTES
+[
+    object
+    ,uuid(DRIVER_ICONNECTOR2_GUID)
+    ,helpstring("CorDriver.IPartCoverConnector2 interface")
+    ,library_block
+]
+#endif
+__interface IPartCoverConnector2 
+{
+    HRESULT StartTarget([in] BSTR targetPath, [in] BSTR targetWorkingDir, [in] BSTR targetArguments, [in] VARIANT_BOOL redirectOutput, [in, optional] IConnectorActionCallback* callback);
+    HRESULT SetVerbose([in] INT logLevel);
+    HRESULT EnableOption([in] ProfilerMode mode);
+    HRESULT WaitForResults([in] VARIANT_BOOL delayClose, [in, optional] IConnectorActionCallback* callback);
+    HRESULT CloseTarget();
+
+    HRESULT WalkInstrumentedResults([in] IInstrumentedBlockWalker* walker);
+
+    HRESULT IncludeItem([in] BSTR item);
+    HRESULT ExcludeItem([in] BSTR item);
+
+	[propget] HRESULT HasTargetExitCode([out, retval] VARIANT_BOOL* exitCode);
+	[propget] HRESULT TargetExitCode([out, retval] INT* exitCode);
+
+	[propget] HRESULT LogFilePath([out, retval] BSTR* logFilePath);
+	[propget] HRESULT ProcessId([out, retval] INT* pid);
+	
+};

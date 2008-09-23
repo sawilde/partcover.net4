@@ -1,33 +1,46 @@
 using System;
 using System.IO;
+using PartCover.Framework.Walkers;
 
 namespace PartCover.Framework
 {
-	public class Connector
-	{
-        PartCoverConnectorClass connector = new PartCover.PartCoverConnectorClass();
+    public class Connector
+    {
+        readonly PartCoverConnector2Class connector = new PartCoverConnector2Class();
 
-        public Connector() {}
+        public Connector() { }
 
-        private System.IO.TextWriter outWriter;
-        public System.IO.TextWriter Out {
-            get { return outWriter; }
+        public event Action<Connector> AfterStart;
+
+        private IProgressCallback outWriter;
+        public IProgressCallback Out
+        {
             set { outWriter = value; }
+            get { return outWriter ?? new ProgressCallbackStub(); }
         }
 
-        public void SetVerbose(int level) {
+        private IConnectorActionCallback actionWriter;
+        public IConnectorActionCallback ActionCallback
+        {
+            set { actionWriter = value; }
+            get { return actionWriter; }
+        }
+
+        public void SetVerbose(int level)
+        {
             connector.SetVerbose(level);
         }
 
-        private Walkers.InstrumentedBlocksWalkerInner blockWalker = new Walkers.InstrumentedBlocksWalkerInner();
-        public Walkers.InstrumentedBlocksWalker BlockWalker {
+        private readonly InstrumentedBlocksWalkerInner blockWalker = new InstrumentedBlocksWalkerInner();
+        public InstrumentedBlocksWalker BlockWalker
+        {
             get { return blockWalker; }
         }
 
-        public void StartTarget(string path, string directory, string args, bool redirectOutput, bool delayClose) {
+        public void StartTarget(string path, string directory, string args, bool redirectOutput, bool delayClose)
+        {
             // set mode
             connector.EnableOption(ProfilerMode.COUNT_COVERAGE);
-            //connector.EnableOption(ProfilerMode.COUNT_CALL_DIAGRAM);
 
             ExcludeItem("[mscorlib]*");
             ExcludeItem("[System*]*");
@@ -40,28 +53,63 @@ namespace PartCover.Framework
                 directory = Directory.GetCurrentDirectory();
 
             // start target
-            if (Out != null) Out.WriteLine("{0}: Start target", DateTime.Now);
-            connector.StartTarget(path, directory, args, redirectOutput);
+            Out.writeStatus("Start target");
+            connector.StartTarget(path, directory, args, redirectOutput, new ActionCallbackStub(ActionCallback));
+
+            if (AfterStart != null) AfterStart(this);
 
             // wait results
-            if (Out != null) Out.WriteLine("{0}: Receive results", DateTime.Now);
-            connector.WaitForResults(delayClose);
+            Out.writeStatus("Wait results");
+            connector.WaitForResults(delayClose, new ActionCallbackStub(ActionCallback));
 
             // walk results
-            if (Out != null) Out.WriteLine("{0}: Walk results", DateTime.Now);
+            Out.writeStatus("Walk results");
             connector.WalkInstrumentedResults(blockWalker);
         }
 
-        public void CloseTarget() {
+        public void CloseTarget()
+        {
             connector.CloseTarget();
         }
 
-        public void IncludeItem(string item) {
+        public void IncludeItem(string item)
+        {
             connector.IncludeItem(item);
         }
 
-        public void ExcludeItem(string item) {
+        public void ExcludeItem(string item)
+        {
             connector.ExcludeItem(item);
+        }
+
+        public int? TargetExitCode
+        {
+            get
+            {
+                if (connector != null && connector.HasTargetExitCode)
+                    return connector.TargetExitCode;
+                return null;
+            }
+        }
+
+        public int TargetProcessId
+        {
+            get
+            {
+                if (connector == null)
+                    throw new InvalidOperationException("No connector available");
+                return connector.ProcessId;
+            }
+        }
+
+        public string DriverLogFile
+        {
+            get
+            {
+                if (connector == null)
+                    throw new InvalidOperationException("No connector available");
+                return connector.LogFilePath;
+            }
         }
     }
 }

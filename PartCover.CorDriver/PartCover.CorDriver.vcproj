@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="windows-1251"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8.00"
+	Version="8,00"
 	Name="PartCover.CorDriver"
 	ProjectGUID="{D179C0D8-461A-4FF1-8119-40CC73C520DB}"
 	RootNamespace="PartCover.CorDriver"
@@ -23,8 +23,8 @@
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="1"
 			UseOfATL="1"
-			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="0"
+			ATLMinimizesCRunTimeLibraryUsage="true"
+			CharacterSet="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -124,9 +124,9 @@
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="1"
-			UseOfATL="1"
-			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="0"
+			UseOfATL="0"
+			ATLMinimizesCRunTimeLibraryUsage="true"
+			CharacterSet="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -154,6 +154,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				Optimization="2"
 				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL;_ATL_ATTRIBUTES"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="2"
@@ -179,7 +180,9 @@
 				AdditionalDependencies="mscoree.lib comsupp.lib corguids.lib comsuppw.lib"
 				OutputFile="$(OutDir)/PartCover.CorDriver.dll"
 				LinkIncremental="1"
+				IgnoreDefaultLibraryNames="atlmincrt.lib"
 				ModuleDefinitionFile=""
+				TypeLibraryFile="PartCover.CorDriver.tlb"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"
@@ -187,6 +190,7 @@
 				BaseAddress="0x67000000"
 				ImportLibrary="$(OutDir)/PartCover.CorDriver.lib"
 				TargetMachine="1"
+				KeyFile="PartCover.CorDriver.snk"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -225,71 +229,67 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\CallGatherer.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\corhelper.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\CorProfiler.cpp"
+				RelativePath=".\corprofiler.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\CorProfilerOptions.cpp"
+				RelativePath=".\corprofiler_options.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\CoverageGatherer.cpp"
+				RelativePath=".\environment.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\DriverLog.cpp"
+				RelativePath=".\function_map.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Environment.cpp"
+				RelativePath=".\helpers.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\FunctionMap.cpp"
+				RelativePath=".\il_helpers.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\ILhelpers.cpp"
+				RelativePath=".\il_instrumentator.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Instrumentator.cpp"
+				RelativePath=".\il_instrumented_body.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\InstrumentedILBody.cpp"
+				RelativePath=".\il_sigparser.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\InstrumentResults.cpp"
+				RelativePath=".\instrumented_results.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\MessageCenter.cpp"
+				RelativePath=".\logging.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\PartCoverConnector.cpp"
+				RelativePath=".\message_pipe.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\PartCoverModule.cpp"
+				RelativePath=".\module.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Rules.cpp"
+				RelativePath=".\partcover_connector.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\sigparser.cpp"
+				RelativePath=".\rules.cpp"
 				>
 			</File>
 			<File
@@ -319,23 +319,15 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\CallGatherer.h"
-				>
-			</File>
-			<File
 				RelativePath=".\corhelper.h"
 				>
 			</File>
 			<File
-				RelativePath=".\CorProfiler.h"
+				RelativePath=".\corprofiler.h"
 				>
 			</File>
 			<File
-				RelativePath=".\CorProfilerOptions.h"
-				>
-			</File>
-			<File
-				RelativePath=".\CoverageGatherer.h"
+				RelativePath=".\corprofiler_options.h"
 				>
 			</File>
 			<File
@@ -343,15 +335,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\DriverLog.h"
+				RelativePath=".\environment.h"
 				>
 			</File>
 			<File
-				RelativePath=".\Environment.h"
-				>
-			</File>
-			<File
-				RelativePath=".\FunctionMap.h"
+				RelativePath=".\function_map.h"
 				>
 			</File>
 			<File
@@ -359,19 +347,23 @@
 				>
 			</File>
 			<File
-				RelativePath=".\ILhelpers.h"
+				RelativePath=".\il_helpers.h"
 				>
 			</File>
 			<File
-				RelativePath=".\Instrumentator.h"
+				RelativePath=".\il_instrumentator.h"
 				>
 			</File>
 			<File
-				RelativePath=".\InstrumentedILBody.h"
+				RelativePath=".\il_instrumentedbody.h"
 				>
 			</File>
 			<File
-				RelativePath=".\InstrumentResults.h"
+				RelativePath=".\il_sigparser.h"
+				>
+			</File>
+			<File
+				RelativePath=".\instrumented_results.h"
 				>
 			</File>
 			<File
@@ -379,23 +371,27 @@
 				>
 			</File>
 			<File
-				RelativePath=".\MessageCenter.h"
+				RelativePath=".\logging.h"
 				>
 			</File>
 			<File
-				RelativePath=".\PartCoverConnector.h"
+				RelativePath=".\message.h"
 				>
 			</File>
 			<File
-				RelativePath=".\Resource.h"
+				RelativePath=".\message_pipe.h"
 				>
 			</File>
 			<File
-				RelativePath=".\Rules.h"
+				RelativePath=".\partcover_connector.h"
 				>
 			</File>
 			<File
-				RelativePath=".\sigparser.h"
+				RelativePath=".\resource.h"
+				>
+			</File>
+			<File
+				RelativePath=".\rules.h"
 				>
 			</File>
 			<File

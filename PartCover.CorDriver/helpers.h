@@ -20,3 +20,16 @@ struct DynamicArray {
     operator value_type* () { return data; }
     operator const value_type* () const { return data; }
 };
+
+struct compare_no_case {
+    inline bool operator()( const String &lhs, const String &rhs ) const {
+        return _tcsicmp( lhs.c_str(), rhs.c_str() ) < 0;
+    }
+};
+
+typedef std::map<String, String, compare_no_case> StringMap;
+
+StringMap ParseEnvironment();
+
+LPTSTR CreateEnvironment(const StringMap& env);
+void FreeEnvironment(LPTSTR buffer);

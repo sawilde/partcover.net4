@@ -53,3 +53,9 @@ using namespace ATL;
 #include <algorithm>
 #include <stdio.h>
 #include <stdarg.h>
+
+#ifdef _UNICODE
+typedef std::wstring String;
+#else
+typedef std::string String;
+#endif

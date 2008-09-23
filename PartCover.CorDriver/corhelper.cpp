@@ -2,41 +2,41 @@
 #include "interface.h"
 #include "helpers.h"
 #include "corhelper.h"
-#include "sigparser.h"
+#include "il_sigparser.h"
 
 namespace CorHelper {
-	std::wstring GetModuleName(ICorProfilerInfo* info, ModuleID module) {
+	String GetModuleName(ICorProfilerInfo* info, ModuleID module) {
 		ULONG buffSize = 0;
 		if (S_OK != info->GetModuleInfo(module, NULL, 0, &buffSize, NULL, NULL)) 
-			return std::wstring();
+			return String();
 		DynamicArray<WCHAR> buffer(buffSize + 1);
 		if (S_OK != info->GetModuleInfo(module, NULL, buffSize + 1, &buffSize, buffer.data, NULL))
-			return std::wstring();
-		return std::wstring(buffer);
+			return String();
+		return String(buffer);
 	}
 
-	std::wstring GetAssemblyName(ICorProfilerInfo* info, AssemblyID assembly) {
+	String GetAssemblyName(ICorProfilerInfo* info, AssemblyID assembly) {
 		ULONG bufferSize = 0;
 		if (S_OK != info->GetAssemblyInfo(assembly, 0, &bufferSize, NULL, NULL, NULL)) 
-			return std::wstring();
+			return String();
 		DynamicArray<WCHAR> buffer(bufferSize + 1);
 		if (S_OK != info->GetAssemblyInfo(assembly, bufferSize + 1, &bufferSize, buffer, NULL, NULL))
-			return std::wstring();
-		return std::wstring(buffer);
+			return String();
+		return String(buffer);
 	}
 
-	std::wstring GetTypedefFullName(IMetaDataImport* mdImport, mdTypeDef typeDef, DWORD *p_typeDefFlags, LPCWSTR connectStr, const std::wstring& innerTypeDefName) {
+	String GetTypedefFullName(IMetaDataImport* mdImport, mdTypeDef typeDef, DWORD *p_typeDefFlags, const String& connectStr, const String& innerTypeDefName) {
 		ULONG bufferSize = 0;
 		DWORD typeDefFlags = 0;
 		if(S_OK == mdImport->GetTypeDefProps(typeDef, NULL, 0, &bufferSize, &typeDefFlags, NULL)) {
 			if (p_typeDefFlags != 0) *p_typeDefFlags = typeDefFlags;
 
-			LPWSTR buffer = new WCHAR[bufferSize + 1];
+			DynamicArray<TCHAR> buffer(bufferSize + 1);
 			mdImport->GetTypeDefProps(typeDef, buffer, bufferSize+1, &bufferSize, NULL, NULL);
-			std::wstring typedefName = buffer;
-			delete[] buffer;
+			String typedefName = buffer;
+			
 			if (innerTypeDefName.length() > 0)
-				typedefName += std::wstring(connectStr) + innerTypeDefName;
+				typedefName += String(connectStr) + innerTypeDefName;
 
 			if (!IsTdNested(typeDefFlags)) 
 				return typedefName;
@@ -45,77 +45,78 @@ namespace CorHelper {
 			if (S_OK == mdImport->GetNestedClassProps(typeDef, &enclosingTypeDef))
 				return GetTypedefFullName(mdImport, enclosingTypeDef, NULL, connectStr, typedefName);
 		}
-		return std::wstring();
+		return String();
 	}
 
-	std::wstring GetClassName(ICorProfilerInfo* info, ClassID classId) {
+	String GetClassName(ICorProfilerInfo* info, ClassID classId) {
 		ModuleID module;
 		mdTypeDef typeDef;
 		if (S_OK != info->GetClassIDInfo(classId, &module, &typeDef))
-			return std::wstring();
+			return String();
 
 		CComPtr<IMetaDataImport> mdImport;
 		if (S_OK != info->GetModuleMetaData(module, ofRead, IID_IMetaDataImport, (IUnknown**) &mdImport))
-			return std::wstring();
+			return String();
 
 		ULONG bufferSize;
 		if (S_OK != mdImport->GetTypeDefProps(typeDef, NULL, 0, &bufferSize, NULL, NULL))
-			return std::wstring();
+			return String();
 
 		DynamicArray<WCHAR> buffer(bufferSize + 1);
 		if (S_OK != mdImport->GetTypeDefProps(typeDef, buffer.data, bufferSize + 1, &bufferSize, NULL, NULL))
-			return std::wstring();
+			return String();
 
-		return GetTypedefFullName(mdImport, typeDef, 0, L"+", buffer.data);
+		return GetTypedefFullName(mdImport, typeDef, 0, _T("+"), buffer.data);
 	}
 
 	const wchar_t* StrCalling[] = {
-		L"default", L"C", L"stdcall", L"thiscall", L"fastcall", L"vararg", L"field", L"localsig", L"property", L"unmanaged"
+		_T("default"), _T("C"), _T("stdcall"), _T("thiscall"), _T("fastcall"), _T("vararg"), _T("field"), _T("localsig"), _T("property"), _T("unmanaged")
 	};
 
 	const wchar_t* MapElementType[] = 
 	{
-		L"End", L"Void", L"Boolean", L"Char", L"I1", L"UI1", L"I2", L"UI2", L"I4", L"UI4", L"I8", L"UI8", L"R4",
-		L"R8", L"String", L"Ptr", L"ByRef", L"ValueClass", L"Class", L"CopyCtor", L"MDArray", L"GENArray", L"TypedByRef",
-		L"VALUEARRAY", L"I", L"U", L"R", L"FNPTR", L"Object", L"SZArray", L"GENERICArray", L"CMOD_REQD", L"CMOD_OPT", L"INTERNAL",
+		_T("End"), _T("Void"), _T("Boolean"), _T("Char"), _T("I1"), _T("UI1"), _T("I2"), _T("UI2"), _T("I4"), _T("UI4"), _T("I8"), _T("UI8"), _T("R4"),
+		_T("R8"), _T("String"), _T("Ptr"), _T("ByRef"), _T("ValueClass"), _T("Class"), _T("CopyCtor"), _T("MDArray"), _T("GENArray"), _T("TypedByRef"),
+		_T("VALUEARRAY"), _T("I"), _T("U"), _T("R"), _T("FNPTR"), _T("Object"), _T("SZArray"), _T("GENERICArray"), _T("CMOD_REQD"), _T("CMOD_OPT"), _T("INTERNAL"),
 	};
 
-	std::wstring TypeRefName(IMetaDataImport* mdImport, mdTypeRef tr)
+	String TypeRefName(IMetaDataImport* mdImport, mdTypeRef tr)
 	{
 		ULONG bufferSize;
 		if(S_OK != mdImport->GetTypeRefProps(tr, NULL, NULL, 0, &bufferSize))
-			return std::wstring();
+			return String();
 		DynamicArray<WCHAR> buffer(bufferSize + 1);
 		if(S_OK != mdImport->GetTypeRefProps(tr, NULL, buffer.data, bufferSize + 1, &bufferSize))
-			return std::wstring();
+			return String();
 		return buffer.data;
 	}
 
-	struct UncompressHelper {
+	struct UncompressHelper 
+	{
 		IMetaDataImport* import;
-		void AddString(const std::wstring& str) { AddString(str.c_str()); }
+		void AddString(const String& str) { AddString(str.c_str()); }
 
-		virtual void AddString(LPCWSTR str) = 0;
+		virtual void AddString(LPCTSTR str) = 0;
 	};
 
-	std::wstring GetTypeRefOrDefName(mdToken inToken, UncompressHelper& hlp)
+	String GetTypeRefOrDefName(mdToken inToken, UncompressHelper& hlp)
 	{
 		if (!IsNilToken(inToken)) {
 			switch(TypeFromToken(inToken)) 
 			{
 				case mdtTypeDef: 
-					return GetTypedefFullName(hlp.import, (mdTypeDef) inToken, NULL, L".");
+					return GetTypedefFullName(hlp.import, (mdTypeDef) inToken, NULL, _T("."));
 				case mdtTypeRef: 
 					return TypeRefName(hlp.import, (mdTypeRef) inToken);
 				default: 
-					return L"[invalidReference]";
+					return _T("[invalidReference]");
 			}
 		}
-		return L"";
+		return _T("");
 	}
 
-	std::wstring GetTokenAssembly(mdToken inToken, UncompressHelper& hlp) {
-		return L"";
+	String GetTokenAssembly(mdToken inToken, UncompressHelper& hlp) {
+		return _T("");
 	}
 
 	ULONG UncompressCustomMod(PCCOR_SIGNATURE pSigBlob, UncompressHelper& hlp) {
@@ -125,7 +126,7 @@ namespace CorHelper {
 		switch(ulData) {
 	case ELEMENT_TYPE_CMOD_OPT:
 	case ELEMENT_TYPE_CMOD_REQD:
-		hlp.AddString(L"const ");
+		hlp.AddString(_T("const "));
 		cb += CorSigUncompressToken(&pSigBlob[cb], &token);
 		break;
 	default:
@@ -134,9 +135,9 @@ namespace CorHelper {
 		return cb;
 	}
 
-	const LPCWSTR PrimitiveTypes[] = {
-		L"end", L"void", L"boolean", L"char", L"byte", L"unsigned byte", L"short", L"unsigned short", L"int",
-		L"unsigned int", L"long", L"unsigned long", L"float", L"double", L"string"
+	const LPCTSTR PrimitiveTypes[] = {
+		_T("end"), _T("void"), _T("boolean"), _T("char"), _T("byte"), _T("unsigned byte"), _T("short"), _T("unsigned short"), _T("int"),
+		_T("unsigned int"), _T("long"), _T("unsigned long"), _T("float"), _T("double"), _T("string")
 	};
 
 	ULONG UncompressMethodDefOrRefSig(PCCOR_SIGNATURE pSigBlob, UncompressHelper& hlp);
@@ -156,20 +157,20 @@ namespace CorHelper {
 	case ELEMENT_TYPE_VALUETYPE:
 	case ELEMENT_TYPE_CLASS:
 		cb += CorSigUncompressToken(&pSigBlob[cb], &token);
-		//hlp.AddString(L"[");
+		//hlp.AddString(_T([");
 		hlp.AddString(GetTokenAssembly(token, hlp));
-		//hlp.AddString(L"]");
+		//hlp.AddString(_T(]");
 		hlp.AddString(GetTypeRefOrDefName(token, hlp));
 		break;
 	case ELEMENT_TYPE_OBJECT:
-		hlp.AddString(L"object");
+		hlp.AddString(_T("object"));
 		break;
 	case ELEMENT_TYPE_PTR:
 		cb += UncompressType(&pSigBlob[cb], hlp);
 		break;
 	case ELEMENT_TYPE_SZARRAY:
 		cb += UncompressType(&pSigBlob[cb], hlp);
-		hlp.AddString(L"[]");
+		hlp.AddString(_T("[]"));
 		break;
 	case ELEMENT_TYPE_ARRAY: {
 		cb += UncompressType(&pSigBlob[cb], hlp);
@@ -194,12 +195,12 @@ namespace CorHelper {
 		cb += UncompressType(&pSigBlob[cb], hlp);
 		cb += CorSigUncompressData(&pSigBlob[cb], &numSizes);
 
-		hlp.AddString(L"[");
+		hlp.AddString(_T("["));
 		for(ULONG i = 0; i < numSizes; ++i) {
 			cb += UncompressType(&pSigBlob[cb], hlp);
-			if (i < numSizes) hlp.AddString(L", ");
+			if (i < numSizes) hlp.AddString(_T(", "));
 		}
-		hlp.AddString(L"]");
+		hlp.AddString(_T("]"));
 		break;
 
 	case ELEMENT_TYPE_MVAR:
@@ -208,7 +209,7 @@ namespace CorHelper {
 		cb += CorSigUncompressData(&pSigBlob[cb], 1, &rank, &numSizes);
 		{
 			WCHAR buffer[10];
-			swprintf_s(buffer, 10, L"!%d", rank);
+			swprintf_s(buffer, 10, _T("!%d"), rank);
 			hlp.AddString(buffer);
 		}
 		break;
@@ -228,11 +229,11 @@ namespace CorHelper {
 		cbTemp = CorSigUncompressData(&pSigBlob[cb], &ulData);
 		switch(ulData) {
 	case ELEMENT_TYPE_VOID: 
-		hlp.AddString(L"void"); break;
+		hlp.AddString(_T("void")); break;
 	case ELEMENT_TYPE_TYPEDBYREF: 
-		hlp.AddString(L"refany"); break;
+		hlp.AddString(_T("refany")); break;
 	case ELEMENT_TYPE_BYREF: 
-		hlp.AddString(L"ref ");
+		hlp.AddString(_T("ref "));
 		cb += cbTemp;
 	default: 
 		cbTemp = UncompressType(&pSigBlob[cb], hlp);
@@ -249,9 +250,9 @@ namespace CorHelper {
 		cbTemp = CorSigUncompressData(&pSigBlob[cb], &ulData);
 		switch(ulData) {
 	case ELEMENT_TYPE_TYPEDBYREF: 
-		hlp.AddString(L"refany"); break;
+		hlp.AddString(_T("refany")); break;
 	case ELEMENT_TYPE_BYREF: 
-		hlp.AddString(L"ref ");
+		hlp.AddString(_T("ref "));
 		cb += cbTemp;
 	default: 
 		cbTemp = UncompressType(&pSigBlob[cb], hlp);
@@ -271,27 +272,27 @@ namespace CorHelper {
 		cb += CorSigUncompressData(&pSigBlob[cb], &paramCount);
 
 		cb += UncompressRetType(&pSigBlob[cb], hlp);
-		hlp.AddString(L" (");
+		hlp.AddString(_T(" ("));
 		while(paramCount-- > 0) {
 			ULONG cbTemp = CorSigUncompressData(&pSigBlob[cb], &ulData);
 			if (ulData == ELEMENT_TYPE_SENTINEL) {
-				hlp.AddString(L"params ");
+				hlp.AddString(_T("params "));
 				cb += cbTemp;
 			}
 			cb += UncompressParam(&pSigBlob[cb], hlp);
 			if (paramCount)
-				hlp.AddString(L", ");
+				hlp.AddString(_T(", "));
 		}
-		hlp.AddString(L")");
+		hlp.AddString(_T(")"));
 		return cb;
 	}
 
 	struct UncompressHelperGetSig : public UncompressHelper {
-		std::wstring *val;
-		void AddString(LPCWSTR str) { *val += str; }
+		String *val;
+		void AddString(LPCTSTR str) { *val += str; }
 	};
 
-	void GetMethodSig(ICorProfilerInfo* info, IMetaDataImport* mdImport, mdMethodDef methodDef, std::wstring* sigVal) {
+	void GetMethodSig(ICorProfilerInfo* info, IMetaDataImport* mdImport, mdMethodDef methodDef, String* sigVal) {
 		ULONG sigSize = 0;
 		PCCOR_SIGNATURE pSigBlob;
 		if(FAILED(mdImport->GetMethodProps(methodDef, NULL, NULL, 0, NULL, NULL, &pSigBlob, &sigSize, NULL, NULL)))
