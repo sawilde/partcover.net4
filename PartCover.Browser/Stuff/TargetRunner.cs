@@ -41,7 +41,7 @@ namespace PartCover.Browser.Stuff
 
             connector.AfterStart += new Action<Framework.Connector>(connector_AfterStart);
 
-            connector.SetVerbose(runTargetForm.LogLevel);
+            connector.SetLogging(runTargetForm.LogLevel);
             connector.StartTarget(
                 runTargetForm.TargetPath,
                 runTargetForm.TargetWorkingDir,

@@ -11,14 +11,19 @@ template<> struct StaticAssert<true> {};
 template<typename ValueType>
 struct DynamicArray {
     typedef ValueType value_type;
+private:
+    value_type* _data;
+	const size_t _size;
 
-    value_type* data;
+public:
+    DynamicArray(size_t count) : _size(count), _data(new value_type[count]) {}
+    ~DynamicArray() { delete[] _data; }
 
-    DynamicArray(size_t count) : data(new value_type[count]) {}
-    ~DynamicArray() { delete[] data; }
+	size_t size() const { return _size; }
+	value_type* ptr() const { return _data; }
 
-    operator value_type* () { return data; }
-    operator const value_type* () const { return data; }
+    operator value_type* () { return _data; }
+    operator const value_type* () const { return _data; }
 };
 
 struct compare_no_case {

@@ -230,15 +230,15 @@ namespace ILHelpers {
             if (ilop.IsBranch()) {
                 if (ilop.code == CEE_SWITCH) {
                     for(BranchOffsetTable::const_iterator it = ilop.branchOffsets.begin(); it != ilop.branchOffsets.end(); ++it) {
-                        LOGINFO1(METHOD_INNER, "    add block point %X", offsetStart + *it);
+                        LOGINFO1(DUMP_INSTRUMENTATION, "    add block point %X", offsetStart + *it);
                         points.insert(offsetStart + *it);
                     }
                 } else {
-                    LOGINFO1(METHOD_INNER, "    add block point %X", offsetStart + ilop.GetBranchOffset());
+                    LOGINFO1(DUMP_INSTRUMENTATION, "    add block point %X", offsetStart + ilop.GetBranchOffset());
                     points.insert(offsetStart + ilop.GetBranchOffset());
                 }
             }
-            LOGINFO1(METHOD_INNER, "    add block point %X", offsetStart);
+            LOGINFO1(DUMP_INSTRUMENTATION, "    add block point %X", offsetStart);
             points.insert(offsetStart);
         }
     };
@@ -247,7 +247,7 @@ namespace ILHelpers {
         ContinuousBlocks* blocks;
         ContinuousBlocksGatherer(ContinuousBlocks* _blocks) : blocks(_blocks) {}
         void operator () ( const DWORD& blockPoint ) {
-            LOGINFO1(METHOD_INNER, "    add block at point %X", blockPoint);
+            LOGINFO1(DUMP_INSTRUMENTATION, "    add block at point %X", blockPoint);
             ContinuousBlock block = { blockPoint };
             blocks->push_back(block);
         }
@@ -255,13 +255,13 @@ namespace ILHelpers {
 
     ContinuousBlocks GetContinuousBlocks(const ILopCodes& ilopArray) {
         ContinuousBlocks result;
-        LOGINFO(METHOD_INNER, "get continuous points");
+        LOGINFO(DUMP_INSTRUMENTATION, "get continuous points");
         BlockPointGatherer points = std::for_each(ilopArray.begin(), ilopArray.end(), BlockPointGatherer());
-        LOGINFO(METHOD_INNER, "  add first point");
+        LOGINFO(DUMP_INSTRUMENTATION, "  add first point");
         points.points.insert(ilopArray.begin()->pos);
-        LOGINFO(METHOD_INNER, "  remove last point");
+        LOGINFO(DUMP_INSTRUMENTATION, "  remove last point");
         points.points.erase(ilopArray.rbegin()->pos + ilopArray.rbegin()->GetSize());
-        LOGINFO(METHOD_INNER, "  get continuous block form points");
+        LOGINFO(DUMP_INSTRUMENTATION, "  get continuous block form points");
         std::for_each(points.points.begin(), points.points.end(), ContinuousBlocksGatherer(&result));
         return result;
     }
@@ -334,13 +334,13 @@ namespace ILHelpers {
     void BuildCodeWithChanges(ILopCodes *newIlops, const ILopCodes& originalIlops, const ChangeBlocks& changes, ILopCodes *op_fixups) {
         BranchCorrectTags fixups;
 
-		LOGINFO(METHOD_INNER, "insert original code into new code");
+		LOGINFO(DUMP_INSTRUMENTATION, "insert original code into new code");
         *newIlops = originalIlops;
 
-        LOGINFO(METHOD_INNER, "store branches");
+        LOGINFO(DUMP_INSTRUMENTATION, "store branches");
         BranchILopTags branches = StoreBranches(*newIlops);
 
-        LOGINFO(METHOD_INNER, "insert new blocks");
+        LOGINFO(DUMP_INSTRUMENTATION, "insert new blocks");
         ChangeBlocks::const_iterator changeIt = changes.begin();
         for(ILopPtr ilit = newIlops->begin(); changeIt != changes.end() && ilit != newIlops->end(); ++ilit) {
             if (ilit->pos == changeIt->original) {
@@ -349,7 +349,7 @@ namespace ILHelpers {
                 newIlops->insert(ilit, changeIt->modifiedCode.begin(), changeIt->modifiedCode.end());
                 changeIt++;
 
-                LOGINFO(METHOD_INNER, "repoint old branches to seq-block instead real code");
+                LOGINFO(DUMP_INSTRUMENTATION, "repoint old branches to seq-block instead real code");
                 // we need to repoint old branches to seq-block instead real code
                 ILopPtr newBranchEnd = newIlops->begin();
                 std::advance(newBranchEnd, ilitOffset);
@@ -357,7 +357,7 @@ namespace ILHelpers {
             }
         }
         
-        LOGINFO(METHOD_INNER, "find fixup branches");
+        LOGINFO(DUMP_INSTRUMENTATION, "find fixup branches");
         for(BranchILopTags::iterator bitIt = branches.begin(); bitIt != branches.end(); ++bitIt) {
             if (!IsSmallBranch(*bitIt->ilop)) continue;
             ILopPtr& endIlop = bitIt->branches[0];
@@ -377,18 +377,18 @@ namespace ILHelpers {
             }
         }
 
-        LOGINFO(METHOD_INNER, "fixup branches");
+        LOGINFO(DUMP_INSTRUMENTATION, "fixup branches");
         for(BranchCorrectTags::iterator it = fixups.begin(); it != fixups.end(); ++it) 
             *it->oldBranch = it->newBranch;
 
-        LOGINFO(METHOD_INNER, "restore branches");
+        LOGINFO(DUMP_INSTRUMENTATION, "restore branches");
         for(BranchILopTags::iterator bitIt = branches.begin(); bitIt != branches.end(); ++bitIt) {
             for(size_t i = 0; i < bitIt->branches.size(); ++i) {
                 bitIt->ilop->branchOffsets[i] = GetAbsoluteCodeOffset(*newIlops, bitIt->ilop, bitIt->branches[i]);
             }
         }
 
-		LOGINFO(METHOD_INNER, "ilcodes reenumerate");
+		LOGINFO(DUMP_INSTRUMENTATION, "ilcodes reenumerate");
 		ReenumerateIlops(*newIlops);
 
 #ifdef DUMP_FIXUP_BRACHES
@@ -419,20 +419,20 @@ namespace ILHelpers {
     }
 
     unsigned EmitEHSection(LPBYTE *buffer, const COR_ILMETHOD_SECT* section, const ChangeBlocks& changes, const ILopCodes& fixups) {
-        LOGINFO(METHOD_INNER, "        emit eh-section");
+        LOGINFO(DUMP_INSTRUMENTATION, "        emit eh-section");
         DriverLog& log = DriverLog::get();
 
         const COR_ILMETHOD_SECT_EH* ehSection = (const COR_ILMETHOD_SECT_EH*)section;
 
         IMAGE_COR_ILMETHOD_SECT_EH_CLAUSE_FAT *ehClauses = new IMAGE_COR_ILMETHOD_SECT_EH_CLAUSE_FAT[ehSection->EHCount()];
-        LOGINFO1(METHOD_INNER, "          copy %d clauses", ehSection->EHCount());
+        LOGINFO1(DUMP_INSTRUMENTATION, "          copy %d clauses", ehSection->EHCount());
         for(unsigned i = 0; i < ehSection->EHCount(); ++i)
             memcpy(ehClauses + i, ehSection->EHClause(i, ehClauses + i), sizeof IMAGE_COR_ILMETHOD_SECT_EH_CLAUSE_FAT);
 
         for(unsigned i = 0; i < ehSection->EHCount(); ++i) {
             IMAGE_COR_ILMETHOD_SECT_EH_CLAUSE_FAT& ehClause = ehClauses[i];
-            LOGINFO(METHOD_INNER, "          emit new eh-clause");
-            LOGINFO4(METHOD_INNER, "            old values: try %X, length %X, handler %X, length %X", 
+            LOGINFO(DUMP_INSTRUMENTATION, "          emit new eh-clause");
+            LOGINFO4(DUMP_INSTRUMENTATION, "            old values: try %X, length %X, handler %X, length %X", 
                 ehClause.TryOffset, ehClause.TryLength, ehClause.HandlerOffset, ehClause.HandlerLength);
 
             DWORD tryOffset, tryLOffset, handlerOffset, handlerLOffset;
@@ -447,7 +447,7 @@ namespace ILHelpers {
             ehClause.HandlerOffset = handlerOffset;
             ehClause.HandlerLength = handlerLOffset - handlerOffset;
 
-            LOGINFO4(METHOD_INNER, "            new values: try %X, length %X, handler %X, length %X", 
+            LOGINFO4(DUMP_INSTRUMENTATION, "            new values: try %X, length %X, handler %X, length %X", 
                 ehClause.TryOffset, ehClause.TryLength, ehClause.HandlerOffset, ehClause.HandlerLength);
         }
 
@@ -478,30 +478,30 @@ namespace ILHelpers {
     // Dump stuff
 
     void DumpIlop(DriverLog& log, const ILop& op, const char* prefix) {
-        if (!log.CanWrite(DUMP_METHOD))
+        if (!log.CanWrite(DUMP_INSTRUMENTATION))
             return;
 
         DWORD pos = op.pos;
         if (!op.IsBranch()) {
             switch(op.inlineParameterType) {
-            case eInlineNull:  LOGINFO3(DUMP_METHOD, "%s %8X %s", prefix, pos, op.mnemonic); break;
-            case eInlineByte:  LOGINFO4(DUMP_METHOD, "%s %8X %s %1X", prefix, pos, op.mnemonic, op.inlineParameter.opByte); break;
-            case eInlineWord:  LOGINFO4(DUMP_METHOD, "%s %8X %s %2X", prefix, pos, op.mnemonic, op.inlineParameter.opWord); break;
-            case eInlineDword: LOGINFO4(DUMP_METHOD, "%s %8X %s %4X", prefix, pos, op.mnemonic, op.inlineParameter.opDword); break;
-            case eInlineQword: LOGINFO3(DUMP_METHOD, "%s %8X %s <QWORD>", prefix, pos, op.mnemonic); break;
+            case eInlineNull:  LOGINFO3(DUMP_INSTRUMENTATION, "%s %8X %s", prefix, pos, op.mnemonic); break;
+            case eInlineByte:  LOGINFO4(DUMP_INSTRUMENTATION, "%s %8X %s %1X", prefix, pos, op.mnemonic, op.inlineParameter.opByte); break;
+            case eInlineWord:  LOGINFO4(DUMP_INSTRUMENTATION, "%s %8X %s %2X", prefix, pos, op.mnemonic, op.inlineParameter.opWord); break;
+            case eInlineDword: LOGINFO4(DUMP_INSTRUMENTATION, "%s %8X %s %4X", prefix, pos, op.mnemonic, op.inlineParameter.opDword); break;
+            case eInlineQword: LOGINFO3(DUMP_INSTRUMENTATION, "%s %8X %s <QWORD>", prefix, pos, op.mnemonic); break;
             }
         } else if (CEE_SWITCH == op.code) {
-            LOGINFO4(DUMP_METHOD, "%s %8X %s size %l", prefix, pos, op.mnemonic, op.branchOffsets.size());
+            LOGINFO4(DUMP_INSTRUMENTATION, "%s %8X %s size %l", prefix, pos, op.mnemonic, op.branchOffsets.size());
             pos += op.stdlen + op.inlineParameterType;
 
             BranchOffsetTable::const_iterator switchIt = op.branchOffsets.begin();
             while(switchIt != op.branchOffsets.end()) {
                 SDWORD offset = *switchIt++;
-                LOGINFO4(DUMP_METHOD, "%s %8X -> (%4X) %8X ", prefix, pos, offset, op.pos + op.GetSize() + offset); 
+                LOGINFO4(DUMP_INSTRUMENTATION, "%s %8X -> (%4X) %8X ", prefix, pos, offset, op.pos + op.GetSize() + offset); 
                 pos += sizeof( BranchOffsetTable::value_type );
             }
         } else {
-            LOGINFO5(DUMP_METHOD, "%s %8X %s %8X (%ld)", prefix, pos, op.mnemonic, pos + op.GetSize() + op.GetBranchOffset(), op.GetBranchOffset());
+            LOGINFO5(DUMP_INSTRUMENTATION, "%s %8X %s %8X (%ld)", prefix, pos, op.mnemonic, pos + op.GetSize() + op.GetBranchOffset(), op.GetBranchOffset());
         }
     }
 
@@ -512,28 +512,28 @@ namespace ILHelpers {
 
 
     void DumpContinuousBlocks(DriverLog& log, const ContinuousBlocks& blocks, const char* prefix) {
-        if (!log.CanWrite(DUMP_METHOD))
+        if (!log.CanWrite(DUMP_INSTRUMENTATION))
             return;
 
-        LOGINFO2(DUMP_METHOD, "%sContinuous blocks (%d items)", prefix, blocks.size());
+        LOGINFO2(DUMP_INSTRUMENTATION, "%sContinuous blocks (%d items)", prefix, blocks.size());
         ContinuousBlocks::const_iterator blocksIt = blocks.begin();
         while(blocksIt != blocks.end()) {
             const ContinuousBlock& block = *blocksIt++;
-            LOGINFO2(DUMP_METHOD, "%s  block byteoffset - %X", prefix, block.byteOffset);
+            LOGINFO2(DUMP_INSTRUMENTATION, "%s  block byteoffset - %X", prefix, block.byteOffset);
         }
     }
 
     void DumpChangeBlocks(DriverLog& log, const ChangeBlocks& blocks, const char* prefix) {
-        if (!log.CanWrite(DUMP_METHOD))
+        if (!log.CanWrite(DUMP_INSTRUMENTATION))
             return;
 
-        LOGINFO2(DUMP_METHOD, "%sChange blocks (%d items)", prefix, blocks.size());
+        LOGINFO2(DUMP_INSTRUMENTATION, "%sChange blocks (%d items)", prefix, blocks.size());
         ChangeBlocks::const_iterator blocksIt = blocks.begin();
         while(blocksIt != blocks.end()) {
             const ChangeBlock& block = *blocksIt++;
-            LOGINFO2(DUMP_METHOD, "%s  block %d", prefix, std::distance(blocks.begin(), blocksIt));
-            LOGINFO3(DUMP_METHOD, "%s    original code, starts at %X, %d bytes length", prefix, block.original, block.originalSize);
-            LOGINFO2(DUMP_METHOD, "%s    modified code, %d bytes length", prefix, GetCodeSize(block.modifiedCode));
+            LOGINFO2(DUMP_INSTRUMENTATION, "%s  block %d", prefix, std::distance(blocks.begin(), blocksIt));
+            LOGINFO3(DUMP_INSTRUMENTATION, "%s    original code, starts at %X, %d bytes length", prefix, block.original, block.originalSize);
+            LOGINFO2(DUMP_INSTRUMENTATION, "%s    modified code, %d bytes length", prefix, GetCodeSize(block.modifiedCode));
             DumpCode(log, block.modifiedCode, prefix);
         }
     }

@@ -106,7 +106,7 @@ void DriverLog::WriteError(LPCTSTR className, LPCTSTR methodName, LPCTSTR messag
 
 bool DriverLog::CanWrite(int infoLevel) const
 {
-    return (infoLevel <= m_infoLevel || m_infoLevel == -1) && infoLevel != 0 && Active();
+    return infoLevel != 0 && (infoLevel & m_infoLevel) == infoLevel && Active();
 }
 
 void DriverLog::WriteInfo(int infoLevel, LPCTSTR message, ...)

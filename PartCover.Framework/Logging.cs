@@ -4,18 +4,15 @@ using System.Text;
 
 namespace PartCover.Framework
 {
-    public class Logging
+    [Flags]
+    public enum Logging
     {
-        /*
-#define METHOD_INNER         4
-#define INSTRUMENT_METHOD    2
-#define PROFILER_CALL_METHOD 2
-#define DUMP_METHOD          1
-#define DUMP_RESULTS         1
-        */
-
-        public const int MethodInnerInfo = 4;
-        public const int MethodTrace = 2;
-        public const int DumpResult = 1;
+        Nothing = 0,
+        DumpMethod = 2,//long one
+        DumpInstrumentation = 4,//long one
+        MethodInstrumentation = 8,
+        MethodInner = 16,
+        SkipByState = 32,
+        SkipByRules = 64,
     }
 }

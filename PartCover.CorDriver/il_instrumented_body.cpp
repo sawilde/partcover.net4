@@ -67,12 +67,12 @@ struct InstrumentedCodeInserter {
 
     InstrumentedCodeInserter(ChangeBlocks& _changes, InstrumentedBlocks& _counters) : changes(_changes), counters(_counters) {}
     void operator() (const ContinuousBlock& block) {
-        LOGINFO2(METHOD_INNER, "%screate instrumented block at %8X", SLogPrefix, block.byteOffset);
+        LOGINFO2(DUMP_INSTRUMENTATION, "%screate instrumented block at %8X", SLogPrefix, block.byteOffset);
         CreateBlockFromPoint(block.byteOffset);
     }
 
     void operator() (const ULONG32& point) {
-        LOGINFO2(METHOD_INNER, "%screate instrumented block at %8X", SLogPrefix, point);
+        LOGINFO2(DUMP_INSTRUMENTATION, "%screate instrumented block at %8X", SLogPrefix, point);
         CreateBlockFromPoint(point);
     }
 
@@ -82,7 +82,7 @@ struct InstrumentedCodeInserter {
         change.originalSize = 0;
         ILopCodes& modified = change.modifiedCode;
 
-        LOGINFO1(METHOD_INNER, "%sallocate counter", LogPrefix);
+        LOGINFO1(DUMP_INSTRUMENTATION, "%sallocate counter", LogPrefix);
         InstrumentedBlock iBlock;
         iBlock.counter = new DWORD(0);
         iBlock.maxCounter = 999999;
@@ -97,7 +97,7 @@ struct InstrumentedCodeInserter {
         ILop branch = ILHelpers::FindILOpByCode(CEE_BEQ_S);
         branch.SetBranchOffset(10);
 
-        LOGINFO1(METHOD_INNER, "%sallocate counter code", LogPrefix);
+        LOGINFO1(DUMP_INSTRUMENTATION, "%sallocate counter code", LogPrefix);
 
         modified.push_back( ldc_i4_counter );
         modified.push_back( ILHelpers::FindILOpByCode(CEE_LDIND_I4) );
@@ -111,16 +111,16 @@ struct InstrumentedCodeInserter {
         modified.push_back( ILHelpers::FindILOpByCode(CEE_ADD) );
         modified.push_back( ILHelpers::FindILOpByCode(CEE_STIND_I4) );
 
-        LOGINFO1(METHOD_INNER, "%sstore change", LogPrefix);
+        LOGINFO1(DUMP_INSTRUMENTATION, "%sstore change", LogPrefix);
         changes.push_back( change );
-        LOGINFO1(METHOD_INNER, "%sstore counter", LogPrefix);
+        LOGINFO1(DUMP_INSTRUMENTATION, "%sstore counter", LogPrefix);
         counters.push_back( iBlock );
-        LOGINFO1(METHOD_INNER, "%smove to next", LogPrefix);
+        LOGINFO1(DUMP_INSTRUMENTATION, "%smove to next", LogPrefix);
     }
 };
 
 void InstrumentedILBody::CreateSequenceCountersFromCode() {
-    LOGINFO1(METHOD_INNER, "%sget continuous blocks", SLogPrefix);
+    LOGINFO1(DUMP_INSTRUMENTATION, "%sget continuous blocks", SLogPrefix);
     ContinuousBlocks blocks = GetContinuousBlocks(m_originalIlops);
 
 #ifdef DUMP_CONTINUOUS_BLOCKS
@@ -142,7 +142,7 @@ void InstrumentedILBody::CreateSequenceCounters(ULONG32 pointsCount, ULONG32* po
 
 void InstrumentedILBody::SetPositionToInstrumentedBlocks() {
     if (m_instrumentedBlocks.size() > 0) {
-        LOGINFO1(METHOD_INNER, "%sset position to instrumented blocks", SLogPrefix);
+        LOGINFO1(DUMP_INSTRUMENTATION, "%sset position to instrumented blocks", SLogPrefix);
         m_instrumentedBlocks.back().length = m_decoder.CodeSize - m_instrumentedBlocks.back().position;
         InstrumentedBlocks::iterator ins_it = m_instrumentedBlocks.begin();
         while(ins_it != m_instrumentedBlocks.end()) {
@@ -155,7 +155,7 @@ void InstrumentedILBody::SetPositionToInstrumentedBlocks() {
 }
 
 void InstrumentedILBody::DumpNewBody() {
-    if (!m_newBody || !DriverLog::get().CanWrite(METHOD_INNER))
+    if (!m_newBody || !DriverLog::get().CanWrite(DUMP_INSTRUMENTATION))
         return;
 
     DriverLog& log = DriverLog::get();
@@ -181,13 +181,13 @@ void InstrumentedILBody::ConstructNewBody() {
 
     DriverLog& log = DriverLog::get();
     //build code with fixies
-    LOGINFO1(METHOD_INNER, "%sbuild new code", SLogPrefix);
+    LOGINFO1(DUMP_INSTRUMENTATION, "%sbuild new code", SLogPrefix);
     BuildCodeWithChanges(&m_newIlops, m_originalIlops, m_counterBlocks, &m_modifiedBranches);
 
-    LOGINFO1(METHOD_INNER, "%scalc new stack size", SLogPrefix);
+    LOGINFO1(DUMP_INSTRUMENTATION, "%scalc new stack size", SLogPrefix);
     ULONG stackSize = m_decoder.GetMaxStack() + 4;
 
-    LOGINFO1(METHOD_INNER, "%scalc new code size", SLogPrefix);
+    LOGINFO1(DUMP_INSTRUMENTATION, "%scalc new code size", SLogPrefix);
     ULONG codeSize  = ILHelpers::GetCodeSize(m_newIlops);
 
     COR_ILMETHOD_FAT method;
@@ -196,24 +196,24 @@ void InstrumentedILBody::ConstructNewBody() {
     method.CodeSize = codeSize;
     method.MaxStack = stackSize;
 
-    LOGINFO1(METHOD_INNER, "%scalc new header size", SLogPrefix);
+    LOGINFO1(DUMP_INSTRUMENTATION, "%scalc new header size", SLogPrefix);
     unsigned headerSize = COR_ILMETHOD::Size(&method, !!(m_decoder.Flags & CorILMethod_MoreSects));
 
     unsigned sectSize = 0;
-    LOGINFO1(METHOD_INNER, "%scalc new eh-sections size", SLogPrefix);
+    LOGINFO1(DUMP_INSTRUMENTATION, "%scalc new eh-sections size", SLogPrefix);
     const COR_ILMETHOD_SECT* section = m_decoder.EH;
     while(section != 0) {
         unsigned sectionSize = ILHelpers::EmitEHSection(0, section, m_counterBlocks, m_modifiedBranches);
-        LOGINFO2(METHOD_INNER, "%ssection (%d bytes)", LogPrefix, sectionSize);
+        LOGINFO2(DUMP_INSTRUMENTATION, "%ssection (%d bytes)", LogPrefix, sectionSize);
         sectSize += sectionSize;
         section = section->Next();
     }
 
-    LOGINFO1(METHOD_INNER, "%scalc new sections size", SLogPrefix);
+    LOGINFO1(DUMP_INSTRUMENTATION, "%scalc new sections size", SLogPrefix);
     section = m_decoder.Sect;
     while(section != 0) {
         unsigned sectionSize = ILHelpers::EmitSection(0, section);
-        LOGINFO2(METHOD_INNER, "%ssection (%d bytes)", LogPrefix, sectionSize);
+        LOGINFO2(DUMP_INSTRUMENTATION, "%ssection (%d bytes)", LogPrefix, sectionSize);
         sectSize += sectionSize;
         section = section->Next();
     }
@@ -222,18 +222,18 @@ void InstrumentedILBody::ConstructNewBody() {
     m_newBodySize += (codeSize + 3) & ~3;
     m_newBodySize += sectSize;
 
-    LOGINFO4(METHOD_INNER, "%sconstruct new body. %d body length, %d code length, %d stack", SLogPrefix, m_newBodySize, method.CodeSize, method.MaxStack);
+    LOGINFO4(DUMP_INSTRUMENTATION, "%sconstruct new body. %d body length, %d code length, %d stack", SLogPrefix, m_newBodySize, method.CodeSize, method.MaxStack);
     m_newBody = new BYTE[m_newBodySize];
     memset(m_newBody, 0, m_newBodySize);
 
     LPBYTE buffer = m_newBody;
 
     // write all data
-    LOGINFO2(METHOD_INNER, "%semit new header (sizeof %d)", SLogPrefix, headerSize);
+    LOGINFO2(DUMP_INSTRUMENTATION, "%semit new header (sizeof %d)", SLogPrefix, headerSize);
     COR_ILMETHOD::Emit(headerSize, &method, !!(m_decoder.Flags & CorILMethod_MoreSects), buffer);
     buffer += headerSize;
 
-    LOGINFO2(METHOD_INNER, "%semit new code (sizeof %d)", SLogPrefix, codeSize);
+    LOGINFO2(DUMP_INSTRUMENTATION, "%semit new code (sizeof %d)", SLogPrefix, codeSize);
     ILHelpers::EmitCode(buffer, m_newIlops);
     buffer += (codeSize + 3) & ~3;
 

@@ -30,8 +30,13 @@ namespace PartCover.Browser
         private System.Windows.Forms.Button btnLoad;
         private System.Windows.Forms.Button btnSave;
         private System.Windows.Forms.SaveFileDialog dlgSave;
-        private ComboBox cbLogging;
-        private GroupBox gbDetails;
+        private GroupBox gbLogging;
+        private CheckBox chkLoggingDumpMethod;
+        private CheckBox chkLoggingDumpInstrumentation;
+        private CheckBox chkLoggingInstrumentMessages;
+        private CheckBox chkLoggingMethodInner;
+        private CheckBox chkLoggingSkipByState;
+        private CheckBox chkLoggingSkipByRule;
         private System.Windows.Forms.OpenFileDialog dlgOpen;
 
         class LogLevelEntry
@@ -52,16 +57,6 @@ namespace PartCover.Browser
         public RunTargetForm()
         {
             InitializeComponent();
-
-            cbLogging.DataSource = new LogLevelEntry[] {
-                new LogLevelEntry(0, "No, thanks"),
-                new LogLevelEntry(Logging.DumpResult, "Results only"),
-                new LogLevelEntry(Logging.MethodTrace, "Trace from methods"),
-                new LogLevelEntry(Logging.MethodInnerInfo, "All you have")
-            };
-            cbLogging.DisplayMember = "Text";
-            cbLogging.ValueMember = "Id";
-            cbLogging.SelectedValue = 0;
         }
 
         protected override void Dispose(bool disposing)
@@ -83,7 +78,6 @@ namespace PartCover.Browser
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.Label label2;
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(RunTargetForm));
             this.dlgOpen = new System.Windows.Forms.OpenFileDialog();
             this.gbTarget = new System.Windows.Forms.GroupBox();
@@ -103,22 +97,17 @@ namespace PartCover.Browser
             this.btnLoad = new System.Windows.Forms.Button();
             this.btnSave = new System.Windows.Forms.Button();
             this.dlgSave = new System.Windows.Forms.SaveFileDialog();
-            this.cbLogging = new System.Windows.Forms.ComboBox();
-            this.gbDetails = new System.Windows.Forms.GroupBox();
-            label2 = new System.Windows.Forms.Label();
+            this.gbLogging = new System.Windows.Forms.GroupBox();
+            this.chkLoggingSkipByRule = new System.Windows.Forms.CheckBox();
+            this.chkLoggingSkipByState = new System.Windows.Forms.CheckBox();
+            this.chkLoggingMethodInner = new System.Windows.Forms.CheckBox();
+            this.chkLoggingInstrumentMessages = new System.Windows.Forms.CheckBox();
+            this.chkLoggingDumpMethod = new System.Windows.Forms.CheckBox();
+            this.chkLoggingDumpInstrumentation = new System.Windows.Forms.CheckBox();
             this.gbTarget.SuspendLayout();
             this.gbRules.SuspendLayout();
-            this.gbDetails.SuspendLayout();
+            this.gbLogging.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // label2
-            // 
-            label2.AutoSize = true;
-            label2.Location = new System.Drawing.Point(24, 19);
-            label2.Name = "label2";
-            label2.Size = new System.Drawing.Size(48, 13);
-            label2.TabIndex = 16;
-            label2.Text = "Logging:";
             // 
             // gbTarget
             // 
@@ -266,32 +255,89 @@ namespace PartCover.Browser
             // 
             this.dlgSave.DefaultExt = "xml";
             // 
-            // cbLogging
+            // gbLogging
             // 
-            this.cbLogging.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cbLogging.FormattingEnabled = true;
-            this.cbLogging.Location = new System.Drawing.Point(81, 16);
-            this.cbLogging.Name = "cbLogging";
-            this.cbLogging.Size = new System.Drawing.Size(130, 21);
-            this.cbLogging.TabIndex = 15;
+            this.gbLogging.Controls.Add(this.chkLoggingSkipByRule);
+            this.gbLogging.Controls.Add(this.chkLoggingSkipByState);
+            this.gbLogging.Controls.Add(this.chkLoggingMethodInner);
+            this.gbLogging.Controls.Add(this.chkLoggingInstrumentMessages);
+            this.gbLogging.Controls.Add(this.chkLoggingDumpMethod);
+            this.gbLogging.Controls.Add(this.chkLoggingDumpInstrumentation);
+            this.gbLogging.Location = new System.Drawing.Point(373, 112);
+            this.gbLogging.Name = "gbLogging";
+            this.gbLogging.Size = new System.Drawing.Size(227, 178);
+            this.gbLogging.TabIndex = 11;
+            this.gbLogging.TabStop = false;
+            this.gbLogging.Text = "Logging";
             // 
-            // gbDetails
+            // chkLoggingSkipByRule
             // 
-            this.gbDetails.Controls.Add(label2);
-            this.gbDetails.Controls.Add(this.cbLogging);
-            this.gbDetails.Location = new System.Drawing.Point(373, 112);
-            this.gbDetails.Name = "gbDetails";
-            this.gbDetails.Size = new System.Drawing.Size(227, 178);
-            this.gbDetails.TabIndex = 11;
-            this.gbDetails.TabStop = false;
-            this.gbDetails.Text = "Details";
+            this.chkLoggingSkipByRule.AutoSize = true;
+            this.chkLoggingSkipByRule.Location = new System.Drawing.Point(15, 19);
+            this.chkLoggingSkipByRule.Name = "chkLoggingSkipByRule";
+            this.chkLoggingSkipByRule.Size = new System.Drawing.Size(131, 17);
+            this.chkLoggingSkipByRule.TabIndex = 22;
+            this.chkLoggingSkipByRule.Text = "Skip-by-rule messages";
+            this.chkLoggingSkipByRule.UseVisualStyleBackColor = true;
+            // 
+            // chkLoggingSkipByState
+            // 
+            this.chkLoggingSkipByState.AutoSize = true;
+            this.chkLoggingSkipByState.Location = new System.Drawing.Point(15, 42);
+            this.chkLoggingSkipByState.Name = "chkLoggingSkipByState";
+            this.chkLoggingSkipByState.Size = new System.Drawing.Size(137, 17);
+            this.chkLoggingSkipByState.TabIndex = 21;
+            this.chkLoggingSkipByState.Text = "Skip-by-state messages";
+            this.chkLoggingSkipByState.UseVisualStyleBackColor = true;
+            // 
+            // chkLoggingMethodInner
+            // 
+            this.chkLoggingMethodInner.AutoSize = true;
+            this.chkLoggingMethodInner.Location = new System.Drawing.Point(15, 88);
+            this.chkLoggingMethodInner.Name = "chkLoggingMethodInner";
+            this.chkLoggingMethodInner.Size = new System.Drawing.Size(140, 17);
+            this.chkLoggingMethodInner.TabIndex = 20;
+            this.chkLoggingMethodInner.Text = "Messages from methods";
+            this.chkLoggingMethodInner.UseVisualStyleBackColor = true;
+            // 
+            // chkLoggingInstrumentMessages
+            // 
+            this.chkLoggingInstrumentMessages.AutoSize = true;
+            this.chkLoggingInstrumentMessages.Location = new System.Drawing.Point(15, 65);
+            this.chkLoggingInstrumentMessages.Name = "chkLoggingInstrumentMessages";
+            this.chkLoggingInstrumentMessages.Size = new System.Drawing.Size(166, 17);
+            this.chkLoggingInstrumentMessages.TabIndex = 19;
+            this.chkLoggingInstrumentMessages.Text = "Messages from instrumentator";
+            this.chkLoggingInstrumentMessages.UseVisualStyleBackColor = true;
+            // 
+            // chkLoggingDumpMethod
+            // 
+            this.chkLoggingDumpMethod.AutoSize = true;
+            this.chkLoggingDumpMethod.ForeColor = System.Drawing.Color.Red;
+            this.chkLoggingDumpMethod.Location = new System.Drawing.Point(15, 134);
+            this.chkLoggingDumpMethod.Name = "chkLoggingDumpMethod";
+            this.chkLoggingDumpMethod.Size = new System.Drawing.Size(118, 17);
+            this.chkLoggingDumpMethod.TabIndex = 18;
+            this.chkLoggingDumpMethod.Text = "Dump method body";
+            this.chkLoggingDumpMethod.UseVisualStyleBackColor = true;
+            // 
+            // chkLoggingDumpInstrumentation
+            // 
+            this.chkLoggingDumpInstrumentation.AutoSize = true;
+            this.chkLoggingDumpInstrumentation.ForeColor = System.Drawing.Color.Red;
+            this.chkLoggingDumpInstrumentation.Location = new System.Drawing.Point(15, 111);
+            this.chkLoggingDumpInstrumentation.Name = "chkLoggingDumpInstrumentation";
+            this.chkLoggingDumpInstrumentation.Size = new System.Drawing.Size(128, 17);
+            this.chkLoggingDumpInstrumentation.TabIndex = 17;
+            this.chkLoggingDumpInstrumentation.Text = "Dump instrumentation";
+            this.chkLoggingDumpInstrumentation.UseVisualStyleBackColor = true;
             // 
             // RunTargetForm
             // 
             this.AutoScaleBaseSize = new System.Drawing.Size(5, 13);
             this.CancelButton = this.btnCancel;
             this.ClientSize = new System.Drawing.Size(610, 328);
-            this.Controls.Add(this.gbDetails);
+            this.Controls.Add(this.gbLogging);
             this.Controls.Add(this.btnLoad);
             this.Controls.Add(this.btnSave);
             this.Controls.Add(this.btnCancel);
@@ -310,8 +356,8 @@ namespace PartCover.Browser
             this.gbTarget.PerformLayout();
             this.gbRules.ResumeLayout(false);
             this.gbRules.PerformLayout();
-            this.gbDetails.ResumeLayout(false);
-            this.gbDetails.PerformLayout();
+            this.gbLogging.ResumeLayout(false);
+            this.gbLogging.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -376,9 +422,28 @@ namespace PartCover.Browser
             get { return FileNameForReport != null; }
         }
 
-        public int LogLevel
+        public Logging LogLevel
         {
-            get { return (int)cbLogging.SelectedValue; }
+            get
+            {
+                return Logging.Nothing |
+                    GetLoggingEnabled(chkLoggingDumpMethod, Logging.DumpMethod) |
+                    GetLoggingEnabled(chkLoggingDumpInstrumentation, Logging.DumpInstrumentation) |
+                    GetLoggingEnabled(chkLoggingInstrumentMessages, Logging.MethodInstrumentation) |
+                    GetLoggingEnabled(chkLoggingMethodInner, Logging.MethodInner) |
+                    GetLoggingEnabled(chkLoggingSkipByRule, Logging.SkipByRules) |
+                    GetLoggingEnabled(chkLoggingSkipByState, Logging.SkipByState);
+            }
+        }
+
+        private Logging GetLoggingEnabled(CheckBox chkLoggingControl, Logging logging)
+        {
+            return chkLoggingControl.Checked ? logging : Logging.Nothing;
+        }
+
+        private void SetLoggingEnabled(CheckBox chkLoggingControl, int value, Logging logging)
+        {
+            chkLoggingControl.Checked = (value & (int)logging) != 0;
         }
 
         #endregion //Properties
@@ -435,7 +500,7 @@ namespace PartCover.Browser
             settings.TargetArgs = TargetArgs;
             settings.TargetWorkingDir = TargetWorkingDir;
             settings.FileNameForReport = FileNameForReport;
-            settings.LogLevel = (int)cbLogging.SelectedValue;
+            settings.LogLevel = (int)LogLevel;
 
             settings.IncludeRules(IncludeItems);
             settings.ExcludeRules(ExcludeItems);
@@ -480,7 +545,13 @@ namespace PartCover.Browser
             tbPath.Text = settings.TargetPath;
             tbWorkingDir.Text = settings.TargetWorkingDir;
             tbArgs.Text = settings.TargetArgs;
-            cbLogging.SelectedValue = settings.LogLevel;
+
+            SetLoggingEnabled(chkLoggingDumpMethod, settings.LogLevel, Logging.DumpMethod);
+            SetLoggingEnabled(chkLoggingDumpInstrumentation, settings.LogLevel, Logging.DumpInstrumentation);
+            SetLoggingEnabled(chkLoggingInstrumentMessages, settings.LogLevel, Logging.MethodInstrumentation);
+            SetLoggingEnabled(chkLoggingMethodInner, settings.LogLevel, Logging.MethodInner);
+            SetLoggingEnabled(chkLoggingSkipByRule, settings.LogLevel, Logging.SkipByRules);
+            SetLoggingEnabled(chkLoggingSkipByState, settings.LogLevel, Logging.SkipByState);
 
             tbRules.Text = string.Empty;
 

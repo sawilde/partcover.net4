@@ -46,12 +46,11 @@ private:
 #define LOGINFO6(level, message, arg0, arg1, arg2, arg3, arg4, arg5)   DriverLog::get().WriteInfo(level, _T(message), arg0, arg1, arg2, arg3, arg4, arg5)
 #define LOGINFO7(level, message, arg0, arg1, arg2, arg3, arg4, arg5, arg6)   DriverLog::get().WriteInfo(level, _T(message), arg0, arg1, arg2, arg3, arg4, arg5, arg6)
 
-
-#define METHOD_INNER         4
-#define INSTRUMENT_METHOD    2
-#define PROFILER_CALL_METHOD 2
-#define DUMP_METHOD          1
-#define DUMP_RESULTS         1
-
-#define SKIP_BY_RULES        4
-#define SKIP_BY_STATE        4
+#define PROFILER_CALL_METHOD        128
+#define SKIP_BY_RULES               64
+#define SKIP_BY_STATE               32
+#define METHOD_INNER                16
+#define METHOD_INSTRUMENT           8
+#define DUMP_INSTRUMENTATION        4
+#define DUMP_METHOD                 2
+#define DUMP_RESULTS                1

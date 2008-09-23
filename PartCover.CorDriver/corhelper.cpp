@@ -10,7 +10,7 @@ namespace CorHelper {
 		if (S_OK != info->GetModuleInfo(module, NULL, 0, &buffSize, NULL, NULL)) 
 			return String();
 		DynamicArray<WCHAR> buffer(buffSize + 1);
-		if (S_OK != info->GetModuleInfo(module, NULL, buffSize + 1, &buffSize, buffer.data, NULL))
+		if (S_OK != info->GetModuleInfo(module, NULL, buffSize + 1, &buffSize, buffer, NULL))
 			return String();
 		return String(buffer);
 	}
@@ -63,10 +63,10 @@ namespace CorHelper {
 			return String();
 
 		DynamicArray<WCHAR> buffer(bufferSize + 1);
-		if (S_OK != mdImport->GetTypeDefProps(typeDef, buffer.data, bufferSize + 1, &bufferSize, NULL, NULL))
+		if (S_OK != mdImport->GetTypeDefProps(typeDef, buffer, bufferSize + 1, &bufferSize, NULL, NULL))
 			return String();
 
-		return GetTypedefFullName(mdImport, typeDef, 0, _T("+"), buffer.data);
+		return GetTypedefFullName(mdImport, typeDef, 0, _T("+"), String(buffer));
 	}
 
 	const wchar_t* StrCalling[] = {
@@ -86,9 +86,9 @@ namespace CorHelper {
 		if(S_OK != mdImport->GetTypeRefProps(tr, NULL, NULL, 0, &bufferSize))
 			return String();
 		DynamicArray<WCHAR> buffer(bufferSize + 1);
-		if(S_OK != mdImport->GetTypeRefProps(tr, NULL, buffer.data, bufferSize + 1, &bufferSize))
+		if(S_OK != mdImport->GetTypeRefProps(tr, NULL, buffer, buffer.size(), &bufferSize))
 			return String();
-		return buffer.data;
+		return buffer;
 	}
 
 	struct UncompressHelper 
