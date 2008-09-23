@@ -73,6 +73,7 @@ STDMETHODIMP CorProfiler::Initialize( /* [in] */ IUnknown *pICorProfilerInfoUnk 
     while(SUCCEEDED(m_center.Wait(message))) 
 	{
 		message->visit(messageVisitor);
+		destroy(message);
 
 		if (messageVisitor.readyToGo) break;
     }

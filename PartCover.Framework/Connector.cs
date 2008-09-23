@@ -26,9 +26,9 @@ namespace PartCover.Framework
             get { return actionWriter; }
         }
 
-        public void SetVerbose(int level)
+        public void SetLogging(Logging logging)
         {
-            connector.SetVerbose(level);
+            connector.SetVerbose((int)logging);
         }
 
         private readonly InstrumentedBlocksWalkerInner blockWalker = new InstrumentedBlocksWalkerInner();

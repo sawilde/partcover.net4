@@ -219,7 +219,6 @@
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <None Include="app.config" />
-    <None Include="manual\PartCover Browser Manual.rtf" />
     <None Include="PartCover.Coverage.Browser.snk" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -462,10 +461,6 @@
     <EmbeddedResource Include="Resources\VSObject\VSObject_MethodProtected_S.bmp" />
     <EmbeddedResource Include="Resources\VSObject\VSObject_MethodSealed_S.bmp" />
     <EmbeddedResource Include="Resources\VSObject\VSObject_Method_S.bmp" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="xslt\Report By Assembly.xslt" />
-    <Content Include="xslt\Report By Class.xslt" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Controls\" />

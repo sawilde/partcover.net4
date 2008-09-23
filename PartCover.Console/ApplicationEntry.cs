@@ -23,7 +23,7 @@ namespace PartCover
                 Connector connector = new Connector();
                 connector.Out = new ConsoleProgressCallback();
 
-                connector.SetVerbose(settings.LogLevel);
+                connector.SetLogging((Logging)settings.LogLevel);
 
                 foreach (string item in settings.IncludeItems)
                 {

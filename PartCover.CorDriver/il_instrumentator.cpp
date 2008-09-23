@@ -54,14 +54,14 @@ void Instrumentator::InstrumentModule(ModuleID module, const String& moduleName,
     desc.loaded = true;
 
     if(FAILED(hr = profilerInfo->GetModuleInfo(module, NULL, 0, NULL, NULL, &desc.assembly))) {
-        LOGINFO3(INSTRUMENT_METHOD, "Cannot instrument module %X '%s' (error %X on get module info)", module, moduleName, hr);
+        LOGINFO3(METHOD_INSTRUMENT, "Cannot instrument module %X '%s' (error %X on get module info)", module, moduleName, hr);
         Unlock();
         return;
     }
 
     desc.assemblyName = CorHelper::GetAssemblyName(profilerInfo, desc.assembly);
     if (desc.assemblyName.length() == 0) {
-        LOGINFO3(INSTRUMENT_METHOD, "Cannot instrument module %X '%s' (no assembly name)", module, moduleName, hr);
+        LOGINFO3(METHOD_INSTRUMENT, "Cannot instrument module %X '%s' (no assembly name)", module, moduleName, hr);
         Unlock();
         return;
     }
@@ -70,7 +70,7 @@ void Instrumentator::InstrumentModule(ModuleID module, const String& moduleName,
 	hr = profilerInfo->GetModuleMetaData(module, ofRead, IID_IMetaDataImport, (IUnknown**) &mdImport);
     if(S_OK != hr) 
 	{
-        LOGINFO3(INSTRUMENT_METHOD, "Cannot instrument module %X '%s' (error %X on get meta data import)", module, moduleName, hr);
+        LOGINFO3(METHOD_INSTRUMENT, "Cannot instrument module %X '%s' (error %X on get meta data import)", module, moduleName, hr);
         Unlock();
         return;
     }
@@ -93,7 +93,7 @@ void Instrumentator::InstrumentModule(ModuleID module, const String& moduleName,
 
     mdImport->CloseEnum(hEnum);
     if (desc.typeDefs.size() == 0) {
-        LOGINFO3(INSTRUMENT_METHOD, "In module %X '%s' instrumented %d items. Skip it", module, moduleName, desc.typeDefs.size());
+        LOGINFO3(METHOD_INSTRUMENT, "In module %X '%s' instrumented %d items. Skip it", module, moduleName, desc.typeDefs.size());
         Unlock();
         return;
     }
@@ -265,7 +265,7 @@ void Instrumentator::InstrumentMethod(TypeDef& typeDef, mdMethodDef methodDef, I
                                 continue;
                             }
 
-                            block.fileId = (ULONG32) GetFileUrlId(url.data);
+                            block.fileId = (ULONG32) GetFileUrlId(String(url));
                             block.startLine = lines[i];
                             block.startColumn = columns[i];
                             block.endLine = endLines[i];
@@ -297,7 +297,7 @@ void Instrumentator::InstrumentMethod(TypeDef& typeDef, mdMethodDef methodDef, I
         method.instrumentedBody = body.release();
         methods.insert(MethodDefMapPair(method.methodDef, method));
 
-        LOGINFO4(INSTRUMENT_METHOD, "      Asm %X: Method %s.%s (0x%X) was instrumented and stored", helper.module->assembly, typeDef.typeDefName.c_str(), method.methodDefName.c_str(), method.methodDef);
+        LOGINFO4(METHOD_INSTRUMENT, "      Asm %X: Method %s.%s (0x%X) was instrumented and stored", helper.module->assembly, typeDef.typeDefName.c_str(), method.methodDefName.c_str(), method.methodDef);
     } catch(std::exception& ex) {
         LOGERROR1("Instrumentator", "InstrumentMethod", "Instrumentation breaked. %s", ex.what());
     }
@@ -309,13 +309,13 @@ void Instrumentator::UpdateClassCode(ClassID classId, ICorProfilerInfo* profiler
     ModuleID moduleId;
     mdTypeDef typeDef;
     if (FAILED(profilerInfo->GetClassIDInfo(classId, &moduleId, &typeDef))) {
-        LOGINFO(INSTRUMENT_METHOD, "Cannot update code for class (no typedef)");
+        LOGINFO(METHOD_INSTRUMENT, "Cannot update code for class (no typedef)");
         return;
     }
 
     AssemblyID assembly;
     if (FAILED(profilerInfo->GetModuleInfo(moduleId, NULL, 0, NULL, NULL, &assembly))) {
-        LOGINFO(INSTRUMENT_METHOD, "Cannot update code for class (no assembly)");
+        LOGINFO(METHOD_INSTRUMENT, "Cannot update code for class (no assembly)");
         return;
     }
 
@@ -323,14 +323,14 @@ void Instrumentator::UpdateClassCode(ClassID classId, ICorProfilerInfo* profiler
 
     ModuleDescriptor* descriptor = GetModuleDescriptor(moduleId);
     if (descriptor == 0) {
-        LOGINFO(INSTRUMENT_METHOD, "Cannot update code for class (no module)");
+        LOGINFO(METHOD_INSTRUMENT, "Cannot update code for class (no module)");
         Unlock();
         return;
     }
 
     TypedefDescriptorMap::iterator typeDefinitionIt = descriptor->typeDefs.find(typeDef);
     if (typeDefinitionIt == descriptor->typeDefs.end()) {
-        LOGINFO(INSTRUMENT_METHOD, "Cannot update code for class (no data)");
+        LOGINFO(METHOD_INSTRUMENT, "Cannot update code for class (no data)");
         Unlock();
         return;
     }
@@ -340,12 +340,12 @@ void Instrumentator::UpdateClassCode(ClassID classId, ICorProfilerInfo* profiler
     while(methodIt != defDescriptor.methodDefs.end()) {
         MethodDef& method = (methodIt++)->second;
         if (method.bodyUpdated) {
-            LOGINFO(INSTRUMENT_METHOD, "Cannot update code for class (il body already updated)");
+            LOGINFO(METHOD_INSTRUMENT, "Cannot update code for class (il body already updated)");
             continue;
         }
 
         if (method.instrumentedBody == 0) {
-            LOGINFO(INSTRUMENT_METHOD, "Cannot update code for class (no il body)");
+            LOGINFO(METHOD_INSTRUMENT, "Cannot update code for class (no il body)");
             continue;
         }
 
@@ -371,7 +371,7 @@ void Instrumentator::UpdateClassCode(ClassID classId, ICorProfilerInfo* profiler
 
         LOGINFO(METHOD_INNER, "Set new IL Function Body");
         if (SUCCEEDED(hr = profilerInfo->SetILFunctionBody(moduleId, method.methodDef, (LPCBYTE) newBody))) {
-            LOGINFO4(INSTRUMENT_METHOD, "Asm %X: Method %s.%s (0x%X) il body updated", descriptor->assembly, defDescriptor.typeDefName.c_str(), method.methodDefName.c_str(), method.methodDef);
+            LOGINFO4(METHOD_INSTRUMENT, "Asm %X: Method %s.%s (0x%X) il body updated", descriptor->assembly, defDescriptor.typeDefName.c_str(), method.methodDefName.c_str(), method.methodDef);
             method.bodyUpdated = true;
         } else {
             LOGERROR3("Instrumentator", "InstrumentMethod", "SetILFunctionBody failed for method '%s' in module %X with error %X", method.methodDefName.c_str(), moduleId, hr);

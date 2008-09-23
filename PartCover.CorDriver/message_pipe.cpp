@@ -186,10 +186,10 @@ bool MessagePipe::read(String* value)
 		return false;
 
 	DynamicArray<String::value_type> data(len);
-	if (FAILED(read(data.data, static_cast<int>(len * sizeof(String::value_type)))))
+	if (FAILED(read(data, static_cast<int>(len * sizeof(String::value_type)))))
 		return false;
 
-	value->assign(data.data, len);
+	value->assign(data, len);
 	return true;
 }
 

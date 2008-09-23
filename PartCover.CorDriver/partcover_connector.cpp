@@ -58,10 +58,11 @@ STDMETHODIMP PartCoverConnector2::StartTarget(
         if (curLength = ::GetCurrentDirectory(curLength + 1, curBuffer)) 
 		{
             _stprintf_s(curBuffer + curLength, 25, DRIVER_LOG_FILENAME);
+            env[OPTION_LOGFILE] = curBuffer;
+
 			m_logFile = curBuffer;
 
-            env[OPTION_LOGFILE] = curBuffer;
-            _stprintf_s(curBuffer, 2, _T("%d"), m_driverLogging);
+            _stprintf_s(curBuffer, curBuffer.size(), _T("%d"), m_driverLogging);
             env[OPTION_VERBOSE] = curBuffer;
         }
     }
