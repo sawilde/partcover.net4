@@ -41,6 +41,7 @@
 #define DRIVER_LOG_FILENAME             _T("\\partcover.driver.log")
 
 #define OPTION_LOGFILE  _T("PartProfile_Log_File")
+#define OPTION_LOGPIPE  _T("PartProfile_Log_Pipe")
 #define OPTION_VERBOSE  _T("PartProfile_Log_Verbose")
 #define OPTION_MESSOPT  _T("PartProfile_Message_Pipe")
 #define OPTION_TGTPROC  _T("PartProfile_Target_Process")

@@ -16,14 +16,10 @@ namespace PartCover.Framework.Walkers
 
         public static void AddFile(CoverageReport report, UInt32 id, String url)
         {
-            CoverageReport.FileDescriptor[] newFiles = new CoverageReport.FileDescriptor[report.files.Length + 1];
-            report.files.CopyTo(newFiles, 1);
-
-            newFiles[0] = new CoverageReport.FileDescriptor();
-            newFiles[0].fileId = id;
-            newFiles[0].fileUrl = url;
-
-            report.files = newFiles;
+            CoverageReport.FileDescriptor file = new CoverageReport.FileDescriptor();
+            file.fileId = id;
+            file.fileUrl = url;
+            report.files.Add(file);
         }
 
         private static CoverageReport.TypeDescriptor FindExistingType(CoverageReport report, CoverageReport.TypeDescriptor dType)
@@ -80,10 +76,7 @@ namespace PartCover.Framework.Walkers
             CoverageReport.TypeDescriptor existingType = FindExistingType(report, dType);
             if (existingType == null)
             {
-                CoverageReport.TypeDescriptor[] newTypes = new CoverageReport.TypeDescriptor[report.types.Length + 1];
-                report.types.CopyTo(newTypes, 1);
-                newTypes[0] = dType;
-                report.types = newTypes;
+                report.types.Add(dType);
                 return;
             }
 
@@ -253,6 +246,9 @@ namespace PartCover.Framework.Walkers
             XmlNode root = xml.AppendChild(xml.CreateElement("PartCoverReport"));
             root.Attributes.Append(xml.CreateAttribute("ver")).Value = VersionString(GetHelperAssembly().GetName().Version);
 
+            if (report.ExitCode.HasValue)
+                root.Attributes.Append(xml.CreateAttribute("exitCode")).Value = report.ExitCode.Value.ToString(CultureInfo.InvariantCulture);
+
             foreach (CoverageReport.FileDescriptor dFile in report.files)
             {
                 XmlNode fileNode = root.AppendChild(xml.CreateElement("file"));
@@ -296,6 +292,26 @@ namespace PartCover.Framework.Walkers
                     }
                 }
             }
+
+            XmlNode runNode = root.AppendChild(xml.CreateElement("run"));
+
+            XmlNode runTrackerNode = runNode.AppendChild(xml.CreateElement("tracker"));
+            foreach (CoverageReport.RunHistoryMessage rhm in report.runHistory)
+            {
+                XmlNode messageNode = runTrackerNode.AppendChild(xml.CreateElement("message"));
+                messageNode.Attributes.Append(xml.CreateAttribute("tm")).Value = rhm.Time.ToUniversalTime().Ticks.ToString(CultureInfo.InvariantCulture);
+                messageNode.InnerText = rhm.Message;
+            }
+
+            XmlNode runLogNode = runNode.AppendChild(xml.CreateElement("log"));
+            foreach (CoverageReport.RunLogMessage rlm in report.runLog)
+            {
+                XmlNode messageNode = runLogNode.AppendChild(xml.CreateElement("message"));
+                messageNode.Attributes.Append(xml.CreateAttribute("tr")).Value = rlm.ThreadId.ToString(CultureInfo.InvariantCulture);
+                messageNode.Attributes.Append(xml.CreateAttribute("ms")).Value = rlm.MsOffset.ToString(CultureInfo.InvariantCulture);
+                messageNode.InnerText = rlm.Message;
+            }
+
             xml.Save(writer);
         }
 
@@ -306,7 +322,27 @@ namespace PartCover.Framework.Walkers
             {
                 return UInt32.Parse(strAttr);
             }
-            catch { throw new ReportException("Wrong report format"); }
+            catch { throw new ReportException("Wrong report format, UInt32 type expected at " + node.Name + "[@" + attr + "]"); }
+        }
+
+        private static long GetLongAttribute(XmlNode node, string attr)
+        {
+            string strAttr = GetStringAttribute(node, attr);
+            try
+            {
+                return long.Parse(strAttr);
+            }
+            catch { throw new ReportException("Wrong report format, long type expected at " + node.Name + "[@" + attr + "]"); }
+        }
+
+        private static int GetIntAttribute(XmlNode node, string attr)
+        {
+            string strAttr = GetStringAttribute(node, attr);
+            try
+            {
+                return int.Parse(strAttr);
+            }
+            catch { throw new ReportException("Wrong report format, int type expected at " + node.Name + "[@" + attr + "]"); }
         }
 
         private static string GetStringAttribute(XmlNode node, string attr)
@@ -325,11 +361,8 @@ namespace PartCover.Framework.Walkers
             if (root == null) throw new ReportException("Wrong report format");
             XmlAttribute verAttribute = root.Attributes["ver"];
             if (verAttribute == null) throw new ReportException("Wrong report format");
-#if !DEBUG
-            if (!IsEqual(GetHelperAssembly().GetName().Version, verAttribute.Value)) throw new ReportException("Wrong report format");
-#endif
-
-
+            XmlAttribute exitCodeAttribute = root.Attributes["exitCode"];
+            if (exitCodeAttribute != null) report.ExitCode = GetIntAttribute(root, exitCodeAttribute.Name);
 
             foreach (XmlNode fileNode in xml.SelectNodes("/PartCoverReport/file"))
                 AddFile(report, GetUInt32Attribute(fileNode, "id"), GetStringAttribute(fileNode, "url"));
@@ -374,6 +407,29 @@ namespace PartCover.Framework.Walkers
                 }
                 AddType(report, dType);
             }
+
+            foreach (XmlNode messageNode in xml.SelectNodes("/PartCoverReport/run/tracker/message"))
+                AddTrackerMessage(report, messageNode);
+
+            foreach (XmlNode messageNode in xml.SelectNodes("/PartCoverReport/run/log/message"))
+                AddLogFileMessage(report, messageNode);
+        }
+
+        private static void AddLogFileMessage(CoverageReport report, XmlNode messageNode)
+        {
+            CoverageReport.RunLogMessage message = new CoverageReport.RunLogMessage();
+            message.ThreadId = GetIntAttribute(messageNode, "tr");
+            message.MsOffset = GetIntAttribute(messageNode, "ms");
+            message.Message = messageNode.InnerText;
+            report.runLog.Add(message);
+        }
+
+        private static void AddTrackerMessage(CoverageReport report, XmlNode messageNode)
+        {
+            CoverageReport.RunHistoryMessage message = new CoverageReport.RunHistoryMessage();
+            message.Time = new DateTime(GetLongAttribute(messageNode, "tm"), DateTimeKind.Utc);
+            message.Message = messageNode.InnerText;
+            report.runHistory.Add(message);
         }
 
         #endregion //Save/Load

@@ -3,7 +3,6 @@ using System.IO;
 
 using PartCover.Framework;
 using PartCover.Framework.Walkers;
-using PartCover.Stuff;
 
 namespace PartCover
 {
@@ -21,8 +20,11 @@ namespace PartCover
                 }
 
                 Connector connector = new Connector();
-                connector.Out = new ConsoleProgressCallback();
+                connector.OnEventMessage += connector_OnEventMessage;
+                connector.ProcessCallback.OnMessage += ProcessCallback_OnMessage;
 
+                connector.UseFileLogging(true);
+                connector.UsePipeLogging(false);
                 connector.SetLogging((Logging)settings.LogLevel);
 
                 foreach (string item in settings.IncludeItems)
@@ -91,6 +93,14 @@ namespace PartCover
             }
 
             return 0;
+        }
+
+        static void ProcessCallback_OnMessage(object sender, EventArgs<CoverageReport.RunHistoryMessage> e)
+        {
+        }
+
+        static void connector_OnEventMessage(object sender, EventArgs<CoverageReport.RunLogMessage> e)
+        {
         }
     }
 }

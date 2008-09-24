@@ -15,10 +15,13 @@ namespace PartCover.Browser.Helpers
             if (DesignMode || executable == null)
                 return;
 
+            BeforeStart();
             ar = executable.BeginInvoke(onEnd, null);
             if (ar.IsCompleted && ar.CompletedSynchronously)
                 onEnd(ar);
         }
+
+        protected virtual void BeforeStart() { }
 
         private void onEnd(IAsyncResult value)
         {

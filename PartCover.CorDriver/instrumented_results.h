@@ -1,5 +1,7 @@
 #pragma once
 
+interface IConnectorActionCallback;
+
 class InstrumentResults : public ITransferrable
 {
 public:
@@ -65,7 +67,10 @@ public:
     bool ReceiveData(MessagePipe&);
 	bool ReceiveData(MessagePipe&, IConnectorActionCallback* callback);
 
+	void SetCallback(IConnectorActionCallback* callback) { m_callback = callback; }
 private:
+
+	IConnectorActionCallback* m_callback;
 
     AssemblyResults m_results;
     FileItems m_fileTable;

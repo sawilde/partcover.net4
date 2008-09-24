@@ -53,6 +53,12 @@ STDMETHODIMP PartCoverConnector2::StartTarget(
 
     if (m_driverLogging > 0)
 	{
+		DynamicArray<TCHAR> curBuffer(5);
+        _stprintf_s(curBuffer, curBuffer.size(), _T("%d"), m_driverLogging);
+        env[OPTION_VERBOSE] = curBuffer;
+	}
+
+	if (m_useFileLogging) {
         DWORD curLength = ::GetCurrentDirectory(0, NULL);
         DynamicArray<TCHAR> curBuffer(curLength + 25);
         if (curLength = ::GetCurrentDirectory(curLength + 1, curBuffer)) 
@@ -61,10 +67,11 @@ STDMETHODIMP PartCoverConnector2::StartTarget(
             env[OPTION_LOGFILE] = curBuffer;
 
 			m_logFile = curBuffer;
-
-            _stprintf_s(curBuffer, curBuffer.size(), _T("%d"), m_driverLogging);
-            env[OPTION_VERBOSE] = curBuffer;
         }
+    }
+
+	if (m_usePipeLogging) {
+        env[OPTION_LOGPIPE] = _T("1");
     }
 
     // copy old and new env settings
@@ -118,15 +125,17 @@ STDMETHODIMP PartCoverConnector2::StartTarget(
 	if(callback != 0 ) callback->DriverConnected();
 
 	struct Starter : ITransferrableVisitor {
+		IConnectorActionCallback* m_callback;
 	public:
 		bool readyToGo;
-		Starter() : readyToGo(false) {}
+		Starter(IConnectorActionCallback* callback) : m_callback(callback), readyToGo(false) {}
 
 		void on(MessageType type) { if (Messages::C_RequestStart == type) readyToGo = true; }
 		void on(FunctionMap& value) {}
 		void on(Rules& value) {}
 		void on(InstrumentResults& value) {}
-	} messageVisitor;
+		void on(LogMessage& value) { if (m_callback != 0) m_callback->LogMessage(value.getThreadId(), value.getTicks(), _bstr_t(value.getMessage().c_str())); }
+	} messageVisitor(callback);
 
 	ITransferrable* message;
 	while(SUCCEEDED(m_center.Wait(message)))
@@ -161,13 +170,6 @@ STDMETHODIMP PartCoverConnector2::StartTarget(
 	return true;
 }
 
-STDMETHODIMP PartCoverConnector2::SetVerbose(INT enable)
-{
-    if (m_center.isOpen()) return E_ACCESSDENIED;
-    m_driverLogging = enable;
-    return S_OK;
-}
-
 STDMETHODIMP PartCoverConnector2::EnableOption(ProfilerMode mode)
 {
     if (m_center.isOpen()) return E_ACCESSDENIED;
@@ -184,31 +186,26 @@ STDMETHODIMP PartCoverConnector2::WaitForResults(VARIANT_BOOL delayClose, IConne
 	HRESULT hr = S_OK;
 
 	struct Waiter : ITransferrableVisitor {
+		IConnectorActionCallback* m_callback;
 	public:
 		bool readyToDown;
-		Waiter() : readyToDown(false) {}
+		Waiter(IConnectorActionCallback* callback) : m_callback(callback), readyToDown(false) {}
 
 		void on(MessageType type) { if(Messages::C_EndOfResults) readyToDown = true; }
 		void on(FunctionMap& value) {}
 		void on(Rules& value) {}
 		void on(InstrumentResults& value) {}
-	} waiter;
+		void on(LogMessage& value) { if (m_callback != 0) m_callback->LogMessage(value.getThreadId(), value.getTicks(), _bstr_t(value.getMessage().c_str())); }
+	} waiter(callback);
+
+	m_functions.SetCallback(callback);
+	m_instrumentResults.SetCallback(callback);
 
 	ITransferrable* message;
-	while(SUCCEEDED(m_center.WaitHeader(message)))
+	while(SUCCEEDED(m_center.Wait(message)))
 	{
-		if (message == &m_functions)
-		{
-			m_functions.ReceiveData(m_center, callback);
-		}
-		if (message == &m_instrumentResults)
-		{
-			m_instrumentResults.ReceiveData(m_center, callback);
-		}
-
 		message->visit(waiter);
 		destroy(message);
-
 		if (waiter.readyToDown) break;
 	}
 
@@ -218,7 +215,6 @@ STDMETHODIMP PartCoverConnector2::WaitForResults(VARIANT_BOOL delayClose, IConne
 	{
 		if (callback != 0) callback->TargetRequestShutdown();
 		m_center.Send(Messages::Message<Messages::C_RequestShutdown>());
-
 
 		if (WAIT_OBJECT_0 == WaitForSingleObject(pi.hProcess, INFINITE)) 
 		{
@@ -278,13 +274,14 @@ ITransferrable* PartCoverConnector2::create(MessageType type)
 		case Messages::C_FunctionMap: return &this->m_functions; 
 		case Messages::C_Rules: return &this->m_rules;
 		case Messages::C_InstrumentResults: return &this->m_instrumentResults;
+		case Messages::C_LogMessage: return &this->m_logMessage;
 		default: return new Messages::GenericMessage(type);
 	}
 }
 
 void PartCoverConnector2::destroy(ITransferrable* item)
 {
-	const ITransferrable* ignore_list[] = { &m_functions, &m_rules, &m_instrumentResults };
+	const ITransferrable* ignore_list[] = { &m_functions, &m_rules, &m_instrumentResults, &m_logMessage };
 	const ITransferrable** lbeg = ignore_list;
 	const ITransferrable** lend = ignore_list + ARRAYSIZE(ignore_list);
 	

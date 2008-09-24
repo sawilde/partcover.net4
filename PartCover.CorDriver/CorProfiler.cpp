@@ -51,6 +51,9 @@ STDMETHODIMP CorProfiler::Initialize( /* [in] */ IUnknown *pICorProfilerInfoUnk 
     Environment::FreeStringResource(messageCenterOption);
 
     DriverLog& log = DriverLog::get();
+	if (m_options.UsePipeLogging()) {
+		log.SetPipe(&m_center);
+	}
 
 	ATLTRACE("CorProfiler::Initialize - send C_RequestStart");
 	m_center.Send(Messages::Message<Messages::C_RequestStart>());
@@ -68,6 +71,7 @@ STDMETHODIMP CorProfiler::Initialize( /* [in] */ IUnknown *pICorProfilerInfoUnk 
 		void on(FunctionMap&) {}
 		void on(Rules&) {}
 		void on(InstrumentResults &) {}
+		void on(LogMessage &) {}
 	} messageVisitor;
 
     while(SUCCEEDED(m_center.Wait(message))) 
@@ -87,11 +91,6 @@ STDMETHODIMP CorProfiler::Initialize( /* [in] */ IUnknown *pICorProfilerInfoUnk 
     m_profilerInfo = pICorProfilerInfoUnk;
 
     DWORD dwMask = 0;
-    //TODO:
-    //if (m_rules.IsEnabledMode(COUNT_CALL_DIAGRAM)) {
-    //    dwMask |= COR_PRF_MONITOR_JIT_COMPILATION|COR_PRF_MONITOR_ENTERLEAVE;
-    //    m_callGatherer.Initialize(m_profilerInfo);
-    //}
     if (m_rules.IsEnabledMode(COUNT_COVERAGE)) {
         dwMask |= COR_PRF_MONITOR_CLASS_LOADS|COR_PRF_MONITOR_MODULE_LOADS|COR_PRF_MONITOR_ASSEMBLY_LOADS|COR_PRF_DISABLE_INLINING|COR_PRF_DISABLE_OPTIMIZATIONS;
         if (FAILED(hr = CoCreateInstanceWithoutModel(CLSID_CorSymBinder_SxS, IID_ISymUnmanagedBinder2, (void**) &m_binder))) {
@@ -137,6 +136,7 @@ STDMETHODIMP CorProfiler::Shutdown( void )
 		void on(FunctionMap& value) {}
 		void on(Rules& value) {}
 		void on(InstrumentResults& value) {}
+		void on(LogMessage& value) {}
 	} shutdowner;
 
 	ITransferrable* message;

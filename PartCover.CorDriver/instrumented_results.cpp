@@ -204,23 +204,19 @@ bool InstrumentResults::SendData(MessagePipe& pipe) {
 }
 
 bool InstrumentResults::ReceiveData(MessagePipe& pipe) {
-	return ReceiveData(pipe, 0);
-}
-
-bool InstrumentResults::ReceiveData(MessagePipe& pipe, IConnectorActionCallback* callback) {
     ATLTRACE("InstrumentResults::SendResults - receive result");
-	if(callback) callback->InstrumentDataReceiveBegin();
+	if(m_callback) m_callback->InstrumentDataReceiveBegin();
 
     m_results.clear();
     m_fileTable.clear();
 
-	if (!PopResults(m_results, pipe, callback))
+	if (!PopResults(m_results, pipe, m_callback))
 		return false;
 
-	if(!PopResults(m_fileTable, pipe, callback))
+	if(!PopResults(m_fileTable, pipe, m_callback))
 		return false;
 
-	if(callback) callback->InstrumentDataReceiveEnd();
+	if(m_callback) m_callback->InstrumentDataReceiveEnd();
 
 	return true;
 }

@@ -11,12 +11,12 @@ namespace PartCover.Browser.Api
 
         public IServiceContainer Services { get { return container; } }
 
-        public virtual void attach(IServiceContainer container)
+        public virtual void attach(IServiceContainer container, IProgressTracker tracker)
         {
             this.container = container;
         }
 
-        public virtual void detach(IServiceContainer container)
+        public virtual void detach(IServiceContainer container, IProgressTracker tracker)
         {
             this.container = null;
         }

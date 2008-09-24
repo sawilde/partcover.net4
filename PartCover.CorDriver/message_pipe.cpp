@@ -194,3 +194,16 @@ bool MessagePipe::read(String* value)
 }
 
 
+bool LogMessage::SendData(MessagePipe &pipe) {
+	return 
+		pipe.write(this->m_threadId) && 
+		pipe.write(this->m_tick) && 
+		pipe.write(this->m_message);
+}
+
+bool LogMessage::ReceiveData(MessagePipe &pipe) {
+	return 
+		pipe.read(&this->m_threadId) &&
+		pipe.read(&this->m_tick) &&
+		pipe.read(&this->m_message);
+}

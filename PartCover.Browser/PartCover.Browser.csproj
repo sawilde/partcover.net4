@@ -146,6 +146,12 @@
     <Compile Include="Features\Views\RunHistoryView.Designer.cs">
       <DependentUpon>RunHistoryView.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\RunTargetTracker.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\RunTargetTracker.Designer.cs">
+      <DependentUpon>RunTargetTracker.cs</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -181,9 +187,7 @@
     </Compile>
     <Compile Include="Settings.cs" />
     <Compile Include="Resources\VSImage.cs" />
-    <Compile Include="Stuff\CoverageReportRunHistory.cs" />
     <Compile Include="Stuff\CoverageReportWrapper.cs" />
-    <Compile Include="Stuff\HistoryCollector.cs" />
     <Compile Include="Stuff\HtmlPreview.cs" />
     <Compile Include="Stuff\ImageSelector.cs" />
     <Compile Include="Stuff\MethodSort.cs" />
@@ -455,6 +459,10 @@
     <EmbeddedResource Include="Features\Views\RunHistoryView.resx">
       <SubType>Designer</SubType>
       <DependentUpon>RunHistoryView.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\RunTargetTracker.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>RunTargetTracker.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\VSObject\VSObject_MethodFriend_S.bmp" />
     <EmbeddedResource Include="Resources\VSObject\VSObject_MethodPrivate_S.bmp" />

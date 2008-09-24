@@ -29,7 +29,7 @@ namespace PartCover.Browser.Stuff
             return assemblyList.ToArray();
         }
 
-        public void build(IProgressTracker tracker)
+        public void build()
         {
             foreach (string asmName in CoverageReportHelper.GetAssemblies(report))
             {
@@ -93,6 +93,21 @@ namespace PartCover.Browser.Stuff
         public void forEachBlock(Action<CoverageReport.InnerBlock> blockReceiver)
         {
             report.forEachInnerBlock(blockReceiver);
+        }
+
+        public ICollection<CoverageReport.RunHistoryMessage> getRunHistory()
+        {
+            return report.runHistory;
+        }
+
+        public ICollection<CoverageReport.RunLogMessage> getLogEvents()
+        {
+            return report.runLog;
+        }
+
+        public int? getExitCode()
+        {
+            return report.ExitCode;
         }
     }
 }

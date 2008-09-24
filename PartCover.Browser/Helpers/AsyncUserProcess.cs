@@ -2,10 +2,26 @@ using System;
 using System.Threading;
 using System.Windows.Forms;
 using PartCover.Framework;
+using PartCover.Browser.Api;
+using PartCover.Browser.Dialogs;
 
 namespace PartCover.Browser.Helpers
 {
-    internal abstract class AsyncUserProcess<T> where T : AsyncUserProcessForm, IProgressCallback, new()
+    internal class TinyAsyncUserProcess : AsyncUserProcess<SmallAsyncUserForm, IProgressTracker>
+    {
+        Action<IProgressTracker> method;
+        public Action<IProgressTracker> Action {
+            get { return method; }
+            set { method = value; }
+        }
+
+        protected override void doWork()
+        {
+            Action(Tracker);
+        }
+    }
+
+    internal abstract class AsyncUserProcess<T, D> where T : AsyncUserProcessForm, D, new()
     {
         private T progressForm;
 
@@ -15,17 +31,10 @@ namespace PartCover.Browser.Helpers
             get { return lastException; }
         }
 
-        private IProgressCallback progressCallback;
-        protected IProgressCallback Callback
+        private D progressTracker;
+        protected D Tracker
         {
-            get { return progressCallback; }
-        }
-
-        private IProgressCallback listener;
-        public IProgressCallback Listener
-        {
-            get { return listener; }
-            set { listener = null; }
+            get { return progressTracker; }
         }
 
         protected abstract void doWork();
@@ -47,12 +56,12 @@ namespace PartCover.Browser.Helpers
         {
             using (progressForm = new T())
             {
-                progressCallback = progressForm;
+                progressTracker = progressForm;
 
                 progressForm.executable = executeThread;
                 progressForm.ShowDialog(owner);
 
-                progressCallback = null;
+                progressTracker = default(D);
             }
 
             if (lastException != null)

@@ -14,6 +14,8 @@ class MessagePipe
 
 	ITransferrable* ResolveMessage(MessageType type);
 
+	HRESULT WaitHeader(ITransferrable* &message);
+
 public:
     MessagePipe(void);
     ~MessagePipe(void);
@@ -31,12 +33,12 @@ public:
 	bool write(String value);
 	bool read(String* value);
 
+
 public:
 
 	HRESULT SetMessageMap(ITransferrableFactory* map[], size_t mapLen);
 
 	HRESULT Wait(ITransferrable* &message);
-	HRESULT WaitHeader(ITransferrable* &message);
 
 	HRESULT Send(ITransferrable &message);
 };

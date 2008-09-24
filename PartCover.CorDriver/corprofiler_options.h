@@ -20,10 +20,12 @@ private:
 
 typedef Option<String> StringOption;
 typedef Option<int> IntOption;
+typedef Option<bool> BoolOption;
 
 class CorProfilerOptions
 {
     StringOption m_logFile;
+	BoolOption m_usePipe;
     IntOption m_logLevel;
 
 public:
@@ -32,6 +34,8 @@ public:
 
     void InitializeFromEnvironment();
     void DumpOptions();
+
+	bool UsePipeLogging() const { return m_usePipe.is_set() && m_usePipe.get(); };
 };
 
 

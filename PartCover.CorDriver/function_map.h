@@ -10,6 +10,8 @@ __interface IFunctionMapWalker : IUnknown {
     HRESULT Function(/*[in]*/ FunctionID funcId, /*[in]*/ BSTR className, /*[in]*/ BSTR functionName);
 };
 
+interface IConnectorActionCallback;
+
 #pragma pack(push)
 #pragma pack(1)
 
@@ -26,9 +28,13 @@ class FunctionMap : public ITransferrable
 
     FunctionInfoArray m_data;
 
+	IConnectorActionCallback* m_callback;
+
 public:
 
     void Register(FunctionID func, ICorProfilerInfo* info);
+
+	void SetCallback(IConnectorActionCallback* callback) { m_callback = callback; }
 
     void Walk(IFunctionMapWalker*);
 

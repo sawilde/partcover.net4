@@ -87,14 +87,15 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ConnectorActionCallback.cs" />
     <Compile Include="Logging.cs" />
+    <Compile Include="ProcessCallback.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Connector.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="IProgressCallback.cs" />
     <Compile Include="Stuff\IVisitable.cs" />
     <Compile Include="Stuff\Methods.cs" />
     <Compile Include="Stuff\Types.cs" />

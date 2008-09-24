@@ -86,9 +86,9 @@ namespace CorHelper {
 		if(S_OK != mdImport->GetTypeRefProps(tr, NULL, NULL, 0, &bufferSize))
 			return String();
 		DynamicArray<WCHAR> buffer(bufferSize + 1);
-		if(S_OK != mdImport->GetTypeRefProps(tr, NULL, buffer, buffer.size(), &bufferSize))
+		if(S_OK != mdImport->GetTypeRefProps(tr, NULL, buffer, (ULONG)buffer.size(), &bufferSize))
 			return String();
-		return buffer;
+		return String(buffer.ptr(), buffer.size());
 	}
 
 	struct UncompressHelper 
