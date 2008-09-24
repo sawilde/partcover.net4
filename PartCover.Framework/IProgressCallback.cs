@@ -1,0 +1,4 @@
+namespace PartCover.Framework
+{
+
+}
