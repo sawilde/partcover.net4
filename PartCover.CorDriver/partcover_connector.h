@@ -19,6 +19,8 @@ protected:
 	int m_targetExitCode;
 	bool m_targetExitCodeSet;
 
+	bool m_useFileLogging;
+	bool m_usePipeLogging;
     int m_driverLogging;
 	String m_logFile;
 
@@ -27,13 +29,18 @@ protected:
     Rules m_rules;
     FunctionMap m_functions;
     InstrumentResults m_instrumentResults;
+	LogMessage m_logMessage;
 
 public:
     PartCoverConnector2(void);
     ~PartCoverConnector2(void);
 
     STDMETHOD(StartTarget)(BSTR targetPath, BSTR targetWorkingDir, BSTR targetArguments, VARIANT_BOOL redirectOutput, IConnectorActionCallback* callback);
-    STDMETHOD(SetVerbose)(INT logLevel);
+
+	STDMETHOD(put_LoggingLevel)(INT logLevel) { m_driverLogging = logLevel; return S_OK; }
+	STDMETHOD(put_FileLoggingEnable)(VARIANT_BOOL enable) { m_useFileLogging = enable == VARIANT_TRUE; return S_OK; }
+	STDMETHOD(put_PipeLoggingEnable)(VARIANT_BOOL enable) { m_usePipeLogging = enable == VARIANT_TRUE; return S_OK; }
+
     STDMETHOD(EnableOption)(ProfilerMode mode);
     STDMETHOD(WaitForResults)(VARIANT_BOOL delayClose, IConnectorActionCallback* callback);
     STDMETHOD(CloseTarget)();

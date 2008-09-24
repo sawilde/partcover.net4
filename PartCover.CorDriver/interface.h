@@ -95,6 +95,8 @@ __interface IConnectorActionCallback : IUnknown
 	HRESULT FunctionsCount([in] size_t count);
 	HRESULT FunctionsReceiveStat([in] size_t index);
 	HRESULT FunctionsReceiveEnd();
+
+	HRESULT LogMessage([in] INT threadId, [in] LONG tick, [in] BSTR message);
 };
 
 #ifndef REMOVE_ATTRIBUTES
@@ -108,7 +110,11 @@ __interface IConnectorActionCallback : IUnknown
 __interface IPartCoverConnector2 
 {
     HRESULT StartTarget([in] BSTR targetPath, [in] BSTR targetWorkingDir, [in] BSTR targetArguments, [in] VARIANT_BOOL redirectOutput, [in, optional] IConnectorActionCallback* callback);
-    HRESULT SetVerbose([in] INT logLevel);
+
+    [propput] HRESULT LoggingLevel([in] INT logLevel);
+	[propput] HRESULT FileLoggingEnable([in] VARIANT_BOOL exitCode);
+	[propput] HRESULT PipeLoggingEnable([in] VARIANT_BOOL exitCode);
+
     HRESULT EnableOption([in] ProfilerMode mode);
     HRESULT WaitForResults([in] VARIANT_BOOL delayClose, [in, optional] IConnectorActionCallback* callback);
     HRESULT CloseTarget();

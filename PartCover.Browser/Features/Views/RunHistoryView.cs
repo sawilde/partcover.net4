@@ -7,6 +7,9 @@ using System.Text;
 using System.Windows.Forms;
 using PartCover.Browser.Api;
 using System.IO;
+using PartCover.Framework.Walkers;
+using PartCover.Framework;
+using System.Globalization;
 
 namespace PartCover.Browser.Features.Views
 {
@@ -18,182 +21,136 @@ namespace PartCover.Browser.Features.Views
             lbItems.DisplayMember = "Text";
         }
 
-        public override void attach(IServiceContainer container)
+        public override void attach(IServiceContainer container, IProgressTracker tracker)
         {
-            base.attach(container);
-
-            Services.getService<ICoverageReportService>().RunHistory.ItemAdded += HistoryItemAdded;
-            Services.getService<ICoverageReportService>().RunHistory.Cleanup += HistoryCleanup;
-            Services.getService<ICoverageReportService>().RunHistory.ExitCodeChanged += HistoryExitCodeChanged;
-            Services.getService<ICoverageReportService>().RunHistory.DriverLogChanged += HistoryDriverLogChanged;
-
-            setData(Services.getService<ICoverageReportService>().RunHistory);
+            base.attach(container, tracker);
+            tracker.setMessage("Load history data for view");
+            setData(Services.getService<ICoverageReportService>().Report, tracker);
         }
 
-        public override void detach(IServiceContainer container)
+        public override void detach(IServiceContainer container, IProgressTracker tracker)
         {
+            tracker.setMessage("Unload history data");
             removeItems();
-
-            Services.getService<ICoverageReportService>().RunHistory.DriverLogChanged -= HistoryDriverLogChanged;
-            Services.getService<ICoverageReportService>().RunHistory.ExitCodeChanged -= HistoryExitCodeChanged;
-            Services.getService<ICoverageReportService>().RunHistory.Cleanup -= HistoryCleanup;
-            Services.getService<ICoverageReportService>().RunHistory.ItemAdded -= HistoryItemAdded;
-
-            base.detach(container);
+            base.detach(container, tracker);
         }
 
-        delegate void ItemArrayDelegate(IRunHistory history);
-        private void setData(IRunHistory history)
-        {
-            if (InvokeRequired)
-            {
-                Invoke(new ItemArrayDelegate(setData), history); return;
+        private struct Counter {
+            private int step;
+            private int current;
+
+            public Counter(int totalCount) {
+                this.step = totalCount / 10;
+                this.step = step == 0 ? 1 : step;
+                this.current = 0;
             }
 
-            foreach (HistoryItem item in history.Items)
-                lbItems.Items.Add(new HistoryItemWrapper(item));
-
-            setExitCode(history);
-            setLogContent(history.DriverLog);
+            public bool next() { current++; return atPoint(); }
+            public bool atPoint() { return 0 == current % step; }
         }
 
-        private delegate void SString(string value);
-        private void setLogContent(string fileName)
+        private void setData(ICoverageReport report, IProgressTracker tracker)
         {
-            if (InvokeRequired)
+            if (report == null)
             {
-                Invoke(new SString(setLogContent), fileName);
+                removeItems();
                 return;
             }
 
+            Counter counter;
+            setExitCode(report.getExitCode());
+            
+            ICollection<CoverageReport.RunHistoryMessage> history = report.getRunHistory();
+            counter = new Counter(history.Count);
+
+            tracker.queueBegin("Load run history ");
+            foreach (CoverageReport.RunHistoryMessage item in history)
+            {
+                addHistoryItem(new HistoryItemWrapper(item));
+                if (counter.next())
+                {
+                    tracker.queuePush(".");
+                }
+            }
+            tracker.queueEnd(string.Empty);
+
+            ICollection<CoverageReport.RunLogMessage> log = report.getLogEvents();
+            counter = new Counter(log.Count);
+
+            tracker.queueBegin("Load log history ");
+            foreach (CoverageReport.RunLogMessage item in log)
+            {
+                addLogItem(item);
+                if (counter.next())
+                {
+                    tracker.queuePush(".");
+                }
+            }
+            tracker.queueEnd(string.Empty);
+        }
+
+        private delegate void AddHistoryItem(HistoryItemWrapper historyItemWrapper);
+        private void addHistoryItem(HistoryItemWrapper historyItemWrapper)
+        {
+            if (InvokeRequired) {
+                Invoke(new AddHistoryItem(addHistoryItem), historyItemWrapper);
+                return;
+            }
+
+            lbItems.Items.Add(historyItemWrapper);
+        }
+
+        private delegate void AddLogItemDelegate(CoverageReport.RunLogMessage item);
+        private void addLogItem(CoverageReport.RunLogMessage item)
+        {
+            if (InvokeRequired)
+            {
+                Invoke(new AddLogItemDelegate(addLogItem), item);
+                return;
+            }
+
+            tbLog.AppendText(string.Format(CultureInfo.CurrentCulture,
+                 "[{0,6}][{1,6}]{2}{3}",
+                 item.ThreadId, item.MsOffset, item.Message, Environment.NewLine));
+        }
+
+        private delegate void SetExitCodeDelegate(int? exitCode);
+        private void setExitCode(int? exitCode)
+        {
+            if (InvokeRequired) {
+                Invoke(new SetExitCodeDelegate(setExitCode), exitCode);
+                return;
+            }
+
+            lbExitCode.Text = string.Format("Process exit code: {0}", 
+                !exitCode.HasValue ? "undefined" : exitCode.Value.ToString());
             tbLog.Text = string.Empty;
-            tbLog.AppendText("## information from " + fileName);
-            tbLog.AppendText(Environment.NewLine);
-            tbLog.AppendText(Environment.NewLine);
-            tbLog.Text = File.Exists(fileName) ? File.ReadAllText(fileName, Encoding.BigEndianUnicode) : string.Empty;
-        }
-
-        private void setExitCode(IRunHistory history)
-        {
-            if (lbExitCode.InvokeRequired)
-            {
-                Invoke(new ItemArrayDelegate(setExitCode), history);
-                return;
-            }
-
-            lbExitCode.Text = string.Format("Process exit code: {0}", !history.ExitCode.HasValue ? "undefined" : history.ExitCode.Value.ToString());
         }
 
         private void removeItems()
         {
             if (InvokeRequired)
             {
-                Invoke(new MethodInvoker(removeItems)); return;
-            }
-            lbItems.Items.Clear();
-        }
-
-        void HistoryExitCodeChanged(object sender, EventArgs e)
-        {
-            setExitCode((IRunHistory)sender);
-        }
-
-
-        private void HistoryCleanup(object sender, HistoryItemEventArgs e)
-        {
-            if (InvokeRequired)
-            {
-                Invoke(new EventHandler<HistoryItemEventArgs>(HistoryCleanup), sender, e);
+                Invoke(new MethodInvoker(removeItems));
                 return;
             }
 
             lbItems.Items.Clear();
-        }
-
-        private void HistoryItemAdded(object sender, HistoryItemEventArgs e)
-        {
-            if (InvokeRequired)
-            {
-                Invoke(new EventHandler<HistoryItemEventArgs>(HistoryItemAdded), sender, e);
-                return;
-            }
-
-            lbItems.Items.Add(new HistoryItemWrapper(e.Item));
-        }
-
-        private void HistoryDriverLogChanged(object sender, EventArgs e)
-        {
-            setLogContent(((IRunHistory)sender).DriverLog);
+            tbLog.Text = string.Empty;
         }
 
         public class HistoryItemWrapper
         {
-            readonly HistoryItem item;
-            public HistoryItemWrapper(HistoryItem item)
+            readonly CoverageReport.RunHistoryMessage item;
+            public HistoryItemWrapper(CoverageReport.RunHistoryMessage item)
             {
                 this.item = item;
             }
 
             public string Text
             {
-                get { return item.Created.ToLongTimeString() + " " + item.Message; }
+                get { return item.Time.ToLongTimeString() + " " + item.Message; }
             }
-        }
-
-        private void btnSave_Click(object sender, EventArgs e)
-        {
-            if (sfd.ShowDialog(this) != DialogResult.OK)
-                return;
-            File.WriteAllText(sfd.FileName, GetPaneText());
-        }
-
-        private void btnLoad_Click(object sender, EventArgs e)
-        {
-            if (ofd.ShowDialog(this) != DialogResult.OK)
-                return;
-            SetPaneText(File.ReadAllText(ofd.FileName));
-        }
-
-        private void SetPaneText(string text)
-        {
-            if (tcPanes.SelectedTab == tpLog)
-            {
-                tbLog.Text = text;
-                return;
-            }
-
-            if (tcPanes.SelectedTab == tpMessages)
-            {
-                StringReader read = new StringReader(text);
-                while (null != (text = read.ReadLine()))
-                {
-                    HistoryItem item = new HistoryItem();
-                    item.Created = DateTime.Now;
-                    item.Message = text;
-                    lbItems.Items.Add(new HistoryItemWrapper(item));
-                }
-                return;
-            }
-        }
-
-        private string GetPaneText()
-        {
-            if (tcPanes.SelectedTab == tpLog)
-            {
-                return tbLog.Text;
-            }
-
-            if (tcPanes.SelectedTab == tpMessages)
-            {
-                StringBuilder builder = new StringBuilder();
-                foreach (HistoryItemWrapper item in lbItems.Items)
-                {
-                    builder.AppendLine(item.Text);
-                }
-                return builder.ToString();
-            }
-
-            return string.Empty;
         }
     }
 }

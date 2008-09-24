@@ -26,18 +26,13 @@ bool FunctionMap::SendData(MessagePipe& pipe)
 
 bool FunctionMap::ReceiveData(MessagePipe& pipe) 
 {
-	return ReceiveData(pipe, 0);
-}
-
-bool FunctionMap::ReceiveData(MessagePipe& pipe, IConnectorActionCallback* callback) 
-{
-	if (callback) callback->FunctionsReceiveBegin();
+	if (m_callback) m_callback->FunctionsReceiveBegin();
 
 	FunctionInfoArray::size_type func_count;
 	if(!pipe.read(&func_count))
 		return false;
 
-	if (callback) callback->FunctionsCount(func_count);
+	if (m_callback) m_callback->FunctionsCount(func_count);
 
 	size_t step = max(1, func_count / 100);
 
@@ -50,10 +45,10 @@ bool FunctionMap::ReceiveData(MessagePipe& pipe, IConnectorActionCallback* callb
 			&& pipe.read(&func_info.functionName);
 		m_data[func_info.functionId] = func_info;
 
-		if (i % step == 0 && callback) callback->FunctionsReceiveStat(i);
+		if (i % step == 0 && m_callback) m_callback->FunctionsReceiveStat(i);
     }
 
-	if (callback) callback->FunctionsReceiveEnd();
+	if (m_callback) m_callback->FunctionsReceiveEnd();
 
     return true;
 }

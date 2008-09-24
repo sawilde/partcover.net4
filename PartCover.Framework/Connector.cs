@@ -8,30 +8,42 @@ namespace PartCover.Framework
     {
         readonly PartCoverConnector2Class connector = new PartCoverConnector2Class();
 
-        public Connector() { }
-
-        public event Action<Connector> AfterStart;
-
-        private IProgressCallback outWriter;
-        public IProgressCallback Out
-        {
-            set { outWriter = value; }
-            get { return outWriter ?? new ProgressCallbackStub(); }
+        public Connector() {
+            actionWriter = new ConnectorActionCallback(this);
+            processCallback = new ProcessCallback();
+            processCallback.OnMessage += processCallbackOnMessage;
         }
 
-        private IConnectorActionCallback actionWriter;
-        public IConnectorActionCallback ActionCallback
+        public event EventHandler<EventArgs<CoverageReport.RunLogMessage>> OnEventMessage;
+
+        private ProcessCallback processCallback;
+        public ProcessCallback ProcessCallback
         {
-            set { actionWriter = value; }
+            get { return processCallback; }
+        }
+
+        private ConnectorActionCallback actionWriter;
+        internal ConnectorActionCallback ActionCallback
+        {
             get { return actionWriter; }
         }
 
         public void SetLogging(Logging logging)
         {
-            connector.SetVerbose((int)logging);
+            connector.LoggingLevel = (int)logging;
         }
 
-        private readonly InstrumentedBlocksWalkerInner blockWalker = new InstrumentedBlocksWalkerInner();
+        public void UseFileLogging(bool logging)
+        {
+            connector.FileLoggingEnable = logging;
+        }
+
+        public void UsePipeLogging(bool logging)
+        {
+            connector.PipeLoggingEnable = logging;
+        }
+
+        private InstrumentedBlocksWalkerInner blockWalker;
         public InstrumentedBlocksWalker BlockWalker
         {
             get { return blockWalker; }
@@ -39,6 +51,8 @@ namespace PartCover.Framework
 
         public void StartTarget(string path, string directory, string args, bool redirectOutput, bool delayClose)
         {
+            blockWalker = new InstrumentedBlocksWalkerInner();
+
             // set mode
             connector.EnableOption(ProfilerMode.COUNT_COVERAGE);
 
@@ -53,18 +67,29 @@ namespace PartCover.Framework
                 directory = Directory.GetCurrentDirectory();
 
             // start target
-            Out.writeStatus("Start target");
-            connector.StartTarget(path, directory, args, redirectOutput, new ActionCallbackStub(ActionCallback));
-
-            if (AfterStart != null) AfterStart(this);
+            ProcessCallback.writeStatus("Start target");
+            connector.StartTarget(path, directory, args, redirectOutput, actionWriter);
 
             // wait results
-            Out.writeStatus("Wait results");
-            connector.WaitForResults(delayClose, new ActionCallbackStub(ActionCallback));
+            ProcessCallback.writeStatus("Wait results");
+            connector.WaitForResults(delayClose, ActionCallback);
 
             // walk results
-            Out.writeStatus("Walk results");
+            ProcessCallback.writeStatus("Walk results");
             connector.WalkInstrumentedResults(blockWalker);
+
+            if (connector.HasTargetExitCode) blockWalker.Report.ExitCode = connector.TargetExitCode;
+        }
+
+        internal void OnLogMessage(CoverageReport.RunLogMessage message)
+        {
+            blockWalker.Report.runLog.Add(message);
+            if (OnEventMessage != null) OnEventMessage(this, new EventArgs<CoverageReport.RunLogMessage>(message));
+        }
+
+        private void processCallbackOnMessage(object sender, EventArgs<CoverageReport.RunHistoryMessage> e)
+        {
+            blockWalker.Report.runHistory.Add(e.Data);
         }
 
         public void CloseTarget()
@@ -111,5 +136,6 @@ namespace PartCover.Framework
                 return connector.LogFilePath;
             }
         }
+
     }
 }

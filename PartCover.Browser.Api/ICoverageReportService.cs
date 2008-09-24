@@ -11,12 +11,11 @@ namespace PartCover.Browser.Api
         event EventHandler<EventArgs> ReportOpened;
 
         ICoverageReport Report { get;}
-        IRunHistory RunHistory { get;}
 
-        void loadFromFile(string fileName, IProgressTracker tracker);
+        void loadFromFile(string fileName);
 
-        void saveReport(string fileName, IProgressTracker tracker);
+        void saveReport(string fileName);
 
-        void load(CoverageReport report, IProgressTracker tracker);
+        void load(CoverageReport report);
     }
 }

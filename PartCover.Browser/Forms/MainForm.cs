@@ -11,6 +11,7 @@ using PartCover.Framework.Stuff;
 using PartCover.Framework.Walkers;
 using PartCover.Browser.Api;
 using PartCover.Browser.Features;
+using PartCover.Browser.Helpers;
 
 namespace PartCover.Browser
 {
@@ -45,7 +46,9 @@ namespace PartCover.Browser
         {
             if (dlgOpen.ShowDialog(this) != DialogResult.OK)
                 return;
-            ServiceContainer.getService<ICoverageReportService>().loadFromFile(dlgOpen.FileName, new DummyProgressTracker());
+
+            CloseViews();
+            ServiceContainer.getService<ICoverageReportService>().loadFromFile(dlgOpen.FileName);
         }
 
         private void mmFileExit_Click(object sender, EventArgs e)
@@ -58,7 +61,7 @@ namespace PartCover.Browser
         {
             if (dlgSave.ShowDialog(this) != DialogResult.OK)
                 return;
-            ServiceContainer.getService<ICoverageReportService>().saveReport(dlgSave.FileName, new DummyProgressTracker());
+            ServiceContainer.getService<ICoverageReportService>().saveReport(dlgSave.FileName);
         }
 
         readonly RunTargetForm runTargetForm = new RunTargetForm();
@@ -78,14 +81,15 @@ namespace PartCover.Browser
             if (runTargetForm.ShowDialog() != DialogResult.OK)
                 return;
 
+            CloseViews();
+
             TargetRunner runner = new TargetRunner();
             runner.RunTargetForm = runTargetForm;
-            runner.RunHistory = serviceContainer.getService<ICoverageReportService>().RunHistory;
             runner.execute(this);
 
             try
             {
-                if (runner.Report.types.Length == 0)
+                if (runner.Report.types.Count == 0)
                 {
                     ShowInformation("Report is empty. Check settings and run target again.");
                     return;
@@ -106,7 +110,15 @@ namespace PartCover.Browser
             }
             else
             {
-                ServiceContainer.getService<ICoverageReportService>().load(runner.Report, new DummyProgressTracker());
+                ServiceContainer.getService<ICoverageReportService>().load(runner.Report);
+            }
+        }
+
+        private void CloseViews()
+        {
+            while (MdiChildren.Length > 0)
+            {
+                MdiChildren[0].Close();
             }
         }
 
@@ -158,8 +170,15 @@ namespace PartCover.Browser
             viewFactories.Remove(factory);
         }
 
-        public void showView(IReportViewFactory factory)
+        private delegate void ShowViewDelegate(IReportViewFactory factory);
+        private void showView(IReportViewFactory factory)
         {
+            if (InvokeRequired)
+            {
+                Invoke(new ShowViewDelegate(showView), factory);
+                return;
+            }
+
             ReportView view = viewFactories[factory];
             if (view == null)
             {
@@ -168,10 +187,16 @@ namespace PartCover.Browser
                 view.WindowState = FormWindowState.Maximized;
                 view.MdiParent = this;
                 view.Text = factory.ViewName;
-                view.attach(serviceContainer);
+
+                TinyAsyncUserProcess asyncProcess = new TinyAsyncUserProcess();
+                asyncProcess.Action = delegate(IProgressTracker tracker)
+                {
+                    view.attach(serviceContainer, tracker);
+                };
+                asyncProcess.execute(this);
 
                 view.FormClosed += delegate {
-                    view.detach(serviceContainer);
+                    view.detach(serviceContainer, new DummyProgressTracker());
                     viewFactories[factory] = null;
                 };
             }

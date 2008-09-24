@@ -2,7 +2,7 @@ using PartCover.Framework;
 
 namespace PartCover.Browser.Dialogs
 {
-    partial class SmallAsyncUserForm : IProgressCallback {
+    partial class SmallAsyncUserForm {
         /// <summary>
         /// Required designer variable.
         /// </summary>

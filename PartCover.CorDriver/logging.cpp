@@ -1,4 +1,7 @@
 #include "StdAfx.h"
+#include "interface.h"
+#include "message.h"
+#include "message_pipe.h"
 #include "logging.h"
 #include "helpers.h"
 #include <string>
@@ -21,14 +24,23 @@ DriverLog& DriverLog::get() {
 
 void DriverLog::Initialize(const String& file)
 {
+	if (file.size() == 0)
+		return;
+	
 	log_fp = CreateFile(file.c_str(), GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_FLAG_WRITE_THROUGH, NULL);
-	if (log_fp != 0) {
+	if (log_fp != INVALID_HANDLE_VALUE) {
 #ifdef _UNICODE
 		DWORD bytesWritten;
 		const char ECS2_Signature[] = { (char)0xFF, (char)0xFE };
 		WriteFile(log_fp, ECS2_Signature, ARRAYSIZE(ECS2_Signature), &bytesWritten, NULL);
 #endif
 	}
+	
+}
+
+void DriverLog::SetPipe(MessagePipe* pipe)
+{
+	m_pipe = pipe;
 }
 
 void DriverLog::Deinitialize()
@@ -37,16 +49,25 @@ void DriverLog::Deinitialize()
 		return;
 
     CloseHandle(log_fp);
+
     log_fp = INVALID_HANDLE_VALUE;
+	m_pipe = 0;
 }
 
-void DriverLog::WriteBuffer(LPCTSTR message, DWORD length)
+void DriverLog::WriteFileLog(LPCTSTR message, DWORD length)
 {
-	if (!Active() || message == 0)
+	if (log_fp == INVALID_HANDLE_VALUE || message == 0)
 		return;
 
-    DWORD messageWritten;
+	DWORD messageWritten;
     WriteFile(log_fp, message, sizeof(TCHAR)*length, &messageWritten, NULL);
+}
+
+void DriverLog::WritePipeLog(LPCTSTR message, DWORD length)
+{
+	if (m_pipe == 0 || message == 0 || length == 0)
+		return;
+	m_pipe->Send(LogMessage(String(message, length), ::GetTickCount() - startTick));
 }
 
 void DriverLog::WriteLine(LPCTSTR message, ...)
@@ -58,7 +79,7 @@ void DriverLog::WriteLine(LPCTSTR message, ...)
     
     static TCHAR lineStart[512];
     int lineStartSize = _stprintf_s(lineStart, 512, _T("[%4d][%6d]"), ::GetCurrentThreadId(), ::GetTickCount() - startTick);
-    WriteBuffer(lineStart, lineStartSize);
+    WriteFileLog(lineStart, lineStartSize);
 
     va_list args;
     va_start( args, message );
@@ -67,9 +88,10 @@ void DriverLog::WriteLine(LPCTSTR message, ...)
     if (characters != -1) {
 		DynamicArray<TCHAR> buffer(characters + 5);
         if(-1 != _vstprintf_s(buffer, characters + 5, message, args)) {
+			WritePipeLog(buffer, characters);
             buffer[characters] = _T('\r');
             buffer[characters + 1] = _T('\n');
-            WriteBuffer(buffer, characters + 2);
+            WriteFileLog(buffer, characters + 2);
         }
     }
     
@@ -86,7 +108,7 @@ void DriverLog::WriteError(LPCTSTR className, LPCTSTR methodName, LPCTSTR messag
 
 	static TCHAR lineStart[512];
     int lineStartSize = _stprintf_s(lineStart, 512, _T("[%4d][%6d][ERROR]<%s.%s> "), ::GetCurrentThreadId(), ::GetTickCount() - startTick, className, methodName);
-    WriteBuffer(lineStart, lineStartSize);
+    WriteFileLog(lineStart, lineStartSize);
 
     va_list args;
     va_start( args, message );
@@ -95,9 +117,10 @@ void DriverLog::WriteError(LPCTSTR className, LPCTSTR methodName, LPCTSTR messag
     if (characters != -1) {
 		DynamicArray<TCHAR> buffer(characters + 5);
         if(-1 != _vstprintf_s(buffer, characters + 5, message, args)) {
+			WritePipeLog(buffer, characters);
             buffer[characters] = _T('\r');
             buffer[characters + 1] = _T('\n');
-            WriteBuffer(buffer, characters + 2);
+            WriteFileLog(buffer, characters + 2);
         }
     }
 
@@ -119,7 +142,7 @@ void DriverLog::WriteInfo(int infoLevel, LPCTSTR message, ...)
     static TCHAR lineStart[32];
     int lineStartSize = _stprintf_s(lineStart, 32, _T("[%4d][%6d] "), ::GetCurrentThreadId(), ::GetTickCount() - startTick);
     if (lineStartSize != -1)
-        WriteBuffer(lineStart, lineStartSize);
+        WriteFileLog(lineStart, lineStartSize);
 
     va_list args;
     va_start( args, message );
@@ -129,9 +152,10 @@ void DriverLog::WriteInfo(int infoLevel, LPCTSTR message, ...)
 	{
 		DynamicArray<TCHAR> buffer(characters + 5);
         if(-1 != _vstprintf_s(buffer, characters + 5, message, args)) {
+			WritePipeLog(buffer, characters);
             buffer[characters] = _T('\r');
             buffer[characters + 1] = _T('\n');
-            WriteBuffer(buffer, characters + 2);
+            WriteFileLog(buffer, characters + 2);
         }
     }
     

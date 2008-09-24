@@ -21,37 +21,30 @@ namespace PartCover.Browser.Features
             get { return reportWrapper; }
         }
 
-        readonly CoverageReportRunHistory history = new CoverageReportRunHistory();
-        public IRunHistory RunHistory
+        public void loadFromFile(string fileName)
         {
-            get { return history; }
-        }
-
-        public void loadFromFile(string fileName, IProgressTracker tracker)
-        {
-            history.clear();
             CoverageReport report = new CoverageReport();
             using (StreamReader reader = new StreamReader(fileName))
             {
                 CoverageReportHelper.ReadReport(report, reader);
             }
-            setReport(report, tracker);
+            setReport(report);
         }
 
-        private void setReport(CoverageReport report, IProgressTracker tracker)
+        private void setReport(CoverageReport report)
         {
             if (Report != null && ReportClosing != null)
                 ReportClosing(this, EventArgs.Empty);
 
             CoverageReportWrapper wrapper = new CoverageReportWrapper(report);
-            wrapper.build(tracker);
+            wrapper.build();
 
             reportWrapper = wrapper;
             if (Report != null && ReportOpened != null)
                 ReportOpened(this, EventArgs.Empty);
         }
 
-        public void saveReport(string fileName, IProgressTracker tracker)
+        public void saveReport(string fileName)
         {
             using (StreamWriter writer = new StreamWriter(fileName))
             {
@@ -59,9 +52,9 @@ namespace PartCover.Browser.Features
             }
         }
 
-        public void load(CoverageReport report, IProgressTracker tracker)
+        public void load(CoverageReport report)
         {
-            setReport(report, tracker);
+            setReport(report);
         }
 
         public void attach(IServiceContainer container) { }

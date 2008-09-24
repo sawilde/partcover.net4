@@ -1,10 +1,13 @@
 #pragma once
 
+class MessagePipe;
+
 class DriverLog
 {
     DWORD startTick;
     CCriticalSection m_cs;
     int m_infoLevel;
+	MessagePipe* m_pipe;
 
     DriverLog(void);
     ~DriverLog(void);
@@ -12,7 +15,8 @@ public:
     static DriverLog& get();
 
     void Initialize(const String& fileName);
-    bool Active() const { return log_fp != INVALID_HANDLE_VALUE; }
+	void SetPipe(MessagePipe* pipe);
+    bool Active() const { return log_fp != INVALID_HANDLE_VALUE && m_pipe != 0; }
     void Deinitialize();
 
     void WriteLine(LPCTSTR message, ...);
@@ -25,7 +29,8 @@ public:
     bool CanWrite(int infoLevel) const;
 
 private:
-    void WriteBuffer(LPCTSTR message, DWORD length);
+    void WriteFileLog(LPCTSTR message, DWORD length);
+	void WritePipeLog(LPCTSTR message, DWORD length);
     
 
     HANDLE log_fp;

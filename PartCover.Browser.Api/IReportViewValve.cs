@@ -8,6 +8,5 @@ namespace PartCover.Browser.Api
     {
         void add(IReportViewFactory factory);
         void remove(IReportViewFactory factory);
-        void showView(IReportViewFactory factory);
     }
 }

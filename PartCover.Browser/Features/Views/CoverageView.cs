@@ -31,16 +31,18 @@ namespace PartCover.Browser.Features.Views
             base.OnPaint(pe);
         }
 
-        public override void attach(IServiceContainer container)
+        public override void attach(IServiceContainer container, IProgressTracker tracker)
         {
-            base.attach(container);
+            base.attach(container, tracker);
+            tracker.setMessage("Advise for selection events");
             Services.getService<IReportItemSelectionService>().SelectionChanged += ReportItemSelectionChanged;
         }
 
-        public override void detach(IServiceContainer container)
+        public override void detach(IServiceContainer container, IProgressTracker tracker)
         {
+            tracker.setMessage("Unadvise for selection events");
             Services.getService<IReportItemSelectionService>().SelectionChanged -= ReportItemSelectionChanged;
-            base.detach(container);
+            base.detach(container, tracker);
         }
 
         void ReportItemSelectionChanged(object sender, EventArgs e)

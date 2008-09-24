@@ -14,5 +14,11 @@ namespace PartCover.Browser.Api
         string getFilePath(uint file);
 
         void forEachBlock(Action<CoverageReport.InnerBlock> blockReceiver);
+
+        ICollection<CoverageReport.RunHistoryMessage> getRunHistory();
+
+        ICollection<CoverageReport.RunLogMessage> getLogEvents();
+
+        int? getExitCode();
     }
 }

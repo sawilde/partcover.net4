@@ -3,10 +3,18 @@ using PartCover.Browser.Helpers;
 using PartCover.Framework.Walkers;
 using PartCover.Browser.Api;
 using System;
+using PartCover.Framework;
+using PartCover.Browser.Forms;
 
 namespace PartCover.Browser.Stuff
 {
-    internal class TargetRunner : AsyncUserProcess<SmallAsyncUserForm>
+    internal interface IRunTargetProgressTracker : IProgressTracker
+    {
+        void add(CoverageReport.RunLogMessage runLogMessage);
+        void add(CoverageReport.RunHistoryMessage runHistoryMessage);
+    }
+
+    internal class TargetRunner : AsyncUserProcess<RunTargetTracker, IRunTargetProgressTracker>
     {
         private RunTargetForm runTargetForm;
         public RunTargetForm RunTargetForm
@@ -21,43 +29,61 @@ namespace PartCover.Browser.Stuff
             get { return report; }
         }
 
-        IRunHistory runHistory;
-        public IRunHistory RunHistory
-        {
-            get { return runHistory; }
-            set { runHistory = value; }
-        }
-
         protected override void doWork()
         {
-            Callback.writeStatus("Create connector");
-
             Framework.Connector connector = new Framework.Connector();
-            connector.Out = new HistoryCollector(Callback, runHistory);
-            connector.ActionCallback = new TargetRunnerCallback(connector.Out);
+            connector.ProcessCallback.OnMessage += connectorOnMessage;
+            connector.OnEventMessage += connectorOnEventMessage;
 
+            Tracker.setMessage("Create connector");
+
+            if (runTargetForm.InvokeRequired)
+            {
+                runTargetForm.Invoke(new InitializeConnectorDelegate(InitializeConnector), connector);
+            }
+            else
+            {
+                InitializeConnector(connector);
+            }
+
+
+            Tracker.setMessage("Store report");
+            report = connector.BlockWalker.Report;
+
+            Tracker.setMessage("Done");
+            connector.OnEventMessage -= connectorOnEventMessage;
+            connector.ProcessCallback.OnMessage -= connectorOnMessage;
+        }
+
+        delegate void InitializeConnectorDelegate(Connector connector);
+        private void InitializeConnector(Connector connector)
+        {
             foreach (string s in runTargetForm.IncludeItems) connector.IncludeItem(s);
             foreach (string s in runTargetForm.ExcludeItems) connector.ExcludeItem(s);
 
-            connector.AfterStart += new Action<Framework.Connector>(connector_AfterStart);
-
             connector.SetLogging(runTargetForm.LogLevel);
+            connector.UseFileLogging(false);
+            connector.UsePipeLogging(true);
             connector.StartTarget(
                 runTargetForm.TargetPath,
                 runTargetForm.TargetWorkingDir,
-                runTargetForm.TargetArgs, 
+                runTargetForm.TargetArgs,
                 false, false);
-
-            Callback.writeStatus("Store report");
-            report = connector.BlockWalker.Report;
-
-            Callback.writeStatus("Done");
-            runHistory.ExitCode = connector.TargetExitCode;
         }
 
-        private void connector_AfterStart(Framework.Connector connector)
+        private event EventHandler<EventArgs<CoverageReport.RunHistoryMessage>> OnMessage;
+        private event EventHandler<EventArgs<CoverageReport.RunLogMessage>> OnEventMessage;
+
+        void connectorOnEventMessage(object sender, EventArgs<CoverageReport.RunLogMessage> e)
         {
-            runHistory.DriverLog = connector.DriverLogFile;
+            if (OnEventMessage != null) OnEventMessage(this, e);
+            Tracker.add(e.Data);
+        }
+
+        void connectorOnMessage(object sender, EventArgs<CoverageReport.RunHistoryMessage> e)
+        {
+            if (OnMessage != null) OnMessage(this, e);
+            Tracker.add(e.Data);
         }
     }
 }
