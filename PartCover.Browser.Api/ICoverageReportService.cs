@@ -11,6 +11,7 @@ namespace PartCover.Browser.Api
         event EventHandler<EventArgs> ReportOpened;
 
         ICoverageReport Report { get;}
+        string ReportFileName { get;}
 
         void loadFromFile(string fileName);
 

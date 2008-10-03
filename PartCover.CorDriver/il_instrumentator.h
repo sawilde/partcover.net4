@@ -86,6 +86,8 @@ public:
     Instrumentator(Rules& rules);
     ~Instrumentator(void);
 
+	bool IsAssemblyAcceptable(const String& assemblyName) const;
+
     void InstrumentModule(ModuleID module, const String& moduleName, ICorProfilerInfo* profilerInfo, ISymUnmanagedBinder2* binder);
     void UnloadModule(ModuleID module);
 

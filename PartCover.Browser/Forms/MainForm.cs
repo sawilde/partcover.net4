@@ -140,21 +140,43 @@ namespace PartCover.Browser
         private void BuildTransformMenu()
         {
             Menu.MenuItemCollection items = miHtml.MenuItems;
-            foreach (string s in HtmlPreview.enumTransforms())
+            foreach (string transform in HtmlPreview.enumTransforms())
             {
                 MenuItem item = new MenuItem();
 
-                item.Text = s;
-                item.Click += delegate(object sender, EventArgs e)
+                item.Text = transform;
+
+                string transformName = transform;
+                item.Click += delegate
                 {
-                    MakeHtmlPreview(s);
+                    MakeHtmlPreview(transformName);
                 };
 
                 items.Add(item);
             }
         }
 
-        private void MakeHtmlPreview(string s) { }
+        private void MakeHtmlPreview(string transform)
+        {
+            if (ServiceContainer.getService<ICoverageReportService>().ReportFileName == null)
+            {
+                mmFileSaveAs.PerformClick();
+            }
+
+            if (ServiceContainer.getService<ICoverageReportService>().ReportFileName == null)
+                return;
+
+            TinyAsyncUserProcess asyncProcess = new TinyAsyncUserProcess();
+            asyncProcess.Action = delegate(IProgressTracker tracker)
+            {
+                HtmlPreview.DoTransform(tracker,
+                    ServiceContainer.getService<ICoverageReportService>().ReportFileName, 
+                    transform);
+            };
+
+            asyncProcess.execute(this);
+
+        }
 
         public void add(IReportViewFactory factory)
         {

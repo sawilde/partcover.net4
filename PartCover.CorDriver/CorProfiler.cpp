@@ -311,6 +311,15 @@ STDMETHODIMP CorProfiler::ModuleAttachedToAssembly(ModuleID module, AssemblyID a
     LOGINFO4(PROFILER_CALL_METHOD, "Module %X (%s) attached to assembly %X (%s)", 
         module, moduleName.length() == 0 ? _T("noname") : moduleName.c_str(),
         assembly, assemblyName.length() == 0 ? _T("noname") : assemblyName.c_str());
-    m_instrumentator.InstrumentModule( module, moduleName.c_str(), m_profilerInfo, m_binder );
+
+	if (!m_instrumentator.IsAssemblyAcceptable(assemblyName))
+	{
+		LOGINFO2(SKIP_BY_RULES, " module '%s' was skipped, because no include rule was specified for this assembly '%s'", 
+			moduleName.length() == 0 ? _T("noname") : moduleName.c_str(),
+			assemblyName.length() == 0 ? _T("noname") : assemblyName.c_str());
+		return S_OK;
+	}
+
+    m_instrumentator.InstrumentModule(module, moduleName.c_str(), m_profilerInfo, m_binder);
     return S_OK;   
 }

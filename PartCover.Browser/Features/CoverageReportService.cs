@@ -15,10 +15,16 @@ namespace PartCover.Browser.Features
         public event EventHandler<EventArgs> ReportClosing;
         public event EventHandler<EventArgs> ReportOpened;
 
+        string reportFileName;
         CoverageReportWrapper reportWrapper;
         public ICoverageReport Report
         {
             get { return reportWrapper; }
+        }
+
+        public string ReportFileName
+        {
+            get { return reportFileName; }
         }
 
         public void loadFromFile(string fileName)
@@ -29,6 +35,7 @@ namespace PartCover.Browser.Features
                 CoverageReportHelper.ReadReport(report, reader);
             }
             setReport(report);
+            reportFileName = fileName;
         }
 
         private void setReport(CoverageReport report)
@@ -39,6 +46,7 @@ namespace PartCover.Browser.Features
             CoverageReportWrapper wrapper = new CoverageReportWrapper(report);
             wrapper.build();
 
+            reportFileName = null;
             reportWrapper = wrapper;
             if (Report != null && ReportOpened != null)
                 ReportOpened(this, EventArgs.Empty);
@@ -49,6 +57,7 @@ namespace PartCover.Browser.Features
             using (StreamWriter writer = new StreamWriter(fileName))
             {
                 CoverageReportHelper.WriteReport(reportWrapper.Report, writer);
+                reportFileName = fileName;
             }
         }
 
