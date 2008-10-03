@@ -1,6 +1,8 @@
 #pragma once
 
 typedef std::list<String> StringArray;
+typedef CAtlRegExp<RegExpCharTraits> *RegexPtr;
+typedef std::map<String, RegexPtr> RegexMap;
 
 namespace RulesHelpers {
     String ExtractNamespace(const String& className);
@@ -19,6 +21,14 @@ class Rules : public ITransferrable
     StringArray m_includeRules;
     StringArray m_excludeRules;
 
+	static RegexMap m_regexMap;
+
+	static RegexPtr GetRegex(const String& regex);
+
+	static bool HasAttributeBasedRules(const StringArray& rules);
+	static bool IsAttributeBasedRule(const String& rule);
+	static bool IsTargetForRules(const String& target, const StringArray& rules, const mdTypeDef typeDef, IMetaDataImport *mdImport);
+
 public:
     Rules(void);
     ~Rules(void);
@@ -36,6 +46,7 @@ public:
 
     void Dump() const;
 
+	bool IsAssemblyIncludedInRules(const String& assembly) const;
     bool IsItemValidForReport(const String& assembly, const String& className, const mdTypeDef typeDef, IMetaDataImport *mdImport) const;
 
     void PrepareItemRules();

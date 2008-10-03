@@ -6,9 +6,9 @@
 #include "logging.h"
 #include "corhelper.h"
 
-#include <atlrx.h>
-typedef CAtlRECharTraitsW RegExpCharTraits;
 #define ATTRIBUTE_RULE_TAG _T("attribute:")
+
+RegexMap Rules::m_regexMap;
 
 namespace RulesHelpers {
     String ExtractNamespace(const String& className) {
@@ -140,7 +140,7 @@ void Rules::ExcludeItem(const String& item) {
 }
 
 bool Rules::CreateRuleFromItem(const String& item, String* rule) {
-	if (item.find(ATTRIBUTE_RULE_TAG) == 0)
+	if (IsAttributeBasedRule(item))
 	{
 		String whole = item.substr();
 		if (rule)
@@ -165,9 +165,9 @@ bool Rules::CreateRuleFromItem(const String& item, String* rule) {
     res.insert(res.begin(), _T('^'));
     res.insert(res.end(), _T('$'));
 
-    CAtlRegExp<RegExpCharTraits> re;
-    if (REPARSE_ERROR_OK != re.Parse( res.c_str() ))
-        return false;
+	if (0 == GetRegex(res))
+		return false;
+
     if (rule) 
         rule->swap(res);
     return rule ? rule->length() > 0 : res.length() > 0;
@@ -250,21 +250,25 @@ bool DoAttributesMatch(const String& rule, const mdTypeDef typeDef, IMetaDataImp
 	return found;
 }
 
-bool IsTargetForRules(const String& target, const StringArray& rules, 
-					  const mdTypeDef typeDef, IMetaDataImport *mdImport) {
+bool Rules::IsTargetForRules(const String& target, const StringArray& rules, 
+					  const mdTypeDef typeDef, IMetaDataImport *mdImport)
+{
 	// Process the non-attribute rules first, as they are faster to match.
     for (StringArray::const_iterator it = rules.begin(); it != rules.end(); ++it) {
-		if (it->find(ATTRIBUTE_RULE_TAG) == 0)
+		if (Rules::IsAttributeBasedRule(*it))
 			continue;
-        CAtlRegExp<RegExpCharTraits> reg;
-        if( REPARSE_ERROR_OK != reg.Parse( it->c_str() ) ) 
-            continue;
+
+        RegexPtr reg = Rules::GetRegex(*it);
+		if (0 == reg)
+			continue;
+
         CAtlREMatchContext<RegExpCharTraits> mcUrl;
-        if( reg.Match( target.c_str(), &mcUrl ) )
+        if( reg->Match( target.c_str(), &mcUrl ) )
             return true;
     }
+
 	for (StringArray::const_iterator it = rules.begin(); it != rules.end(); ++it) {
-		if (it->find(ATTRIBUTE_RULE_TAG) == 0)
+		if (Rules::IsAttributeBasedRule(*it))
 		{
 			if (DoAttributesMatch(it->substr(wcslen(ATTRIBUTE_RULE_TAG)), typeDef, mdImport))
 				return true;
@@ -285,3 +289,67 @@ bool Rules::IsItemValidForReport(const String& assembly, const String& className
     return false;
 }
 
+RegexPtr Rules::GetRegex(const String& regex)
+{
+	RegexMap::iterator it = m_regexMap.find(regex);
+	if (it != m_regexMap.end())
+	{
+		return it->second;
+	}
+
+	CAtlRegExp<RegExpCharTraits> reg;
+	if( REPARSE_ERROR_OK != reg.Parse( regex.c_str() ) ) {
+		return 0;
+	}
+
+	RegexPtr regPtr = new CAtlRegExp<RegExpCharTraits>();
+	regPtr->Parse(regex.c_str());
+
+	return m_regexMap[regex] = regPtr;
+}
+
+bool Rules::IsAttributeBasedRule(const String& rule)
+{
+	return rule.find(ATTRIBUTE_RULE_TAG) == 0;
+}
+
+bool Rules::HasAttributeBasedRules(const StringArray& rules)
+{
+	for (StringArray::const_iterator it = rules.begin(); it != rules.end(); ++it) {
+		if (IsAttributeBasedRule(*it))
+			return true;
+	}
+	return false;
+}
+
+String RemoveRuleClassPart(const String& rule)
+{
+	String::size_type ind = rule.find(_T(']'));
+	if (ind == String::npos)
+		return rule;
+	return rule.substr(0, ind + 1) + _T("$");
+}
+
+bool Rules::IsAssemblyIncludedInRules(const String& assembly) const
+{
+	if (HasAttributeBasedRules(m_includeRules))
+		return true;
+
+	String assemblyInBrackets = _T("[") + assembly + _T("]");
+	for (StringArray::const_iterator it = m_includeRules.begin(); it != m_includeRules.end(); ++it) {
+		if (IsAttributeBasedRule(*it))
+			continue;
+
+		String assemblyOnlyRule = RemoveRuleClassPart(*it);
+
+		RegexPtr reg = Rules::GetRegex(assemblyOnlyRule);
+		if (0 == reg)
+			continue;
+
+        CAtlREMatchContext<RegExpCharTraits> mcUrl;
+        if( reg->Match( assemblyInBrackets.c_str(), &mcUrl ) )
+            return true;
+	}
+	
+	return false;
+}

@@ -41,6 +41,7 @@
 #include <atltrace.h>
 #include <atlsync.h>
 #include <comutil.h>
+#include <atlrx.h>
 
 using namespace ATL;
 
@@ -53,6 +54,8 @@ using namespace ATL;
 #include <algorithm>
 #include <stdio.h>
 #include <stdarg.h>
+
+typedef CAtlRECharTraitsW RegExpCharTraits;
 
 #ifdef _UNICODE
 typedef std::wstring String;

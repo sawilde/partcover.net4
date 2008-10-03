@@ -43,6 +43,11 @@ ULONG32 Instrumentator::GetFileUrlId(const String& url) {
     return fileId;
 }
 
+bool Instrumentator::IsAssemblyAcceptable(const String& assemblyName) const
+{
+	return m_rules.IsAssemblyIncludedInRules(assemblyName);
+}
+
 void Instrumentator::InstrumentModule(ModuleID module, const String& moduleName, ICorProfilerInfo* profilerInfo, ISymUnmanagedBinder2* binder) {
     Lock();
     ULONG bufferSize;
