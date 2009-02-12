@@ -1,7 +1,7 @@
 namespace PartViewer.Model
 {
-    public interface Stylizer
+    public interface IStylizer
     {
-        void stylize(StylizerSource source);
+        void Stylize(IStylizerSource source);
     }
 }

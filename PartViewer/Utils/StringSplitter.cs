@@ -5,7 +5,7 @@ namespace PartViewer.Utils
 {
     internal static class StringSplitter
     {
-        public static string[] split(string source)
+        public static string[] Split(string source)
         {
             List<string> result = new List<string>();
 

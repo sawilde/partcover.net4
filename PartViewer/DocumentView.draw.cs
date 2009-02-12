@@ -1,12 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Text;
-using System.Windows.Forms;
-using PartViewer.Cache;
 using PartViewer.Model;
-using PartViewer.Styles;
+using PartViewer.Utils;
 
 namespace PartViewer
 {
@@ -73,7 +69,7 @@ namespace PartViewer
 
             public float LineFrame
             {
-                get { return lineFrame; }
+                private get { return lineFrame; }
                 set { lineFrame = Math.Max(value, lineFrame); }
             }
 
@@ -97,13 +93,13 @@ namespace PartViewer
             {
                 if (scrolling) return;
 
-                Size range = Size.Empty;
+                var range = Size.Empty;
 
                 range.Width = (int)Math.Ceiling(LineFrame);
                 range.Height = host.Document.LineCount;
 
-                int k = (int)Math.Floor(host.bounds.Width / HorizontalKoeff);
-                int h = (int)Math.Floor(LeftOffset);
+                var k = (int)Math.Floor(host.bounds.Width / HorizontalKoeff);
+                var h = (int)Math.Floor(LeftOffset);
 
                 if (host.bounds.Width > 0)
                 {
@@ -118,7 +114,7 @@ namespace PartViewer
             {
                 scrolling = true;
 
-                int k = (int)Math.Floor(host.bounds.Width / HorizontalKoeff);
+                var k = (int)Math.Floor(host.bounds.Width / HorizontalKoeff);
 
                 try
                 {
@@ -133,7 +129,7 @@ namespace PartViewer
         }
         #endregion Render Stuff
 
-        public void draw(Graphics gr, Rectangle clip)
+        public void Draw(Graphics gr, Rectangle clip)
         {
             if (document == null)
             {
@@ -151,7 +147,7 @@ namespace PartViewer
 
             while (thisPixelOffset < Bounds.Height)
             {
-                DocumentRowView rowView = getDocumentRowView(renderStuff.LastRow);
+                var rowView = getDocumentRowView(renderStuff.LastRow);
                 if (rowView == null)
                 {
                     renderList[renderStuff.LastRow] = rowView =
@@ -174,14 +170,14 @@ namespace PartViewer
                     selectionRange = new CharacterRange();
                 }else 
                 {
-                    selectionRange = Selection.extractLineRange(rowView.row.Index, rowView.row.Length);
+                    selectionRange = Selection.ExtractLineRange(rowView.row.Index, rowView.row.Length);
                 }
 
-                bool hideCaret = ViewStyle.HideInactiveCursor && !surface.hasFocus();
+                var hideCaret = ViewStyle.HideInactiveCursor && !surface.hasFocus();
 
-                if (!hideCaret && rowView.row.Index == caret.Y)
+                if (!hideCaret && rowView.row.Index == Position.Y)
                 {
-                    RenderRowViewWithCursor(gr, rowView, -renderStuff.LeftOffset, caret.X, selectionRange);
+                    RenderRowViewWithCursor(gr, rowView, -renderStuff.LeftOffset, Position.X, selectionRange);
                 }
                 else
                 {
@@ -216,12 +212,12 @@ namespace PartViewer
             float offset,
             CharacterRange selectionRange)
         {
-            for (int i = 0; i < view.parts.Length; ++i)
+            for (var i = 0; i < view.parts.Length; ++i)
             {
-                StylizedRowElement atom = view.parts[i];
-                string atomRaw = view.partRaws[i];
+                var atom = view.parts[i];
+                var atomRaw = view.partRaws[i];
 
-                CharacterRangeTrio trio = intersectAtomWithSelection(atom.range, selectionRange);
+                var trio = intersectAtomWithSelection(atom.range, selectionRange);
                 if (trio.first.Length > 0)
                 {
                     trio.first.First -= atom.range.First;
@@ -233,7 +229,7 @@ namespace PartViewer
                 {
                     trio.second.First -= atom.range.First;
 
-                    Style thisStyle = atom.style.combine(selectionStyle);
+                    Style thisStyle = atom.style.Combine(selectionStyle);
 
                     offset += DrawStringPart(trio.second, g, atomRaw, thisStyle, offset).Width;
                 }
@@ -257,22 +253,22 @@ namespace PartViewer
         {
             for (int i = 0, last = view.parts.Length - 1; i <= last; ++i)
             {
-                StylizedRowElement atom = view.parts[i];
-                string atomRaw = view.partRaws[i];
+                var atom = view.parts[i];
+                var atomRaw = view.partRaws[i];
 
                 if (i == last && cursor >= atom.range.Length)
                 {
                     cursor = atom.range.Length - 1;
                 }
 
-                CharacterRangeTrio trio = intersectAtomWithSelection(atom.range, selectionRange);
+                var trio = intersectAtomWithSelection(atom.range, selectionRange);
 
                 if (trio.first.Length > 0) {
                     trio.first.First -= atom.range.First;
 
-                    Style thisStyle = atom.style;
+                    var thisStyle = atom.style;
 
-                    float offsetChange = DrawStringPart(trio.first, g, atomRaw, thisStyle, offset).Width;
+                    var offsetChange = DrawStringPart(trio.first, g, atomRaw, thisStyle, offset).Width;
 
                     cursor -= drawCursor(cursor, trio.first, offset, g, atomRaw, thisStyle);
 
@@ -283,9 +279,9 @@ namespace PartViewer
                 {
                     trio.second.First -= atom.range.First;
 
-                    Style thisStyle = atom.style.combine(selectionStyle);
+                    var thisStyle = atom.style.Combine(selectionStyle);
 
-                    float offsetChange = DrawStringPart(trio.second, g, atomRaw, thisStyle, offset).Width;
+                    var offsetChange = DrawStringPart(trio.second, g, atomRaw, thisStyle, offset).Width;
 
                     cursor -= drawCursor(cursor, trio.second, offset, g, atomRaw, thisStyle);
 
@@ -296,9 +292,9 @@ namespace PartViewer
                 {
                     trio.third.First -= atom.range.First;
 
-                    Style thisStyle = atom.style;
+                    var thisStyle = atom.style;
 
-                    float offsetChange = DrawStringPart(trio.third, g, atomRaw, atom.style, offset).Width;
+                    var offsetChange = DrawStringPart(trio.third, g, atomRaw, atom.style, offset).Width;
 
                     cursor -= drawCursor(cursor, trio.third, offset, g, atomRaw, thisStyle);
 
@@ -315,10 +311,10 @@ namespace PartViewer
 
             renderStuff.caretRect = MeasureStringPart(new CharacterRange(cursor, 1), g, atomRaw, thisStyle);
 
-            RectangleF caretRect = renderStuff.caretRect;
+            var caretRect = renderStuff.caretRect;
             caretRect.Offset(offset, 0);
 
-            Pen pen = PenCache.getSolid(Color.Black);
+            var pen = PenCache.GetSolid(Color.Black);
             pen.Width = 2;
 
             g.DrawLine(pen, caretRect.Left, caretRect.Top, caretRect.Left, caretRect.Bottom);
@@ -328,7 +324,7 @@ namespace PartViewer
 
         private static CharacterRangeTrio intersectAtomWithSelection(CharacterRange range, CharacterRange selectionRange)
         {
-            CharacterRangeTrio trio = new CharacterRangeTrio();
+            var trio = new CharacterRangeTrio();
 
             if (selectionRange.Length == 0 
                 || range.First >= selectionRange.First + selectionRange.Length
@@ -356,12 +352,12 @@ namespace PartViewer
 
         private static CharacterRange intersect(CharacterRange range1, CharacterRange range2)
         {
-            int start = Math.Max(range1.First, range2.First);
-            int end = Math.Min(range1.First + range1.Length, range2.First + range2.Length);
+            var start = Math.Max(range1.First, range2.First);
+            var end = Math.Min(range1.First + range1.Length, range2.First + range2.Length);
 
-            if (end > start)
-                return new CharacterRange(start, end - start);
-            return new CharacterRange();
+            return end > start 
+                ? new CharacterRange(start, end - start) 
+                : new CharacterRange();
         }
 
         private RectangleF DrawStringPart(CharacterRange range, Graphics g, string str, Style style, float offset)
@@ -387,19 +383,21 @@ namespace PartViewer
 
         private void UpdateTabStop(string str, Style style)
         {
-            int tabCount = countTabs(str);
-            if (tabCount > 0)
+            var tabCount = countTabs(str);
+            if (tabCount <= 0)
             {
-                string tabString = new string(' ', ViewStyle.TabSize);
-                SizeF tabSize = surface.Graphics.MeasureString(tabString, FontCache.get(style), 0, stringFormat);
-                stringFormat.SetTabStops(0, new float[] { tabSize.Width });
+                return;
             }
+
+            var tabString = new string(' ', ViewStyle.TabSize);
+            var tabSize = surface.Graphics.MeasureString(tabString, FontCache.get(style), 0, stringFormat);
+            stringFormat.SetTabStops(0, new[] { tabSize.Width });
         }
 
         private static int countTabs(string part)
         {
-            int tabCount = 0;
-            int indexOfTab = -1;
+            var tabCount = 0;
+            var indexOfTab = -1;
             while (-1 != (indexOfTab = part.IndexOf('\t', indexOfTab + 1)))
             {
                 tabCount++;
@@ -416,10 +414,7 @@ namespace PartViewer
             Region[] regn = g.MeasureCharacterRanges(str, FontCache.get(style),
                                                      RectangleF.Empty, stringFormat);
 
-            return Array.ConvertAll<Region, RectangleF>(regn, delegate(Region rgn)
-            {
-                return rgn.GetBounds(g);
-            });
+            return Array.ConvertAll(regn, rgn => rgn.GetBounds(g));
         }
 
         private RectangleF MeasureStringPart(CharacterRange range, string str, Style style)
@@ -431,7 +426,7 @@ namespace PartViewer
         {
             if (range.Length == 0)
                 return RectangleF.Empty;
-            return MeasureStringParts(new CharacterRange[] { range }, g, str, style)[0];
+            return MeasureStringParts(new[] { range }, g, str, style)[0];
         }
 
         private void prepare(Graphics g, DocumentRowView view)
@@ -440,11 +435,11 @@ namespace PartViewer
 
             SizeF sum = SizeF.Empty;
 
-            List<string> partRawList = new List<string>();
-            List<SizeF> partSizeList = new List<SizeF>();
-            foreach (StylizedRowElement atom in view.parts)
+            var partRawList = new List<string>();
+            var partSizeList = new List<SizeF>();
+            foreach (var atom in view.parts)
             {
-                SizeF atomSize = measure(g, view.row, atom);
+                var atomSize = measure(g, view.row, atom);
                 sum.Width += atomSize.Width;
                 if (sum.Height < atomSize.Height)
                     sum.Height = atomSize.Height;
@@ -457,7 +452,7 @@ namespace PartViewer
             view.partSizes = partSizeList.ToArray();
             view.bounds.Size = sum;
 
-            DocumentRowView prevView = getDocumentRowView(view.row.Index - 1);
+            var prevView = getDocumentRowView(view.row.Index - 1);
             if (prevView != null)
                 view.bounds.Y = prevView.bounds.Bottom;
 
@@ -466,7 +461,7 @@ namespace PartViewer
 
         private DocumentRowView createRowView(int rowIndex)
         {
-            DocumentRow row = document.Rows[rowIndex];
+            var row = document.Rows[rowIndex];
             if (row == null)
                 return null;
 
@@ -477,7 +472,7 @@ namespace PartViewer
 
         void document_FaceChanged(object sender, DocumentRow arg)
         {
-            DocumentRowView view = getDocumentRowView(arg.Index);
+            var view = getDocumentRowView(arg.Index);
             if (view != null)
                 view.dirty = true;
             surface.invalidate();

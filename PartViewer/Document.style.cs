@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Drawing;
 
 using PartViewer.Model;
-using PartViewer.Styles;
 
 namespace PartViewer
 {
@@ -26,7 +25,7 @@ namespace PartViewer
             private readonly string face;
             private readonly CharacterRange range;
 
-            public string Face {get {return face;}}
+            public string Face { get { return face; } }
             public CharacterRange Range { get { return range; } }
 
             public FaceApplied(string face, CharacterRange range)
@@ -36,7 +35,7 @@ namespace PartViewer
             }
         }
 
-        private class StylizerSourceImpl : StylizerSource
+        private class StylizerSourceImpl : IStylizerSource
         {
             readonly Document doc;
             readonly DocumentRange range;
@@ -50,14 +49,14 @@ namespace PartViewer
             public Document Document { get { return doc; } }
             public DocumentRange Range { get { return range; } }
 
-            public void setFace(DocumentRange target, string face) { doc.setFace(target, face); }
-            public void setFace(DocumentRange target, StyleFace face) { doc.setFace(target, face); }
+            public void AssignFace(DocumentRange target, string face) { doc.AssignFace(target, face); }
+            public void AssignFace(DocumentRange target, IStyleFace face) { doc.AssignFace(target, face); }
         }
 
-        private class Face : StyleFace
+        private class Face : IStyleFace
         {
             private readonly string name;
-            private readonly Stylizer owner;
+            private readonly IStylizer owner;
             private readonly Style faceStyle;
 
             public string Name
@@ -65,7 +64,7 @@ namespace PartViewer
                 get { return name; }
             }
 
-            public Stylizer Owner
+            public IStylizer Owner
             {
                 get { return owner; }
             }
@@ -75,7 +74,7 @@ namespace PartViewer
                 get { return faceStyle; }
             }
 
-            public Face(string name, Stylizer owner)
+            public Face(string name, IStylizer owner)
             {
                 this.name = name;
                 this.owner = owner;
@@ -83,11 +82,11 @@ namespace PartViewer
             }
         }
 
-        readonly List<Stylizer> stylizers = new List<Stylizer>();
+        readonly List<IStylizer> stylizers = new List<IStylizer>();
         readonly Dictionary<int, List<FaceApplied>> stylesApplied = new Dictionary<int, List<FaceApplied>>();
         readonly Dictionary<string, Face> faces = new Dictionary<string, Face>();
 
-        public StyleFace createFace(Stylizer stylizer, string name)
+        public IStyleFace CreateFace(IStylizer stylizer, string name)
         {
             Face face;
             if (faces.ContainsKey(name))
@@ -97,39 +96,35 @@ namespace PartViewer
             return face;
         }
 
-        public StyleFace getFace(string name)
+        public IStyleFace FindFace(string name)
         {
             return faces[name];
         }
 
-        public void addStylizer(Stylizer stylizer)
+        public void Add(IStylizer stylizer)
         {
             stylizers.Add(stylizer);
-            updateStyle(stylizer, StartPoint.Y, EndPoint.Y);
+            updateStyle(stylizer, 0, 0);
         }
 
-        public void removeStylizer(Stylizer stylizer)
+        public void Remove(IStylizer stylizer)
         {
             stylizers.Remove(stylizer);
 
-            List<string> faceToRemove = new List<string>();
-            foreach(KeyValuePair<string, Face> f in faces)
+            var faceToRemove = new List<string>();
+            foreach (var f in faces)
             {
                 if (f.Value.Owner == stylizer)
                     faceToRemove.Add(f.Key);
             }
 
-            Dictionary<int, bool> rowList = new Dictionary<int, bool>();
-            foreach(string s in faceToRemove) 
+            var rowList = new Dictionary<int, bool>();
+            foreach (var s in faceToRemove)
             {
-                foreach (KeyValuePair<int, List<FaceApplied>> sa in stylesApplied)
+                foreach (var sa in stylesApplied)
                 {
-                    int removed = sa.Value.RemoveAll(delegate(FaceApplied fa)
-                    {
-                        return fa.Face.Equals(s);
-                    });
-
-                    if (removed > 0)
+                    var value = s;
+                    if (sa.Value.RemoveAll(fa => fa.Face.Equals(value)) > 0)
                     {
                         rowList[sa.Key] = true;
                     }
@@ -137,26 +132,27 @@ namespace PartViewer
                 faces.Remove(s);
             }
 
-            foreach (KeyValuePair<int, bool> a in rowList)
+            foreach (var a in rowList)
             {
                 if (stylesApplied.ContainsKey(a.Key) && stylesApplied[a.Key].Count == 0)
                     stylesApplied.Remove(a.Key);
             }
 
-            foreach (KeyValuePair<int, bool> a in rowList)
+            foreach (var a in rowList)
             {
                 fireFaceChanged(Rows[a.Key]);
             }
         }
 
-        public void removeStylizers()
+        public void RemoveStylizerAll()
         {
-            foreach (Stylizer s in Stylizers)
-                removeStylizer(s);
+            foreach (var s in new List<IStylizer>(Stylizers))
+                Remove(s);
         }
 
-        public Stylizer[] Stylizers {
-            get { return stylizers.ToArray(); }
+        public ICollection<IStylizer> Stylizers
+        {
+            get { return stylizers.AsReadOnly(); }
         }
 
         internal StylizedRowElement[] getStylizedRow(int line)
@@ -175,19 +171,21 @@ namespace PartViewer
         {
             if (styles == null || styles.Count == 0)
             {
-                StylizedRowElement[] result = new StylizedRowElement[1];
+                var result = new StylizedRowElement[1];
                 result[0] = new StylizedRowElement(new CharacterRange(0, row.Length), style);
                 return result;
             }
 
-            List<CharacterRange> elements = new List<CharacterRange>();
-            elements.Add(new CharacterRange(0, row.Length));
-
-            foreach (FaceApplied styleApplied in styles)
+            var elements = new List<CharacterRange>
             {
-                CharacterRange faceRange = styleApplied.Range;
+                new CharacterRange(0, row.Length)
+            };
 
-                for (int i = 0; i < elements.Count; ++i)
+            foreach (var styleApplied in styles)
+            {
+                var faceRange = styleApplied.Range;
+
+                for (var i = 0; i < elements.Count; ++i)
                 {
                     CharacterRange element = elements[i];
 
@@ -196,51 +194,54 @@ namespace PartViewer
                     {
                         continue;
                     }
-                    else if (element.First + element.Length < faceRange.First)
+
+                    if (element.First + element.Length < faceRange.First)
                     {
                         continue;
                     }
+
                     // if we are after range needed
-                    else if (element.First >= faceRange.First + faceRange.Length)
+                    if (element.First >= faceRange.First + faceRange.Length)
                     {
                         break;
                     }
 
                     // if face range after element start
-                    if (element.First < faceRange.First) 
+                    if (element.First < faceRange.First)
                     {
-                        CharacterRange preFace = new CharacterRange(element.First, faceRange.First - element.First);
+                        var preFace = new CharacterRange(element.First, faceRange.First - element.First);
 
                         element.Length -= preFace.Length;
                         element.First += preFace.Length;
                         elements[i] = element;
 
                         elements.Insert(i++, preFace);
-
                     }
 
-                    if (element.First + element.Length > faceRange.First + faceRange.Length)
+                    if (element.First + element.Length <= faceRange.First + faceRange.Length)
                     {
-                        int afterOffset = faceRange.First + faceRange.Length;
-                        int afterOffsetLength = element.First + element.Length - afterOffset;
-
-                        element.Length -= afterOffsetLength;
-                        elements[i] = element;
-
-                        elements.Insert(++i, new CharacterRange(afterOffset, afterOffsetLength));
+                        continue;
                     }
+
+                    var afterOffset = faceRange.First + faceRange.Length;
+                    var afterOffsetLength = element.First + element.Length - afterOffset;
+
+                    element.Length -= afterOffsetLength;
+                    elements[i] = element;
+
+                    elements.Insert(++i, new CharacterRange(afterOffset, afterOffsetLength));
                 }
             }
 
-            List<StylizedRowElement> els = new List<StylizedRowElement>();
-            foreach (CharacterRange range in elements)
+            var els = new List<StylizedRowElement>();
+            foreach (var range in elements)
             {
-                Style rangeStyle = Style;
-                foreach (FaceApplied face in styles)
+                var rangeStyle = Style;
+                foreach (var face in styles)
                 {
                     if (!intersect(face.Range, range))
                         continue;
-                    rangeStyle = rangeStyle.combine(getFace(face.Face).FaceStyle);
+                    rangeStyle = rangeStyle.Combine(FindFace(face.Face).FaceStyle);
                 }
 
                 els.Add(new StylizedRowElement(range, rangeStyle));
@@ -251,23 +252,24 @@ namespace PartViewer
 
         private static bool intersect(CharacterRange lhs, CharacterRange rhs)
         {
-            int min = Math.Max(lhs.First, rhs.First);
-            int max = Math.Min(lhs.First + lhs.Length, rhs.First + rhs.Length);
+            var min = Math.Max(lhs.First, rhs.First);
+            var max = Math.Min(lhs.First + lhs.Length, rhs.First + rhs.Length);
             return min < max;
         }
 
-        private void updateStyle(Stylizer s, int startLine, int endLine)
+        private void updateStyle(IStylizer s, int startLine, int endLine)
         {
-            DocumentRange range = new DocumentRange();
-            range.Start = new DocumentPoint(startLine, 0);
-            range.End = new DocumentPoint(endLine, Rows[endLine].Length);
-
-            s.stylize(new StylizerSourceImpl(this, range));
+            var range = new DocumentRange
+            {
+                Start = new DocumentPoint(startLine, 0),
+                End = new DocumentPoint(endLine, Rows[endLine].Length)
+            };
+            s.Stylize(new StylizerSourceImpl(this, range));
         }
 
-        public void setFace(DocumentRange target, string face)
+        public void AssignFace(DocumentRange target, string face)
         {
-            setFace(target, faces[face]);
+            AssignFace(target, faces[face]);
         }
 
         private List<FaceApplied> getRowStyles(int row)
@@ -280,25 +282,18 @@ namespace PartViewer
             return rowStyles;
         }
 
-        public void setFace(DocumentRange target, StyleFace face)
+        public void AssignFace(DocumentRange target, IStyleFace face)
         {
             if (face == null) return;
 
-            int line = target.Start.Line;
-            int column = target.Start.Column;
+            var line = target.Start.Line;
+            var column = target.Start.Column;
 
             while (line <= target.End.Line)
             {
-                CharacterRange chRange;
-
-                if (line == target.End.Line)
-                {
-                    chRange = new CharacterRange(column, target.End.Column - column);
-                }
-                else
-                {
-                    chRange = new CharacterRange(column, Rows[line].Length);
-                }
+                var chRange = line == target.End.Line 
+                    ? new CharacterRange(column, target.End.Column - column) 
+                    : new CharacterRange(column, Rows[line].Length);
 
                 getRowStyles(line).Add(new FaceApplied(face.Name, chRange));
 
@@ -311,7 +306,8 @@ namespace PartViewer
 
         internal event DocumentRowEventHandler FaceChanged;
 
-        private void fireFaceChanged(DocumentRow row) {
+        private void fireFaceChanged(DocumentRow row)
+        {
             if (FaceChanged != null)
                 FaceChanged(this, row);
         }

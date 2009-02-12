@@ -5,25 +5,19 @@ using System.Drawing;
 
 using PartViewer.Model;
 using PartViewer.Plugins;
-using PartViewer.Styles;
 
 namespace PartViewer
 {
-    public partial class DocumentView : View
+    public partial class DocumentView : IView
     {
-        private static readonly StringFormat stringFormat;
-
-        [DebuggerHidden]
-        static DocumentView()
+        //(StringFormat)StringFormat.GenericTypographic.Clone();
+        private static readonly StringFormat stringFormat = new StringFormat
         {
-            stringFormat = (StringFormat)StringFormat.GenericTypographic.Clone();
-            stringFormat.Trimming = StringTrimming.None;
-            stringFormat.FormatFlags |= StringFormatFlags.MeasureTrailingSpaces;
-            stringFormat.FormatFlags |= StringFormatFlags.NoFontFallback;
-        }
-
-        private Point caret;
-        private bool caretVisible;
+            Trimming = StringTrimming.None,
+            LineAlignment = StringAlignment.Near,
+            Alignment = StringAlignment.Near,
+            FormatFlags = StringFormatFlags.MeasureTrailingSpaces | StringFormatFlags.NoFontFallback | StringFormatFlags.FitBlackBox | StringFormatFlags.LineLimit | StringFormatFlags.NoClip
+        };
 
         private readonly ViewControlTrace trace;
         private readonly Dictionary<int, DocumentRowView> renderList;
@@ -43,7 +37,7 @@ namespace PartViewer
 
         #region External
 
-        readonly ViewPlugin[] plugins = new ViewPlugin[] { 
+        readonly IViewPlugin[] plugins = new[] { 
             new PcSelectionMode()
         };
 
@@ -62,9 +56,11 @@ namespace PartViewer
 
             ClearStuff();
 
-            selectionStyle = new Style();
-            selectionStyle.Foreground = Color.White;
-            selectionStyle.Background = Color.Blue;
+            selectionStyle = new Style
+            {
+                Foreground = Color.White,
+                Background = Color.Blue
+            };
 
             viewStyle = new ViewStyle();
         }
@@ -114,7 +110,7 @@ namespace PartViewer
         private DocumentRow CurrentRow
         {
             [DebuggerHidden]
-            get { return document == null ? null : document.Rows[caret.Y]; }
+            get { return document == null ? null : document.Rows[Position.Y]; }
         }
 
         public bool TraceEnabled
@@ -127,7 +123,7 @@ namespace PartViewer
         {
             renderList.Clear();
             renderStuff.clear();
-            caret = new Point(0, 0);
+            Position = new Point(0, 0);
             selection = new SelectionRegion();
         }
 
@@ -150,43 +146,36 @@ namespace PartViewer
             if (document == null) return;
 
             attachKeyCommands();
-            foreach (ViewPlugin p in plugins)
-                p.attach(this);
+            foreach (var p in plugins)
+                p.Attach(this);
         }
 
         private void DetachViewCommands()
         {
             if (document == null) return;
 
-            foreach (ViewPlugin p in plugins)
-                p.detach(this);
+            foreach (var p in plugins)
+                p.Detach(this);
             detachKeyCommands();
         }
 
-        public Point Caret
-        {
-            [DebuggerHidden]
-            get
-            {
-                return caret;
-            }
-        }
+        public Point Position { get; private set; }
 
-        public void moveCaretTo(Point pt)
+        public void MoveCaretTo(Point pt)
         {
-            moveCursorVertical(pt.Y - Caret.Y, false);
-            moveCursorHorizont(pt.X - Caret.X);
+            moveCursorVertical(pt.Y - Position.Y, false);
+            moveCursorHorizont(pt.X - Position.X);
             surface.invalidate();
         }
 
-        public void centerLine(int line)
+        public void CenterLine(int line)
         {
             if (Document == null) return;
 
-            float heightLimit = bounds.Height / 2;
+            var heightLimit = bounds.Height / 2.0f;
             do
             {
-                DocumentRowView rowView = getDocumentRowView(line);
+                var rowView = getDocumentRowView(line);
                 if (rowView == null) break;
 
                 heightLimit -= rowView.bounds.Height;
@@ -206,7 +195,7 @@ namespace PartViewer
             return rowView;
         }
 
-        public void scroll(int hValue, int vValue)
+        public void Scroll(int hValue, int vValue)
         {
             renderStuff.setScroll(hValue, vValue);
             surface.invalidate();

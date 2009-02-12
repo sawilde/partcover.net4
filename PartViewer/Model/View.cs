@@ -1,28 +1,27 @@
 using System;
 using System.Drawing;
-using PartViewer.Styles;
 
 namespace PartViewer.Model
 {
-    public interface View
+    public interface IView
     {
-        void caretBackward();
-        void caretForward();
+        void CaretBackward();
+        void CaretForward();
 
-        void caretUp();
-        void caretDown();
+        void CaretUp();
+        void CaretDown();
 
-        void caretPageUp();
-        void caretPageDown();
+        void CaretPageUp();
+        void CaretPageDown();
 
-        void caretEndOfLine();
-        void caretBeginOfLine();
+        void CaretEndOfLine();
+        void CaretBeginOfLine();
 
-        void moveCaretTo(Point pt);
-        void centerLine(int line);
+        void MoveCaretTo(Point pt);
+        void CenterLine(int line);
 
         KeyActionMap KeyMap { get;}
-        Point Caret { get;}
+        Point Position { get;}
 
         ViewStyle ViewStyle { get; }
         SelectionRegion Selection { get; set;}

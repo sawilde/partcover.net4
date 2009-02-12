@@ -13,12 +13,12 @@ namespace PartViewer
             handlers = new Dictionary<KeySelector, List<KeyActionHandler>>();
         }
 
-        public bool have(KeySelector keys)
+        public bool Contains(KeySelector keys)
         {
             return handlers.ContainsKey(keys);
         }
 
-        public void add(KeySelector keys, KeyActionHandler handler)
+        public void Add(KeySelector keys, KeyActionHandler handler)
         {
             List<KeyActionHandler> list;
             if (!handlers.TryGetValue(keys, out list))
@@ -28,14 +28,14 @@ namespace PartViewer
             list.Add(handler);
         }
 
-        public void add(KeySelector key, IEnumerable<KeyActionHandler> values)
+        public void Add(KeySelector key, IEnumerable<KeyActionHandler> values)
         {
-            foreach (KeyActionHandler h in values)
-                add(key, h);
+            foreach (var h in values)
+                Add(key, h);
         }
 
 
-        public void remove(KeySelector keys, KeyActionHandler handler)
+        public void Remove(KeySelector keys, KeyActionHandler handler)
         {
             List<KeyActionHandler> list;
             if (!handlers.TryGetValue(keys, out list))
@@ -47,18 +47,18 @@ namespace PartViewer
                 handlers.Remove(keys);
         }
 
-        public void remove(KeySelector key, IEnumerable<KeyActionHandler> values)
+        public void Remove(KeySelector key, IEnumerable<KeyActionHandler> values)
         {
-            foreach (KeyActionHandler h in values)
-                remove(key, h);
+            foreach (var h in values)
+                Remove(key, h);
         }
 
-        public void execute(KeySelector keys, ActionKeyKind kind)
+        public void Execute(KeySelector keys, ActionKeyKind kind)
         {
             List<KeyActionHandler> list;
             if (!handlers.TryGetValue(keys, out list))
                 return;
-            foreach (KeyActionHandler action in new List<KeyActionHandler>(list))
+            foreach (var action in new List<KeyActionHandler>(list))
                 action(kind);
         }
 

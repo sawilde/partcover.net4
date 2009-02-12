@@ -1,8 +1,8 @@
 namespace PartViewer.Model
 {
-    public interface ViewPlugin
+    public interface IViewPlugin
     {
-        void attach(View target);
-        void detach(View target);
+        void Attach(IView target);
+        void Detach(IView target);
     }
 }

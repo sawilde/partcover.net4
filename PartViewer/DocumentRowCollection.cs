@@ -49,18 +49,18 @@ namespace PartViewer
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         readonly List<DocumentRow> data = new List<DocumentRow>();
 
-        public void add(string[] strings)
+        public void Add(string[] value)
         {
-            add(Array.ConvertAll<string, DocumentRow>(strings, DocumentRow.create));
+            Add(Array.ConvertAll<string, DocumentRow>(value, DocumentRow.create));
         }
 
-        private void add(DocumentRow[] rows)
+        private void Add(DocumentRow[] value)
         {
             lock (data)
             {
-                for (int i = 0; i < rows.Length; ++i)
-                    rows[i].Index = data.Count + i;
-                data.AddRange(rows);
+                for (var i = 0; i < value.Length; ++i)
+                    value[i].Index = data.Count + i;
+                data.AddRange(value);
             }
         }
 

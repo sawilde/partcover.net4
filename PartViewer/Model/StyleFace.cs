@@ -1,11 +1,9 @@
-using PartViewer.Styles;
-
 namespace PartViewer.Model
 {
-    public interface StyleFace
+    public interface IStyleFace
     {
         string Name { get;}
-        Stylizer Owner { get;}
+        IStylizer Owner { get;}
         Style FaceStyle { get;}
     }
 }
