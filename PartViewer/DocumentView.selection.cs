@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Text;
 using PartViewer.Model;
-using PartViewer.Styles;
 using PartViewer.Utils;
 
 namespace PartViewer
@@ -25,25 +24,46 @@ namespace PartViewer
             set { end = value; }
         }
 
-        public static Point minimum(Point pt1, Point pt2)
+        public static Point Min(Point pt1, Point pt2)
         {
             if (pt1.Y < pt2.Y) return pt1;
             if (pt1.Y > pt2.Y) return pt2;
             return (pt1.X <= pt2.X) ? pt1 : pt2;
         }
 
-        public static Point maximum(Point pt1, Point pt2)
+        public static Point Max(Point pt1, Point pt2)
         {
             if (pt1.Y > pt2.Y) return pt1;
             if (pt1.Y < pt2.Y) return pt2;
             return (pt1.X <= pt2.X) ? pt2 : pt1;
         }
 
-        public bool IsEmpty {
+        public bool IsEmpty
+        {
             get { return start.IsEmpty && end.IsEmpty; }
         }
 
-        public static readonly SelectionRegion Empty = new SelectionRegion();
+        public override int GetHashCode()
+        {
+            return Start.GetHashCode() ^ End.GetHashCode();
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is SelectionRegion)
+                return Equals((SelectionRegion)obj);
+            return base.Equals(obj);
+        }
+
+        public static bool operator ==(SelectionRegion left, SelectionRegion right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(SelectionRegion left, SelectionRegion right)
+        {
+            return !left.Equals(right);
+        }
 
         public bool Equals(SelectionRegion other)
         {
@@ -53,14 +73,14 @@ namespace PartViewer
             return Start == other.Start && End == other.End;
         }
 
-        public CharacterRange extractLineRange(int line, int lineLength)
+        public CharacterRange ExtractLineRange(int line, int lineLength)
         {
-            CharacterRange res = new CharacterRange();
+            var res = new CharacterRange();
             if (IsEmpty || line < Start.Y || line > End.Y)
                 return res;
 
-            int realStartX = Math.Max(Math.Min(Start.X, lineLength), 0);
-            int realEndX = Math.Max(Math.Min(End.X, lineLength), 0);
+            var realStartX = Math.Max(Math.Min(Start.X, lineLength), 0);
+            var realEndX = Math.Max(Math.Min(End.X, lineLength), 0);
 
             if (Start.Y == End.Y)
             {
@@ -77,7 +97,7 @@ namespace PartViewer
                 res.First = 0;
                 res.Length = realEndX;
             }
-            else 
+            else
             {
                 res.First = 0;
                 res.Length = lineLength;
@@ -86,13 +106,16 @@ namespace PartViewer
             return res;
         }
 
-        public IEnumerable<int> getLines()
+        public ICollection<int> Lines
         {
-            int line = start.Y;
-            while (line <= end.Y)
+            get
             {
-                yield return line;
-                line++;
+                var result = new List<int>();
+                for (var line = start.Y; line <= end.Y; line++)
+                {
+                    result.Add(line);
+                }
+                return result;
             }
         }
 
@@ -126,40 +149,43 @@ namespace PartViewer
         {
             if (kind != ActionKeyKind.KeyDown) return;
 
-            copySelection();
+            CopySelection();
         }
 
-        public void copySelection()
+        public void CopySelection()
         {
-            ClipboardManager.putPlain(getSelectionText());
+            ClipboardManager.PutPlain(SelectionText);
         }
 
-        public string getSelectionText()
+        public string SelectionText
         {
-            if (Selection.IsEmpty) return string.Empty;
-
-            StringBuilder builder=  new StringBuilder();
-            foreach (int line in Selection.getLines())
+            get
             {
-                DocumentRow row = Document.Rows[line];
-                CharacterRange chRange = Selection.extractLineRange(line, row.Length);
+                if (Selection.IsEmpty) return string.Empty;
 
-                if (chRange.Length == 0 && line == Selection.End.Y)
-                    break;
+                var builder = new StringBuilder();
+                foreach (var line in Selection.Lines)
+                {
+                    var row = Document.Rows[line];
+                    var chRange = Selection.ExtractLineRange(line, row.Length);
 
-                string substr = row.Raw.Substring(chRange.First, chRange.Length);
-                if (substr.EndsWith("\n"))
-                {
-                    substr = substr.TrimEnd('\n');
-                    builder.AppendLine(substr);
+                    if (chRange.Length == 0 && line == Selection.End.Y)
+                        break;
+
+                    var substr = row.Raw.Substring(chRange.First, chRange.Length);
+                    if (substr.EndsWith("\n", StringComparison.OrdinalIgnoreCase))
+                    {
+                        substr = substr.TrimEnd('\n');
+                        builder.AppendLine(substr);
+                    }
+                    else
+                    {
+                        builder.Append(substr);
+                    }
                 }
-                else
-                {
-                    builder.Append(substr);
-                }
+
+                return builder.ToString();
             }
-
-            return builder.ToString();
         }
     }
 }

@@ -2,27 +2,60 @@ namespace PartViewer.Model
 {
     public struct KeySelector
     {
-        public int charCode;
-        public bool ctrl;
-        public bool alt;
-        public bool shift;
+        public int CharCode { get; set; }
+        public bool Control { get; set; }
+        public bool Alt { get; set; }
+        public bool Shift { get; set; }
 
         private KeySelector(int charCode, bool ctrl, bool alt, bool shift)
         {
-            this.charCode = charCode;
-            this.ctrl = ctrl;
-            this.alt = alt;
-            this.shift = shift;
+            this = new KeySelector 
+            {
+                CharCode = charCode, 
+                Control = ctrl, 
+                Alt = alt, 
+                Shift = shift
+            };
         }
 
-        public static KeySelector create(int charCode)
+        public static KeySelector Create(int charCode)
         {
-            return create(charCode, false, false, false);
+            return Create(charCode, false, false, false);
         }
 
-        public static KeySelector create(int charCode, bool ctrl, bool alt, bool shift)
+        public static KeySelector Create(int charCode, bool ctrl, bool alt, bool shift)
         {
             return new KeySelector(charCode, ctrl, alt, shift);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is KeySelector)
+                return Equals((KeySelector)obj);
+            return base.Equals(obj);
+        }
+
+        public bool Equals(KeySelector keySelector)
+        {
+            return keySelector.Alt == Alt &&
+                keySelector.CharCode == CharCode &&
+                keySelector.Control == Control &&
+                keySelector.Shift == Shift;
+        }
+
+        public override int GetHashCode()
+        {
+            return Alt.GetHashCode() + CharCode.GetHashCode() + Control.GetHashCode() + Shift.GetHashCode();
+        }
+
+        public static bool operator ==(KeySelector left, KeySelector right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(KeySelector left, KeySelector right)
+        {
+            return left.Equals(right);
         }
     }
 }

@@ -21,53 +21,53 @@ namespace PartViewer
 
         private void createKeyCommands()
         {
-            attachMap.add(KeySelector.create(KeyCode.Down), kCaretDown);
-            attachMap.add(KeySelector.create(KeyCode.Up), kCaretUp);
-            attachMap.add(KeySelector.create(KeyCode.Right), kCaretForward);
-            attachMap.add(KeySelector.create(KeyCode.Left), kCaretBackward);
+            attachMap.Add(KeySelector.Create(KeyCode.Down), kCaretDown);
+            attachMap.Add(KeySelector.Create(KeyCode.Up), kCaretUp);
+            attachMap.Add(KeySelector.Create(KeyCode.Right), kCaretForward);
+            attachMap.Add(KeySelector.Create(KeyCode.Left), kCaretBackward);
 
-            attachMap.add(KeySelector.create(KeyCode.PageDown), kCaretPageDown);
-            attachMap.add(KeySelector.create(KeyCode.PageUp), kCaretPageUp);
+            attachMap.Add(KeySelector.Create(KeyCode.PageDown), kCaretPageDown);
+            attachMap.Add(KeySelector.Create(KeyCode.PageUp), kCaretPageUp);
 
-            attachMap.add(KeySelector.create(KeyCode.Home), kCaretLineBegin);
-            attachMap.add(KeySelector.create(KeyCode.End), kCaretLineEnd);
+            attachMap.Add(KeySelector.Create(KeyCode.Home), kCaretLineBegin);
+            attachMap.Add(KeySelector.Create(KeyCode.End), kCaretLineEnd);
 
-            attachMap.add(KeySelector.create(KeyChar.C, true, false, false), kCopySelection);
-            attachMap.add(KeySelector.create(KeyCode.Insert, true, false, false), kCopySelection);
+            attachMap.Add(KeySelector.Create(KeyChar.C, true, false, false), kCopySelection);
+            attachMap.Add(KeySelector.Create(KeyCode.Insert, true, false, false), kCopySelection);
         }
 
         private void attachKeyCommands()
         {
-            foreach (KeyValuePair<KeySelector, List<KeyActionHandler>> item in attachMap)
-                keyActionMap.add(item.Key, item.Value);
+            foreach (var item in attachMap)
+                keyActionMap.Add(item.Key, item.Value);
         }
 
         private void detachKeyCommands()
         {
             foreach (KeyValuePair<KeySelector, List<KeyActionHandler>> item in attachMap)
-                keyActionMap.remove(item.Key, item.Value);
+                keyActionMap.Remove(item.Key, item.Value);
         }
 
         internal void keyDown(int charCode, Keys keyData)
         {
-            KeySelector s = KeySelector.create(charCode,
+            var s = KeySelector.Create(charCode,
                 (keyData & Keys.Control) == Keys.Control,
                 (keyData & Keys.Alt) == Keys.Alt,
                 (keyData & Keys.Shift) == Keys.Shift);
 
             trace.keyDown(charCode, keyData);
-            keyActionMap.execute(s, ActionKeyKind.KeyDown);
+            keyActionMap.Execute(s, ActionKeyKind.KeyDown);
         }
 
         internal void keyUp(int charCode, Keys keyData)
         {
-            KeySelector s = KeySelector.create(charCode,
+            var s = KeySelector.Create(charCode,
                 (keyData & Keys.Control) == Keys.Control,
                 (keyData & Keys.Alt) == Keys.Alt,
                 (keyData & Keys.Shift) == Keys.Shift);
 
             trace.keyUp(charCode, keyData);
-            keyActionMap.execute(s, ActionKeyKind.KeyUp);
+            keyActionMap.Execute(s, ActionKeyKind.KeyUp);
         }
     }
 }

@@ -1,6 +1,7 @@
 using System;
 
 using PartViewer.Model;
+using System.Drawing;
 
 namespace PartViewer
 {
@@ -10,91 +11,91 @@ namespace PartViewer
         private void kCaretLineEnd(ActionKeyKind kind)
         {
             if (kind == ActionKeyKind.KeyDown)
-                caretEndOfLine();
+                CaretEndOfLine();
         }
 
         private void kCaretLineBegin(ActionKeyKind kind)
         {
             if (kind == ActionKeyKind.KeyDown)
-                caretBeginOfLine();
+                CaretBeginOfLine();
         }
 
         private void kCaretBackward(ActionKeyKind kind)
         {
             if (kind == ActionKeyKind.KeyDown)
-                caretBackward();
+                CaretBackward();
         }
 
         private void kCaretPageUp(ActionKeyKind kind)
         {
             if (kind == ActionKeyKind.KeyDown)
-                caretPageUp();
+                CaretPageUp();
         }
 
         private void kCaretPageDown(ActionKeyKind kind)
         {
             if (kind == ActionKeyKind.KeyDown)
-                caretPageDown();
+                CaretPageDown();
         }
 
         private void kCaretForward(ActionKeyKind kind)
         {
             if (kind == ActionKeyKind.KeyDown)
-                caretForward();
+                CaretForward();
         }
 
         private void kCaretUp(ActionKeyKind kind)
         {
             if (kind == ActionKeyKind.KeyDown)
-                caretUp();
+                CaretUp();
         }
 
         private void kCaretDown(ActionKeyKind kind)
         {
             if (kind == ActionKeyKind.KeyDown)
-                caretDown();
+                CaretDown();
         }
 
-        public void caretBackward()
+        public void CaretBackward()
         {
             moveCursorHorizont(-1);
         }
 
-        public void caretForward()
+        public void CaretForward()
         {
             moveCursorHorizont(1);
         }
 
-        public void caretUp()
+        public void CaretUp()
         {
             moveCursorVertical(-1, true);
         }
 
-        public void caretDown()
+        public void CaretDown()
         {
             moveCursorVertical(1, true);
         }
 
-        public void caretPageUp()
+        public void CaretPageUp()
         {
             moveCursorVertical(renderStuff.FirstRow - renderStuff.LastRow, true);
         }
 
-        public void caretPageDown()
+        public void CaretPageDown()
         {
             moveCursorVertical(renderStuff.LastRow - renderStuff.FirstRow, true);
         }
 
-        public void caretEndOfLine()
+        public void CaretEndOfLine()
         {
-            if (CurrentRow == null || caret.X == CurrentRow.Length - 1)
+            if (CurrentRow == null || Position.X == CurrentRow.Length - 1)
                 return;
-            moveCursorHorizont(CurrentRow.Length - caret.X - 1);
+            moveCursorHorizont(CurrentRow.Length - Position.X - 1);
         }
 
-        public void caretBeginOfLine()
+        public void CaretBeginOfLine()
         {
-            moveCursorHorizont(-caret.X);
+            moveCursorHorizont(-Position.X);
         }
 
         private void moveCursorHorizont(int offset)
@@ -103,7 +104,7 @@ namespace PartViewer
                 return;
 
             int newCaretX;
-            if (caret.X + offset < 0)
+            if (Position.X + offset < 0)
             {
                 if (CurrentRow.Index > 0)
                 {
@@ -115,7 +116,7 @@ namespace PartViewer
                     newCaretX = 0;
                 }
             }
-            else if (caret.X + offset >= CurrentRow.Length)
+            else if (Position.X + offset >= CurrentRow.Length)
             {
                 if (CurrentRow.Index < Document.LineCount - 1)
                 {
@@ -129,10 +130,10 @@ namespace PartViewer
             }
             else
             {
-                newCaretX = caret.X + offset;
+                newCaretX = Position.X + offset;
             }
 
-            caret.X = newCaretX;
+            Position = new Point { X = newCaretX, Y = Position.Y };
             fireCaretMoved();
 
             surface.invalidate();
@@ -146,20 +147,20 @@ namespace PartViewer
 
             int newCaretY;
 
-            if (caret.Y + offset < 0)
+            if (Position.Y + offset < 0)
             {
                 newCaretY = 0;
             }
-            else if (caret.Y + offset >= Document.LineCount)
+            else if (Position.Y + offset >= Document.LineCount)
             {
                 newCaretY = Document.LineCount - 1;
             }
             else
             {
-                newCaretY = caret.Y + offset;
+                newCaretY = Position.Y + offset;
             }
 
-            caret.Y = newCaretY;
+            Position = new Point { X = Position.X, Y = newCaretY };
             fireCaretMoved();
 
             if (ensureInView)
@@ -173,15 +174,15 @@ namespace PartViewer
         {
             int row = renderStuff.FirstRow;
 
-            if (caret.Y + ViewStyle.CaretPaddingBottom >= renderStuff.LastRow)
+            if (Position.Y + ViewStyle.CaretPaddingBottom >= renderStuff.LastRow)
             {
                 int rowBand = renderStuff.LastRow - renderStuff.FirstRow + 1;
 
-                row = Math.Min(Document.LineCount, caret.Y + ViewStyle.CaretPaddingBottom + 1) - rowBand;
+                row = Math.Min(Document.LineCount, Position.Y + ViewStyle.CaretPaddingBottom + 1) - rowBand;
             }
-            else if (caret.Y - ViewStyle.CaretPaddingTop < renderStuff.FirstRow)
+            else if (Position.Y - ViewStyle.CaretPaddingTop < renderStuff.FirstRow)
             {
-                row = Math.Max(0, caret.Y - ViewStyle.CaretPaddingTop);
+                row = Math.Max(0, Position.Y - ViewStyle.CaretPaddingTop);
             }
 
             float paddingLeft = ViewStyle.CaretPaddingLeft * bounds.Width;
@@ -219,8 +220,8 @@ namespace PartViewer
 
         private float measureCaretLeftOffset()
         {
-            DocumentRowView rowView = getDocumentRowView(Caret.Y);
-            return (rowView == null) ? 0 : findCharacterPositionOffset(rowView, Caret.X);
+            DocumentRowView rowView = getDocumentRowView(Position.Y);
+            return (rowView == null) ? 0 : findCharacterPositionOffset(rowView, Position.X);
         }
     }
 }

@@ -34,7 +34,7 @@ namespace PartViewer
                     return;
 
                 Trace.WriteLine("PV Updating Clip: " + rectangle);
-                Trace.WriteLine("            Cursor: " + host.caret);
+                Trace.WriteLine("            Cursor: " + host.Position);
                 Trace.WriteLine("            Top Offset: " + host.renderStuff.FirstRow + " rows");
                 Trace.WriteLine("            Left Offset: " + host.renderStuff.LeftOffset + " pixels");
 
@@ -101,7 +101,7 @@ namespace PartViewer
             {
                 if (!enabled) return;
 
-                Trace.WriteLine("PV Cursor Moved to " + host.caret);
+                Trace.WriteLine("PV Cursor Moved to " + host.Position);
             }
 
             [Conditional("DEBUG")]

@@ -22,24 +22,59 @@ namespace PartViewer.Model
             set { end = value; }
         }
 
+        public override int GetHashCode()
+        {
+            return Start.GetHashCode() ^ End.GetHashCode();
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is DocumentRange)
+                return Equals((DocumentRange)obj);
+            return base.Equals(obj);
+        }
+
         public bool Equals(DocumentRange other)
         {
             return start.Equals(other.start) && end.Equals(other.end);
         }
 
+        public static bool operator ==(DocumentRange left, DocumentRange right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(DocumentRange left, DocumentRange right)
+        {
+            return !left.Equals(right);
+        }
+
+        public static bool operator < (DocumentRange left, DocumentRange right)
+        {
+            return left.CompareTo(right) < 0;
+        }
+
+        public static bool operator > (DocumentRange left, DocumentRange right)
+        {
+            return left.CompareTo(right) > 0;
+        }
+
         public int CompareTo(DocumentRange other)
         {
-            int test = start.CompareTo(other.start);
+            var test = start.CompareTo(other.start);
             return test == 0 ? end.CompareTo(other.end) : test;
         }
 
-        public IEnumerable<int> getLines()
+        public IEnumerable<int> Lines
         {
-            int line = start.Line;
-            while (line <= end.Line)
+            get
             {
-                yield return line;
-                line++;
+                var line = start.Line;
+                while (line <= end.Line)
+                {
+                    yield return line;
+                    line++;
+                }
             }
         }
     }

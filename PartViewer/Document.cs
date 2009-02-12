@@ -3,8 +3,8 @@ using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
 
-using PartViewer.Styles;
 using PartViewer.Utils;
+using PartViewer.Model;
 
 namespace PartViewer
 {
@@ -14,12 +14,13 @@ namespace PartViewer
         {
             rows = new DocumentRowCollection();
 
-            style = new Style();
-
-            style.FontName = Control.DefaultFont.Name;
-            style.FontHeight = Control.DefaultFont.SizeInPoints;
-            style.Foreground = Color.Black;
-            style.Background = Color.White;
+            style = new Style
+            {
+                FontName = Control.DefaultFont.Name,
+                FontHeight = Control.DefaultFont.SizeInPoints,
+                Foreground = Color.Black,
+                Background = Color.White
+            };
         }
 
         private readonly Style style;
@@ -43,38 +44,32 @@ namespace PartViewer
             get { return rows; }
         }
 
-        public Point StartPoint
-        {
-            get { return new Point(0, 0); }
-        }
-
         public Point EndPoint
         {
-            get {
-                if (LineCount == 0)
-                    return Point.Empty;
-                return new Point(Rows[LineCount - 1].Length - 1, LineCount - 1);
+            get
+            {
+                return LineCount == 0
+                    ? Point.Empty
+                    : new Point(Rows[LineCount - 1].Length - 1, LineCount - 1);
             }
         }
 
-        public static Document create(params string[] source)
+        public static Document Create(params string[] source)
         {
-            Document doc = new Document();
+            var doc = new Document();
 
-            foreach (string s in source)
+            foreach (var s in source)
             {
-                doc.rows.add(StringSplitter.split(s));
+                doc.rows.Add(StringSplitter.Split(s));
             }
 
             return doc;
         }
 
-        public static Document createFromFile(string filePath)
+        public static Document CreateFromFile(string filePath)
         {
-            Document doc = new Document();
-
-            doc.rows.add(StringSplitter.split(File.ReadAllText(filePath)));
-
+            var doc = new Document();
+            doc.rows.Add(StringSplitter.Split(File.ReadAllText(filePath)));
             return doc;
         }
     }

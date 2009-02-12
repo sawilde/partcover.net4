@@ -3,17 +3,13 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Forms;
+using PartViewer.Model;
 
 namespace PartViewer
 {
     public partial class ViewControl : UserControl
     {
-        internal interface ScrollHost
-        {
-            void setScroll(Size bounds, int h, int v);
-        }
-
-        private class ScrollHostProxy : ScrollHost
+        private class ScrollHostProxy : IScrollable
         {
             readonly ViewControl owner;
             public ScrollHostProxy(ViewControl owner)
@@ -68,7 +64,7 @@ namespace PartViewer
         }
 
         [Browsable(false)]
-        public Model.View View
+        public Model.IView View
         {
             [DebuggerHidden]
             get { return text.View; }
@@ -108,7 +104,7 @@ namespace PartViewer
                 newValues.Height = e.NewValue;
                 newValues.Width = hScrollBar.Value;
             }
-            text.scroll(newValues.Width, newValues.Height);
+            text.Scroll(newValues.Width, newValues.Height);
         }
     }
 }

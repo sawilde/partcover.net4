@@ -6,37 +6,58 @@ namespace PartViewer.Model
         : IEquatable<DocumentPoint>
         , IComparable<DocumentPoint>
     {
-        private int line;
-        private int column;
-
         public DocumentPoint(int line, int column)
+            : this()
         {
-            this.line = line;
-            this.column = column;
+            Line = line;
+            Column = column;
         }
 
-        public int Line
+        public int Line { get; set; }
+        public int Column { get; set; }
+
+        public override int GetHashCode()
         {
-            get { return line; }
-            set { line = value; }
+            return Line.GetHashCode() ^ Column.GetHashCode();
         }
 
-        public int Column
+        public override bool Equals(object obj)
         {
-            get { return column; }
-            set { column = value; }
+            if (obj is DocumentPoint)
+                return Equals((DocumentPoint)obj);
+            return base.Equals(obj);
+        }
+
+        public static bool operator ==(DocumentPoint left, DocumentPoint right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(DocumentPoint left, DocumentPoint right)
+        {
+            return !left.Equals(right);
+        }
+
+        public static bool operator <(DocumentPoint left, DocumentPoint right)
+        {
+            return left.CompareTo(right) < 0;
+        }
+
+        public static bool operator >(DocumentPoint left, DocumentPoint right)
+        {
+            return left.CompareTo(right) > 0;
         }
 
         public bool Equals(DocumentPoint other)
         {
-            return line.Equals(other.line) && column.Equals(other.column);
+            return Line.Equals(other.Line) && Column.Equals(other.Column);
         }
 
         public int CompareTo(DocumentPoint other)
         {
-            int test = line.CompareTo(other.line);
+            var test = Line.CompareTo(other.Line);
             return test == 0
-                ? column.CompareTo(other.column)
+                ? Column.CompareTo(other.Column)
                 : test;
         }
     }

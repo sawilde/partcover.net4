@@ -3,14 +3,15 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Forms;
-using PartViewer.Styles;
+using PartViewer.Model;
+
 
 namespace PartViewer
 {
     internal class TextControl : Control
     {
         private DocumentView view;
-        private ViewControl.ScrollHost scrollHost;
+        private IScrollable scrollHost;
         private Graphics graphics;
         
         public TextControl()
@@ -40,15 +41,9 @@ namespace PartViewer
             }
         }
 
-        internal ViewControl.ScrollHost ScrollHost
+        internal IScrollable ScrollHost
         {
-            get { return scrollHost; }
             set { scrollHost = value; }
-        }
-
-        public ViewStyle ViewStyle
-        {
-            get { return view.ViewStyle; }
         }
 
         [Browsable(false)]
@@ -60,7 +55,7 @@ namespace PartViewer
         }
 
         [Browsable(false)]
-        public Model.View View
+        public IView View
         {
             get { return view; }
         }
@@ -86,9 +81,9 @@ namespace PartViewer
 
         protected override void OnPaint(PaintEventArgs e)
         {
-            Rectangle clip = e.ClipRectangle;
+            var clip = e.ClipRectangle;
             clip.Intersect(ViewRectangle);
-            view.draw(e.Graphics, clip);
+            view.Draw(e.Graphics, clip);
         }
 
         protected override void OnClientSizeChanged(EventArgs e)
@@ -120,8 +115,8 @@ namespace PartViewer
         private void moveCursorUnderMouse(Point pt)
         {
             pt.Offset(ViewRectangle.Location);
-            pt = view.getNearestCaretPosition(pt);
-            view.moveCaretTo(pt);
+            pt = view.GetNearestCaretPosition(pt);
+            view.MoveCaretTo(pt);
         }
 
         #region Handle Keys
@@ -171,9 +166,9 @@ namespace PartViewer
             scrollHost.setScroll(bounds, h, v);
         }
 
-        internal void scroll(int hValue, int vValue)
+        internal void Scroll(int hValue, int vValue)
         {
-            view.scroll(hValue, vValue);
+            view.Scroll(hValue, vValue);
         }
     }
 }

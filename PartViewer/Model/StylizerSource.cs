@@ -1,11 +1,11 @@
 namespace PartViewer.Model
 {
-    public interface StylizerSource
+    public interface IStylizerSource
     {
         Document Document { get;}
         DocumentRange Range { get;}
 
-        void setFace(DocumentRange target, string face);
-        void setFace(DocumentRange target, StyleFace face);
+        void AssignFace(DocumentRange target, string face);
+        void AssignFace(DocumentRange target, IStyleFace face);
     }
 }

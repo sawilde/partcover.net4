@@ -3,7 +3,7 @@ using System.Drawing;
 namespace PartViewer
 {
     partial class DocumentView {
-        public Point getNearestCaretPosition(Point viewScreenPoint)
+        public Point GetNearestCaretPosition(Point viewScreenPoint)
         {
             if (Document == null)
                 return Point.Empty;
