@@ -37,20 +37,20 @@ namespace PartCover.Browser.Stuff
 
         public static void DoTransform(IProgressTracker tracker, string inputFile, string transform)
         {
-            string xsltFilePath = Path.Combine(XsltDir, transform + XsltExt);
+            var xsltFilePath = Path.Combine(XsltDir, transform + XsltExt);
 
-            tracker.setMessage("Load xslt file " + xsltFilePath);
-            XslCompiledTransform tran = new XslCompiledTransform(false);
+            tracker.AppendMessage("Load xslt file " + xsltFilePath);
+            var tran = new XslCompiledTransform(false);
             tran.Load(xsltFilePath);
 
-            tracker.setMessage("Transform report xml file");
-            string outputFile = Path.GetTempFileName() + ".html";
+            tracker.AppendMessage("Transform report xml file");
+            var outputFile = Path.GetTempFileName() + ".html";
             tran.Transform(inputFile, outputFile);
 
-            tracker.setMessage("Open html report");
+            tracker.AppendMessage("Open html report");
             Process.Start(outputFile);
 
-            tracker.setMessage("Done");
+            tracker.AppendMessage("Done");
         }
     }
 }

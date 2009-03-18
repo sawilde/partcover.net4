@@ -1,8 +1,4 @@
 using System;
-using System.Collections;
-using System.Globalization;
-using System.IO;
-using System.Xml;
 using System.Collections.Generic;
 
 namespace PartCover.Framework.Walkers
@@ -91,7 +87,7 @@ namespace PartCover.Framework.Walkers
             public string Message;
         }
 
-        public int? ExitCode = null;
+        public int? ExitCode;
         public List<TypeDescriptor> types = new List<TypeDescriptor>();
         public List<FileDescriptor> files = new List<FileDescriptor>();
         public List<RunHistoryMessage> runHistory = new List<RunHistoryMessage>();
@@ -99,16 +95,10 @@ namespace PartCover.Framework.Walkers
 
         public void forEachInnerBlock(Action<InnerBlock> action)
         {
-            types.ForEach(delegate(TypeDescriptor desc)
-            {
-                Array.ForEach(desc.methods, delegate(MethodDescriptor md)
-                {
-                    Array.ForEach(md.insBlocks, delegate(InnerBlockData ib)
-                    {
-                        Array.ForEach(ib.blocks, action);
-                    });
-                });
-            });
+            types.ForEach(desc =>
+                Array.ForEach(desc.methods, md => 
+                    Array.ForEach(md.insBlocks, ib => 
+                        Array.ForEach(ib.blocks, action))));
         }
     }
 }

@@ -51,7 +51,7 @@ namespace ILHelpers {
     };
 
     enum ILopCode {
-        #define OPDEF(name, str, decs, incs, args, optp, stdlen, stdop1, stdop2, flow) name = stdop2,
+        #define OPDEF(name, str, decs, incs, args, optp, stdlen, stdop1, stdop2, flow) name = (stdop1 << 16) | stdop2,
         #include "opcode.def"
         #undef OPDEF
         CEE_NO_OP = -1
@@ -170,11 +170,10 @@ namespace ILHelpers {
     //////////////////////////////////////////////////////////////////////////
     // Dump stuff
 
-    void DumpIlop(DriverLog& log, const ILop& ilop, const char* prefix = "");
-    void DumpCode(DriverLog& log, const ILopCodes& ilops, const char* prefix = "");
-    void DumpContinuousBlocks(DriverLog& log, const ContinuousBlocks& blocks, const char* prefix = "");
-    void DumpChangeBlocks(DriverLog& log, const ChangeBlocks& blocks, const char* prefix = "");
-
+    void DumpIlop(DriverLog& log, const ILop& ilop, LPCTSTR prefix = _T(""));
+    void DumpCode(DriverLog& log, const ILopCodes& ilops, LPCTSTR prefix = _T(""));
+    void DumpContinuousBlocks(DriverLog& log, const ContinuousBlocks& blocks, LPCTSTR prefix = _T(""));
+    void DumpChangeBlocks(DriverLog& log, const ChangeBlocks& blocks, LPCTSTR prefix = _T(""));
     // Dump stuff
     //////////////////////////////////////////////////////////////////////////
 }

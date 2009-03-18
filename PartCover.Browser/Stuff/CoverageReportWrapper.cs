@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 using PartCover.Browser.Api;
 using PartCover.Browser.Api.ReportItems;
 using PartCover.Framework.Walkers;
-using System.Reflection;
 using PartCover.Browser.Stuff.ReportItems;
 
 namespace PartCover.Browser.Stuff
@@ -23,60 +21,67 @@ namespace PartCover.Browser.Stuff
             this.report = report;
         }
 
-        List<AssemblyItem> assemblyList = new List<AssemblyItem>();
-        public IAssembly[] getAssemblies()
+        readonly List<AssemblyItem> assemblyList = new List<AssemblyItem>();
+        public ICollection<IAssembly> Assemblies
         {
-            return assemblyList.ToArray();
+            get
+            {
+                return assemblyList.ToArray();
+            }
         }
 
         public void build()
         {
-            foreach (string asmName in CoverageReportHelper.GetAssemblies(report))
+            foreach (var asmName in CoverageReportHelper.GetAssemblies(report))
             {
-                AssemblyItem assemblyItem = new AssemblyItem(asmName);
-                foreach (CoverageReport.TypeDescriptor d in CoverageReportHelper.GetTypes(report, assemblyItem.Name))
+                var assemblyItem = new AssemblyItem(asmName);
+                foreach (var d in CoverageReportHelper.GetTypes(report, assemblyItem.Name))
                 {
-                    ClassItem classItem = new ClassItem(d.typeName, assemblyItem);
-                    buildNamespaceChain(assemblyItem, classItem);
-                    buildMethods(d.methods, classItem);
+                    var classItem = new ClassItem(d.typeName, assemblyItem);
+                    BuildNamespaceChain(assemblyItem, classItem);
+                    BuildMethods(d.methods, classItem);
                     assemblyItem.addType(classItem);
                 }
                 assemblyList.Add(assemblyItem);
             }
         }
 
-        private void buildMethods(CoverageReport.MethodDescriptor[] mdList, ClassItem classItem)
+        private static void BuildMethods(IEnumerable<CoverageReport.MethodDescriptor> mdList, ClassItem classItem)
         {
-            foreach (CoverageReport.MethodDescriptor md in mdList)
+            foreach (var md in mdList)
             {
-                MethodItem mdItem = new MethodItem(md, classItem);
-                buildMethodBlocks(md, mdItem);
+                var mdItem = new MethodItem(md, classItem);
+                BuildMethodBlocks(md, mdItem);
                 classItem.addMethod(mdItem);
             }
         }
 
-        private void buildMethodBlocks(CoverageReport.MethodDescriptor md, MethodItem mdItem)
+        private static void BuildMethodBlocks(CoverageReport.MethodDescriptor md, MethodItem mdItem)
         {
-            foreach (CoverageReport.InnerBlockData ibd in md.insBlocks)
+            foreach (var ibd in md.insBlocks)
             {
-                CoveredVariantItem cvItem = new CoveredVariantItem();
-                cvItem.Blocks = ibd.blocks;
+                var cvItem = new CoveredVariantItem
+                {
+                    Blocks = ibd.blocks
+                };
                 mdItem.addBlock(cvItem);
             }
         }
 
-        private void buildNamespaceChain(AssemblyItem assemblyItem, ClassItem classItem)
+        private static void BuildNamespaceChain(AssemblyItem assemblyItem, ClassItem classItem)
         {
-            string[] parts = CoverageReportHelper.SplitNamespaces(classItem.QName);
+            var parts = CoverageReportHelper.SplitNamespaces(classItem.QName);
 
             NamespaceItem lastNamespaceItem = null;
-            for (int i = 0; i < parts.Length - 1; ++i)
+            for (var i = 0; i < parts.Length - 1; ++i)
             {
-                NamespaceItem namespaceItem = assemblyItem.findNamespace(parts[i], lastNamespaceItem);
+                var namespaceItem = assemblyItem.findNamespace(parts[i], lastNamespaceItem);
                 if (namespaceItem == null)
                 {
-                    namespaceItem = new NamespaceItem(parts[i], assemblyItem);
-                    namespaceItem.Parent = lastNamespaceItem;
+                    namespaceItem = new NamespaceItem(parts[i], assemblyItem)
+                    {
+                        Parent = lastNamespaceItem
+                    };
                     assemblyItem.addNamespace(namespaceItem);
                 }
                 lastNamespaceItem = namespaceItem;
@@ -85,29 +90,29 @@ namespace PartCover.Browser.Stuff
             classItem.Namespace = lastNamespaceItem;
         }
 
-        public string getFilePath(uint file)
+        public string ResolveFilePath(uint file)
         {
             return CoverageReportHelper.GetFileUrl(report, file);
         }
 
-        public void forEachBlock(Action<CoverageReport.InnerBlock> blockReceiver)
+        public void ForEachBlock(Action<CoverageReport.InnerBlock> blockReceiver)
         {
             report.forEachInnerBlock(blockReceiver);
         }
 
-        public ICollection<CoverageReport.RunHistoryMessage> getRunHistory()
+        public ICollection<CoverageReport.RunHistoryMessage> RunHistory
         {
-            return report.runHistory;
+            get { return report.runHistory; }
         }
 
-        public ICollection<CoverageReport.RunLogMessage> getLogEvents()
+        public ICollection<CoverageReport.RunLogMessage> LogEvents
         {
-            return report.runLog;
+            get { return report.runLog; }
         }
 
-        public int? getExitCode()
+        public int? ExitCode
         {
-            return report.ExitCode;
+            get { return report.ExitCode; }
         }
     }
 }

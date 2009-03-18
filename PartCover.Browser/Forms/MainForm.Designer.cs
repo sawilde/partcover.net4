@@ -1,10 +1,13 @@
-namespace PartCover.Browser {
+using PartCover.Browser.Features.Controls;
+
+namespace PartCover.Browser.Forms
+{
     partial class MainForm {
         private System.Windows.Forms.MainMenu mm;
         private System.Windows.Forms.MenuItem mmFile;
         private System.Windows.Forms.MenuItem mmFileOpen;
         private System.Windows.Forms.OpenFileDialog dlgOpen;
-        private PartCover.Browser.Controls.ReportTree tvItems;
+        private ReportTree tvItems;
         private System.Windows.Forms.MenuItem mmFileExit;
         private System.Windows.Forms.MenuItem mmFileSaveAs;
         private System.Windows.Forms.MenuItem mmRunTarget;
@@ -52,27 +55,27 @@ namespace PartCover.Browser {
             this.dlgOpen = new System.Windows.Forms.OpenFileDialog();
             this.dlgSave = new System.Windows.Forms.SaveFileDialog();
             this.splitter1 = new System.Windows.Forms.Splitter();
-            this.tvItems = new PartCover.Browser.Controls.ReportTree();
+            this.tvItems = new ReportTree();
             this.SuspendLayout();
             // 
             // mm
             // 
             this.mm.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
-            this.mmFile,
-            this.miViews,
-            this.miWindows,
-            this.miHelp});
+                                                                               this.mmFile,
+                                                                               this.miViews,
+                                                                               this.miWindows,
+                                                                               this.miHelp});
             // 
             // mmFile
             // 
             this.mmFile.Index = 0;
             this.mmFile.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
-            this.mmRunTarget,
-            this.mmSep2,
-            this.mmFileOpen,
-            this.mmFileSaveAs,
-            this.mmSep1,
-            this.mmFileExit});
+                                                                                   this.mmRunTarget,
+                                                                                   this.mmSep2,
+                                                                                   this.mmFileOpen,
+                                                                                   this.mmFileSaveAs,
+                                                                                   this.mmSep1,
+                                                                                   this.mmFileExit});
             this.mmFile.Text = "&File";
             // 
             // mmRunTarget
@@ -115,8 +118,8 @@ namespace PartCover.Browser {
             // 
             this.miViews.Index = 1;
             this.miViews.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
-            this.miHtml,
-            this.menuItem1});
+                                                                                    this.miHtml,
+                                                                                    this.menuItem1});
             this.miViews.Text = "&Views";
             // 
             // miHtml
@@ -139,8 +142,8 @@ namespace PartCover.Browser {
             // 
             this.miHelp.Index = 3;
             this.miHelp.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
-            this.miSettings,
-            this.miAbout});
+                                                                                   this.miSettings,
+                                                                                   this.miAbout});
             this.miHelp.Text = "&Help";
             // 
             // miSettings

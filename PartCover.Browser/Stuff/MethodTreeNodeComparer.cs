@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using PartCover.Browser.Controls;
+using PartCover.Browser.Features.Controls;
 
 namespace PartCover.Browser.Stuff
 {
@@ -7,17 +7,16 @@ namespace PartCover.Browser.Stuff
     {
         private class NodeTypeDetector : INodeVisitor
         {
-            int level;
-            public int Level { get { return level; } }
+            public int Level { get; private set; }
 
-            public void forAssembly(AssemblyTreeNode node) { level = 0; }
-            public void forNamespace(NamespaceTreeNode node) { level = 0; }
-            public void forType(ClassTreeNode node) { level = 0; }
-            public void forProperty(PropertyTreeNode node) { level = 1; }
-            public void forMethod(MethodTreeNode node) { level = 2; }
-            public void forBlockVariant(BlockVariantTreeNode node) { level = 0; }
+            public void OnAssembly(AssemblyTreeNode node) { Level = 0; }
+            public void OnNamespace(NamespaceTreeNode node) { Level = 0; }
+            public void OnType(ClassTreeNode node) { Level = 0; }
+            public void OnProperty(PropertyTreeNode node) { Level = 1; }
+            public void OnMethod(MethodTreeNode node) { Level = 2; }
+            public void OnBlockVariant(BlockVariantTreeNode node) { Level = 0; }
 
-            public void reset() { level = 0; }
+            public void Reset() { Level = 0; }
         }
 
         public readonly static MethodTreeNodeComparer Default = new MethodTreeNodeComparerKindName();
@@ -27,11 +26,11 @@ namespace PartCover.Browser.Stuff
 
         public int Compare(TreeNodeBase x, TreeNodeBase y)
         {
-            xDetector.reset();
-            yDetector.reset();
+            xDetector.Reset();
+            yDetector.Reset();
 
-            x.visit(xDetector);
-            y.visit(yDetector);
+            x.Visit(xDetector);
+            y.Visit(yDetector);
 
             switch (xDetector.Level)
             {

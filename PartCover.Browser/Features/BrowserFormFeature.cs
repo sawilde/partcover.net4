@@ -1,37 +1,31 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using PartCover.Browser.Api;
+using PartCover.Browser.Forms;
 
 namespace PartCover.Browser.Features
 {
     internal class BrowserFormFeature : IFeature
     {
-        private MainForm mainForm;
+        public MainForm MainForm { get; private set; }
 
-        public MainForm MainForm
+        public void Attach(IServiceContainer container)
         {
-            get { return mainForm; }
+            MainForm = new MainForm {
+                ServiceContainer = container
+            };
+
+            container.registerService(MainForm);
         }
 
-        public void attach(IServiceContainer container)
+        public void Detach(IServiceContainer container)
         {
-            mainForm = new MainForm();
-            mainForm.ServiceContainer = container;
+            container.unregisterService(MainForm);
 
-            container.registerService(mainForm);
+            MainForm.ServiceContainer = null;
+            MainForm = null;
         }
 
-        public void detach(IServiceContainer container)
-        {
-            container.unregisterService(mainForm);
+        public void Build(IServiceContainer container) { }
 
-            mainForm.ServiceContainer = null;
-            mainForm = null;
-        }
-
-        public void build(IServiceContainer container) { }
-
-        public void destroy(IServiceContainer container) { }
+        public void Destroy(IServiceContainer container) { }
     }
 }

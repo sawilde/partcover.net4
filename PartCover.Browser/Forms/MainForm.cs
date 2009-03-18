@@ -5,24 +5,19 @@ using System.Windows.Forms;
 
 using PartCover.Browser.Dialogs;
 using PartCover.Browser.Properties;
-using PartCover.Browser.Resources;
 using PartCover.Browser.Stuff;
-using PartCover.Framework.Stuff;
 using PartCover.Framework.Walkers;
 using PartCover.Browser.Api;
-using PartCover.Browser.Features;
 using PartCover.Browser.Helpers;
 
-namespace PartCover.Browser
+namespace PartCover.Browser.Forms
 {
     /// <summary>
     /// Summary description for Form1.
     /// </summary>
-    public partial class MainForm
-        : Form
-        , IReportViewValve
+    public partial class MainForm : Form, IReportViewValve
     {
-        private Dictionary<IReportViewFactory, ReportView> viewFactories = new Dictionary<IReportViewFactory, ReportView>();
+        private readonly Dictionary<IReportViewFactory, ReportView> viewFactories = new Dictionary<IReportViewFactory, ReportView>();
 
         private IServiceContainer serviceContainer;
         public IServiceContainer ServiceContainer
@@ -48,7 +43,7 @@ namespace PartCover.Browser
                 return;
 
             CloseViews();
-            ServiceContainer.getService<ICoverageReportService>().loadFromFile(dlgOpen.FileName);
+            ServiceContainer.getService<ICoverageReportService>().LoadFromFile(dlgOpen.FileName);
         }
 
         private void mmFileExit_Click(object sender, EventArgs e)
@@ -61,7 +56,7 @@ namespace PartCover.Browser
         {
             if (dlgSave.ShowDialog(this) != DialogResult.OK)
                 return;
-            ServiceContainer.getService<ICoverageReportService>().saveReport(dlgSave.FileName);
+            ServiceContainer.getService<ICoverageReportService>().SaveToFile(dlgSave.FileName);
         }
 
         readonly RunTargetForm runTargetForm = new RunTargetForm();
@@ -83,8 +78,10 @@ namespace PartCover.Browser
 
             CloseViews();
 
-            TargetRunner runner = new TargetRunner();
-            runner.RunTargetForm = runTargetForm;
+            var runner = new TargetRunner
+            {
+                RunTargetForm = runTargetForm
+            };
             runner.execute(this);
 
             try
@@ -104,13 +101,14 @@ namespace PartCover.Browser
 
             if (runTargetForm.OutputToFile)
             {
-                StreamWriter writer = new StreamWriter(dlgSave.FileName);
-                CoverageReportHelper.WriteReport(runner.Report, writer);
-                writer.Close();
+                using (var writer = new StreamWriter(dlgSave.FileName))
+                {
+                    CoverageReportHelper.WriteReport(runner.Report, writer);
+                }
             }
             else
             {
-                ServiceContainer.getService<ICoverageReportService>().load(runner.Report);
+                ServiceContainer.getService<ICoverageReportService>().Load(runner.Report);
             }
         }
 
@@ -124,7 +122,7 @@ namespace PartCover.Browser
 
         private void miSettings_Click(object sender, EventArgs e)
         {
-            using (SettingsForm form = new SettingsForm())
+            using (var form = new SettingsForm())
             {
                 if (DialogResult.OK != form.ShowDialog(this))
                 {
@@ -139,18 +137,16 @@ namespace PartCover.Browser
 
         private void BuildTransformMenu()
         {
-            Menu.MenuItemCollection items = miHtml.MenuItems;
-            foreach (string transform in HtmlPreview.enumTransforms())
+            var items = miHtml.MenuItems;
+            foreach (var transform in HtmlPreview.enumTransforms())
             {
-                MenuItem item = new MenuItem();
-
-                item.Text = transform;
-
-                string transformName = transform;
-                item.Click += delegate
+                var item = new MenuItem
                 {
-                    MakeHtmlPreview(transformName);
+                    Text = transform
                 };
+
+                var transformName = transform;
+                item.Click += delegate { MakeHtmlPreview(transformName); };
 
                 items.Add(item);
             }
@@ -166,12 +162,9 @@ namespace PartCover.Browser
             if (ServiceContainer.getService<ICoverageReportService>().ReportFileName == null)
                 return;
 
-            TinyAsyncUserProcess asyncProcess = new TinyAsyncUserProcess();
-            asyncProcess.Action = delegate(IProgressTracker tracker)
+            var asyncProcess = new TinyAsyncUserProcess
             {
-                HtmlPreview.DoTransform(tracker,
-                    ServiceContainer.getService<ICoverageReportService>().ReportFileName, 
-                    transform);
+                Action = tracker => HtmlPreview.DoTransform(tracker, ServiceContainer.getService<ICoverageReportService>().ReportFileName, transform)
             };
 
             asyncProcess.execute(this);
@@ -181,10 +174,8 @@ namespace PartCover.Browser
         public void add(IReportViewFactory factory)
         {
             viewFactories.Add(factory, null);
-            miViews.MenuItems.Add(factory.ViewName, delegate
-            {
-                showView(factory);
-            });
+            miViews.MenuItems.Add(factory.ViewName,
+                delegate { showView(factory); });
         }
 
         public void remove(IReportViewFactory factory)
@@ -201,23 +192,23 @@ namespace PartCover.Browser
                 return;
             }
 
-            ReportView view = viewFactories[factory];
+            var view = viewFactories[factory];
             if (view == null)
             {
-                viewFactories[factory] = view = factory.create();
+                viewFactories[factory] = view = factory.Create();
 
                 view.WindowState = FormWindowState.Maximized;
                 view.MdiParent = this;
                 view.Text = factory.ViewName;
 
-                TinyAsyncUserProcess asyncProcess = new TinyAsyncUserProcess();
-                asyncProcess.Action = delegate(IProgressTracker tracker)
+                var asyncProcess = new TinyAsyncUserProcess
                 {
-                    view.attach(serviceContainer, tracker);
+                    Action = tracker => view.attach(serviceContainer, tracker)
                 };
                 asyncProcess.execute(this);
 
-                view.FormClosed += delegate {
+                view.FormClosed += delegate
+                {
                     view.detach(serviceContainer, new DummyProgressTracker());
                     viewFactories[factory] = null;
                 };
@@ -241,4 +232,3 @@ namespace PartCover.Browser
         }
     }
 }
-

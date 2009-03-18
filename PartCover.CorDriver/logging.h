@@ -49,7 +49,6 @@ private:
 #define LOGINFO4(level, message, arg0, arg1, arg2, arg3)   DriverLog::get().WriteInfo(level, _T(message), arg0, arg1, arg2, arg3)
 #define LOGINFO5(level, message, arg0, arg1, arg2, arg3, arg4)   DriverLog::get().WriteInfo(level, _T(message), arg0, arg1, arg2, arg3, arg4)
 #define LOGINFO6(level, message, arg0, arg1, arg2, arg3, arg4, arg5)   DriverLog::get().WriteInfo(level, _T(message), arg0, arg1, arg2, arg3, arg4, arg5)
-#define LOGINFO7(level, message, arg0, arg1, arg2, arg3, arg4, arg5, arg6)   DriverLog::get().WriteInfo(level, _T(message), arg0, arg1, arg2, arg3, arg4, arg5, arg6)
 
 #define PROFILER_CALL_METHOD        128
 #define SKIP_BY_RULES               64

@@ -1,9 +1,4 @@
 using System;
-using System.Diagnostics;
-using System.Collections;
-using System.Xml;
-
-using PartCover.Framework.Walkers;
 
 namespace PartCover.Framework.Walkers
 {
@@ -14,9 +9,9 @@ namespace PartCover.Framework.Walkers
 
     internal class InstrumentedBlocksWalkerInner :
         InstrumentedBlocksWalker,
-        PartCover.IInstrumentedBlockWalker
+        IInstrumentedBlockWalker
     {
-        CoverageReport coverage;
+        readonly CoverageReport coverage;
         public CoverageReport Report
         {
             get { return coverage; }
@@ -31,7 +26,7 @@ namespace PartCover.Framework.Walkers
 
         public void EndReport() { }
 
-        public void RegisterFile(System.UInt32 fileId, System.String fileUrl)
+        public void RegisterFile(uint fileId, String fileUrl)
         {
             CoverageReportHelper.AddFile(Report, fileId, fileUrl);
         }
@@ -40,10 +35,12 @@ namespace PartCover.Framework.Walkers
 
         public void EnterTypedef(String assemblyName, String typedefName, UInt32 flags)
         {
-            currentType = new CoverageReport.TypeDescriptor();
-            currentType.assemblyName = assemblyName;
-            currentType.typeName = typedefName;
-            currentType.flags = flags;
+            currentType = new CoverageReport.TypeDescriptor
+            {
+                assemblyName = assemblyName,
+                typeName = typedefName,
+                flags = flags
+            };
         }
 
         public void LeaveTypedef()
@@ -53,13 +50,15 @@ namespace PartCover.Framework.Walkers
 
         CoverageReport.MethodDescriptor currentMethod;
 
-        public void EnterMethod(String methodName, String methodSig,  UInt32 flags, UInt32 implFlags)
+        public void EnterMethod(String methodName, String methodSig, UInt32 flags, UInt32 implFlags)
         {
-            currentMethod = new CoverageReport.MethodDescriptor(1);
-            currentMethod.methodName = methodName;
-            currentMethod.methodSig = methodSig;
-            currentMethod.flags = flags;
-            currentMethod.implFlags = implFlags;
+            currentMethod = new CoverageReport.MethodDescriptor(1)
+            {
+                methodName = methodName,
+                methodSig = methodSig,
+                flags = flags,
+                implFlags = implFlags
+            };
         }
 
         public void LeaveMethod()
@@ -69,16 +68,17 @@ namespace PartCover.Framework.Walkers
 
         public void MethodBlock(UInt32 position, UInt32 blockLen, UInt32 visitCount, UInt32 fileId, UInt32 startLine, UInt32 startColumn, UInt32 endLine, UInt32 endColumn)
         {
-            CoverageReport.InnerBlock inner = new CoverageReport.InnerBlock();
-            inner.position = position;
-            inner.blockLen = blockLen;
-            inner.visitCount = visitCount;
-            inner.fileId = fileId;
-            inner.startLine = startLine;
-            inner.startColumn = startColumn;
-            inner.endLine = endLine;
-            inner.endColumn = endColumn;
-
+            var inner = new CoverageReport.InnerBlock
+            {
+                position = position,
+                blockLen = blockLen,
+                visitCount = visitCount,
+                fileId = fileId,
+                startLine = startLine,
+                startColumn = startColumn,
+                endLine = endLine,
+                endColumn = endColumn
+            };
             CoverageReportHelper.AddMethodBlock(currentMethod, inner);
         }
     }

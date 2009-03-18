@@ -11,10 +11,10 @@
 #pragma warning(disable : 4312)
 #pragma warning(disable : 4311)
 
-//#define DUMP_ORIGINAL_CODE
+#define DUMP_ORIGINAL_CODE
 //#define DUMP_CONTINUOUS_BLOCKS
 //#define DUMP_CHANGED_BLOCK
-//#define DUMP_NEW_CODE
+#define DUMP_NEW_CODE
 
 //#undef METHOD_INNER
 //#define METHOD_INNER eNull
@@ -22,8 +22,8 @@
 using namespace ILHelpers;
 
 const DWORD MaxCounterValue = 0x1869F;
-const char* SLogPrefix = "      ";
-const char* LogPrefix = "        ";
+LPCTSTR SLogPrefix = _T("      ");
+LPCTSTR LogPrefix = _T("        ");
 
 InstrumentedILBody::InstrumentedILBody(LPCBYTE body, ULONG bodySize) : m_decoder((COR_ILMETHOD*) body), m_parsed(false)
 {
@@ -37,14 +37,14 @@ InstrumentedILBody::InstrumentedILBody(LPCBYTE body, ULONG bodySize) : m_decoder
     DriverLog& log = DriverLog::get();
 
 #ifdef DUMP_ORIGINAL_CODE
-    log.WriteLine("%scode: %s, header %d bytes, code length %d bytes, stack %d, %d eh-sections, additional sections - %s", 
+    log.WriteLine(_T("%scode: %s, header %d bytes, code length %d bytes, stack %d, %d eh-sections, additional sections - %s"), 
         SLogPrefix,
-        m_decoder.IsFat() ? "FAT" : "TINY", 
+        m_decoder.IsFat() ? _T("FAT") : _T("TINY"), 
         m_decoder.Size * 4, 
         m_decoder.CodeSize, 
         m_decoder.GetMaxStack(),
         m_decoder.EHCount(),
-        m_decoder.Sect == 0 ? "no" : "yes");
+        m_decoder.Sect == 0 ? _T("no") : _T("yes"));
 #endif
 
     ParseBody(m_decoder.Code, m_decoder.Code + m_decoder.CodeSize);

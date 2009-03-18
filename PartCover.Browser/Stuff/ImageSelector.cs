@@ -3,7 +3,6 @@ using System.Reflection;
 
 using PartCover.Browser.Resources;
 using PartCover.Framework.Stuff;
-using PartCover.Framework.Walkers;
 using PartCover.Browser.Api.ReportItems;
 
 namespace PartCover.Browser.Stuff
@@ -60,38 +59,38 @@ namespace PartCover.Browser.Stuff
 
         }
 
-        public static int forPropertyGet(IMethod md)
+        public static int ForPropertyGet(IMethod md)
         {
             return VSImage.Current.PropertyGet;
         }
 
-        public static int forPropertySet(IMethod md)
+        public static int ForPropertySet(IMethod md)
         {
             return VSImage.Current.PropertySet;
         }
 
-        public static int forEventAdd(IMethod md)
+        public static int ForEventAdd(IMethod md)
         {
             return VSImage.Current.EventAdd;
         }
 
-        public static int forEventRemove(IMethod md)
+        public static int ForEventRemove(IMethod md)
         {
             return VSImage.Current.EventRemove;
         }
 
-        public static int forType(IClass type)
+        public static int ForType(IClass type)
         {
-            TypeAttributes visibilityAndSemantic = Types.getAccessAndSemantic(type.Flags);
-            if (Types.isPrivate(type.Flags))
+            var visibilityAndSemantic = Types.GetAccessAndSemantic(type.Flags);
+            if (Types.IsPrivate(type.Flags))
             {
-                int nested = type.Name.IndexOf('+');
-                int generic = type.Name.IndexOf('<');
+                var nested = type.Name.IndexOf('+');
+                var generic = type.Name.IndexOf('<');
                 if (nested == -1 || (generic != -1 && nested > generic))
                     visibilityAndSemantic |= TypeAttributes.NestedAssembly;
             }
 
-            if (Types.isValueType(type.Flags))
+            if (Types.IsValueType(type.Flags))
             {
                 visibilityAndSemantic |= TypeAttributes.LayoutMask;
             }
@@ -103,9 +102,9 @@ namespace PartCover.Browser.Stuff
             return -1;
         }
 
-        public static int forMethod(IMethod md)
+        public static int ForMethod(IMethod md)
         {
-            MethodAttributes access = Methods.getAccess(md.Flags);
+            var access = Methods.getAccess(md.Flags);
             if (Methods.isStatic(md.Flags))
             {
                 access |= MethodAttributes.Static;

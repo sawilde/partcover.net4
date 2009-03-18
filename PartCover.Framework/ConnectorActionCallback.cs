@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using PartCover.Framework.Walkers;
 
 namespace PartCover.Framework
@@ -70,10 +67,12 @@ namespace PartCover.Framework
 
         void IConnectorActionCallback.LogMessage(int threadId, int tick, string text)
         {
-            CoverageReport.RunLogMessage message = new CoverageReport.RunLogMessage();
-            message.Message = text;
-            message.MsOffset = tick;
-            message.ThreadId = threadId;
+            var message = new CoverageReport.RunLogMessage 
+            {
+                Message = text, 
+                MsOffset = tick, 
+                ThreadId = threadId
+            };
             connector.OnLogMessage(message);
         }
     }

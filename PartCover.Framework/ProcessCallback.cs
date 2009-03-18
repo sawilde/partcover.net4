@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
 using PartCover.Framework.Walkers;
 
 namespace PartCover.Framework
@@ -23,9 +21,11 @@ namespace PartCover.Framework
             if (OnMessage == null)
                 return;
 
-            CoverageReport.RunHistoryMessage data = new CoverageReport.RunHistoryMessage();
-            data.Message = message;
-            data.Time = DateTime.Now.ToUniversalTime();
+            var data = new CoverageReport.RunHistoryMessage 
+            {
+                Message = message, 
+                Time = DateTime.Now.ToUniversalTime()
+            };
             OnMessage(this, new EventArgs<CoverageReport.RunHistoryMessage>(data));
         }
     }

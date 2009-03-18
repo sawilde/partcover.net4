@@ -477,21 +477,21 @@ namespace ILHelpers {
     //////////////////////////////////////////////////////////////////////////
     // Dump stuff
 
-    void DumpIlop(DriverLog& log, const ILop& op, const char* prefix) {
+    void DumpIlop(DriverLog& log, const ILop& op, LPCTSTR prefix) {
         if (!log.CanWrite(DUMP_INSTRUMENTATION))
             return;
 
         DWORD pos = op.pos;
         if (!op.IsBranch()) {
             switch(op.inlineParameterType) {
-            case eInlineNull:  LOGINFO3(DUMP_INSTRUMENTATION, "%s %8X %s", prefix, pos, op.mnemonic); break;
-            case eInlineByte:  LOGINFO4(DUMP_INSTRUMENTATION, "%s %8X %s %1X", prefix, pos, op.mnemonic, op.inlineParameter.opByte); break;
-            case eInlineWord:  LOGINFO4(DUMP_INSTRUMENTATION, "%s %8X %s %2X", prefix, pos, op.mnemonic, op.inlineParameter.opWord); break;
-            case eInlineDword: LOGINFO4(DUMP_INSTRUMENTATION, "%s %8X %s %4X", prefix, pos, op.mnemonic, op.inlineParameter.opDword); break;
-            case eInlineQword: LOGINFO3(DUMP_INSTRUMENTATION, "%s %8X %s <QWORD>", prefix, pos, op.mnemonic); break;
+            case eInlineNull:  LOGINFO3(DUMP_INSTRUMENTATION, "%S %8X %s", prefix, pos, op.mnemonic); break;
+            case eInlineByte:  LOGINFO4(DUMP_INSTRUMENTATION, "%S %8X %s %1X", prefix, pos, op.mnemonic, op.inlineParameter.opByte); break;
+            case eInlineWord:  LOGINFO4(DUMP_INSTRUMENTATION, "%S %8X %s %2X", prefix, pos, op.mnemonic, op.inlineParameter.opWord); break;
+            case eInlineDword: LOGINFO4(DUMP_INSTRUMENTATION, "%S %8X %s %4X", prefix, pos, op.mnemonic, op.inlineParameter.opDword); break;
+            case eInlineQword: LOGINFO3(DUMP_INSTRUMENTATION, "%S %8X %s <QWORD>", prefix, pos, op.mnemonic); break;
             }
         } else if (CEE_SWITCH == op.code) {
-            LOGINFO4(DUMP_INSTRUMENTATION, "%s %8X %s size %l", prefix, pos, op.mnemonic, op.branchOffsets.size());
+            LOGINFO4(DUMP_INSTRUMENTATION, "%S %8X %s size %l", prefix, pos, op.mnemonic, op.branchOffsets.size());
             pos += op.stdlen + op.inlineParameterType;
 
             BranchOffsetTable::const_iterator switchIt = op.branchOffsets.begin();
@@ -505,13 +505,13 @@ namespace ILHelpers {
         }
     }
 
-    void DumpCode(DriverLog& log, const ILopCodes& ilops, const char* prefix) {
+    void DumpCode(DriverLog& log, const ILopCodes& ilops, LPCTSTR prefix) {
         for(ILopConstPtr ilit = ilops.begin(); ilit != ilops.end(); ++ilit)
             DumpIlop(log, *ilit, prefix);
     }
 
 
-    void DumpContinuousBlocks(DriverLog& log, const ContinuousBlocks& blocks, const char* prefix) {
+    void DumpContinuousBlocks(DriverLog& log, const ContinuousBlocks& blocks, LPCTSTR prefix) {
         if (!log.CanWrite(DUMP_INSTRUMENTATION))
             return;
 
@@ -523,7 +523,7 @@ namespace ILHelpers {
         }
     }
 
-    void DumpChangeBlocks(DriverLog& log, const ChangeBlocks& blocks, const char* prefix) {
+    void DumpChangeBlocks(DriverLog& log, const ChangeBlocks& blocks, LPCTSTR prefix) {
         if (!log.CanWrite(DUMP_INSTRUMENTATION))
             return;
 

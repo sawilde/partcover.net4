@@ -1,9 +1,8 @@
 using System;
 using System.Windows.Forms;
-using PartCover.Browser.Api;
 using System.Reflection;
 using log4net;
-using PartCover.Browser.Features;
+using PartCover.Browser.Forms;
 
 namespace PartCover.Browser
 {
@@ -17,10 +16,10 @@ namespace PartCover.Browser
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            ApplicationHost host = new ApplicationHost();
+            var host = new ApplicationHost();
 
             log.Info("search for features");
-            foreach (IFeature feature in FeatureSeeker.seek(Assembly.GetExecutingAssembly()))
+            foreach (var feature in FeatureSeeker.seek(Assembly.GetExecutingAssembly()))
             {
                 log.Info("register feature: " + feature.GetType());
                 host.registerService(feature);
