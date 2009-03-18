@@ -134,6 +134,7 @@
     <Compile Include="Features\CoverageReportService.cs" />
     <Compile Include="Features\FeatureViewRunHistory.cs" />
     <Compile Include="Features\Views\CoverageView.cs">
+      <SubType>Form</SubType>
     </Compile>
     <Compile Include="Features\Views\CoverageView.Designer.cs">
       <DependentUpon>CoverageView.cs</DependentUpon>
@@ -141,6 +142,7 @@
     <Compile Include="Features\FeatureReportItemSelection.cs" />
     <Compile Include="Features\FeatureViewCoverage.cs" />
     <Compile Include="Features\Views\RunHistoryView.cs">
+      <SubType>Form</SubType>
     </Compile>
     <Compile Include="Features\Views\RunHistoryView.Designer.cs">
       <DependentUpon>RunHistoryView.cs</DependentUpon>
