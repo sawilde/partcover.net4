@@ -1,9 +1,9 @@
-namespace PartCover.Browser
+namespace PartCover.Browser.Dialogs
 {
-	/// <summary>
-	/// Summary description for AboutFomt.
-	/// </summary>
-	partial class AboutForm
+    /// <summary>
+    /// Summary description for AboutFomt.
+    /// </summary>
+    partial class AboutForm
     {
         /// <summary>
         /// Required designer variable.
@@ -39,8 +39,8 @@ namespace PartCover.Browser
             // tbText
             // 
             this.tbText.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+                                                                        | System.Windows.Forms.AnchorStyles.Left)
+                                                                       | System.Windows.Forms.AnchorStyles.Right)));
             this.tbText.BackColor = System.Drawing.SystemColors.Control;
             this.tbText.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.tbText.Cursor = System.Windows.Forms.Cursors.Arrow;

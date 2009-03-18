@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
 using PartCover.Browser.Api;
 using PartCover.Framework.Walkers;
 using System.IO;
@@ -15,27 +13,23 @@ namespace PartCover.Browser.Features
         public event EventHandler<EventArgs> ReportClosing;
         public event EventHandler<EventArgs> ReportOpened;
 
-        string reportFileName;
         CoverageReportWrapper reportWrapper;
         public ICoverageReport Report
         {
             get { return reportWrapper; }
         }
 
-        public string ReportFileName
-        {
-            get { return reportFileName; }
-        }
+        public string ReportFileName { get; private set; }
 
-        public void loadFromFile(string fileName)
+        public void LoadFromFile(string fileName)
         {
-            CoverageReport report = new CoverageReport();
-            using (StreamReader reader = new StreamReader(fileName))
+            var report = new CoverageReport();
+            using (var reader = new StreamReader(fileName))
             {
                 CoverageReportHelper.ReadReport(report, reader);
             }
             setReport(report);
-            reportFileName = fileName;
+            ReportFileName = fileName;
         }
 
         private void setReport(CoverageReport report)
@@ -43,36 +37,36 @@ namespace PartCover.Browser.Features
             if (Report != null && ReportClosing != null)
                 ReportClosing(this, EventArgs.Empty);
 
-            CoverageReportWrapper wrapper = new CoverageReportWrapper(report);
+            var wrapper = new CoverageReportWrapper(report);
             wrapper.build();
 
-            reportFileName = null;
+            ReportFileName = null;
             reportWrapper = wrapper;
             if (Report != null && ReportOpened != null)
                 ReportOpened(this, EventArgs.Empty);
         }
 
-        public void saveReport(string fileName)
+        public void SaveToFile(string fileName)
         {
-            using (StreamWriter writer = new StreamWriter(fileName))
+            using (var writer = new StreamWriter(fileName))
             {
                 CoverageReportHelper.WriteReport(reportWrapper.Report, writer);
-                reportFileName = fileName;
+                ReportFileName = fileName;
             }
         }
 
-        public void load(CoverageReport report)
+        public void Load(CoverageReport report)
         {
             setReport(report);
         }
 
-        public void attach(IServiceContainer container) { }
+        public void Attach(IServiceContainer container) { }
 
-        public void detach(IServiceContainer container) { }
+        public void Detach(IServiceContainer container) { }
 
-        public void build(IServiceContainer container) { }
+        public void Build(IServiceContainer container) { }
 
-        public void destroy(IServiceContainer container) { }
+        public void Destroy(IServiceContainer container) { }
 
     }
 }

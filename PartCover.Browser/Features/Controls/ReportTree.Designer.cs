@@ -1,5 +1,4 @@
-using PartCover.Framework.Walkers;
-namespace PartCover.Browser.Controls
+namespace PartCover.Browser.Features.Controls
 {
     partial class ReportTree
     {

@@ -8,25 +8,18 @@ namespace PartCover.Framework
     {
         readonly PartCoverConnector2Class connector = new PartCoverConnector2Class();
 
-        public Connector() {
-            actionWriter = new ConnectorActionCallback(this);
-            processCallback = new ProcessCallback();
-            processCallback.OnMessage += processCallbackOnMessage;
+        public Connector()
+        {
+            ActionCallback = new ConnectorActionCallback(this);
+            ProcessCallback = new ProcessCallback();
+            ProcessCallback.OnMessage += processCallbackOnMessage;
         }
 
         public event EventHandler<EventArgs<CoverageReport.RunLogMessage>> OnEventMessage;
 
-        private ProcessCallback processCallback;
-        public ProcessCallback ProcessCallback
-        {
-            get { return processCallback; }
-        }
+        public ProcessCallback ProcessCallback { get; set; }
 
-        private ConnectorActionCallback actionWriter;
-        internal ConnectorActionCallback ActionCallback
-        {
-            get { return actionWriter; }
-        }
+        internal ConnectorActionCallback ActionCallback { get; set; }
 
         public void SetLogging(Logging logging)
         {
@@ -59,16 +52,26 @@ namespace PartCover.Framework
             ExcludeItem("[mscorlib]*");
             ExcludeItem("[System*]*");
 
-            if (directory != null) directory = directory.Trim();
-            if (path != null) path = path.Trim();
-            if (args != null) args = args.Trim();
-
-            if (directory == null || directory.Length == 0)
+            if (directory != null)
+            {
+                directory = directory.Trim();
+            }
+            if (path != null)
+            {
+                path = path.Trim();
+            }
+            if (args != null)
+            {
+                args = args.Trim();
+            }
+            if (string.IsNullOrEmpty(directory))
+            {
                 directory = Directory.GetCurrentDirectory();
+            }
 
             // start target
             ProcessCallback.writeStatus("Start target");
-            connector.StartTarget(path, directory, args, redirectOutput, actionWriter);
+            connector.StartTarget(path, directory, args, redirectOutput, ActionCallback);
 
             // wait results
             ProcessCallback.writeStatus("Wait results");

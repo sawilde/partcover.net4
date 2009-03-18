@@ -1,9 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
 
 using PartCover.Browser.Api;
@@ -11,9 +7,8 @@ using PartCover.Browser.Api.ReportItems;
 using PartCover.Browser.Resources;
 using PartCover.Browser.Stuff;
 using PartCover.Framework.Stuff;
-using PartCover.Framework.Walkers;
 
-namespace PartCover.Browser.Controls
+namespace PartCover.Browser.Features.Controls
 {
     public partial class ReportTree : TreeView
     {
@@ -53,7 +48,7 @@ namespace PartCover.Browser.Controls
         {
             if (selecting) return;
 
-            IReportItem item = serviceContainer.getService<IReportItemSelectionService>().SelectedItem;
+            var item = serviceContainer.getService<IReportItemSelectionService>().SelectedItem;
 
             TreeNode selectedNode = null;
             if (item is INamespace)
@@ -80,21 +75,21 @@ namespace PartCover.Browser.Controls
         {
             BeginUpdate();
 
-            ICoverageReport report = serviceContainer.getService<ICoverageReportService>().Report;
+            var report = serviceContainer.getService<ICoverageReportService>().Report;
 
-            foreach (IAssembly assembly in report.getAssemblies())
+            foreach (var assembly in report.Assemblies)
             {
-                AssemblyTreeNode asmNode = new AssemblyTreeNode(assembly);
+                var asmNode = new AssemblyTreeNode(assembly);
                 Nodes.Add(asmNode);
 
-                foreach (IClass dType in assembly.getTypes())
+                foreach (var dType in assembly.getTypes())
                 {
-                    TreeNode namespaceNode = GetNamespaceNode(asmNode, dType);
-                    ClassTreeNode classNode = new ClassTreeNode(dType);
+                    var namespaceNode = GetNamespaceNode(asmNode, dType);
+                    var classNode = new ClassTreeNode(dType);
                     namespaceNode.Nodes.Add(classNode);
 
-                    Dictionary<string, PropertyTreeNode> props = new Dictionary<string, PropertyTreeNode>();
-                    foreach (IMethod md in dType.getMethods())
+                    var props = new Dictionary<string, PropertyTreeNode>();
+                    foreach (var md in dType.getMethods())
                     {
                         if (!Methods.isSpecial(md.Flags))
                         {
@@ -103,14 +98,14 @@ namespace PartCover.Browser.Controls
                         }
 
                         //has special meaning
-                        MdSpecial mdSpecial = Methods.getMdSpecial(md.Name);
+                        var mdSpecial = Methods.getMdSpecial(md.Name);
                         if (mdSpecial == MdSpecial.Unknown)
                         {
                             AddMethodTreeNode(classNode, md);
                             continue;
                         }
 
-                        string propName = Methods.getMdSpecialName(md.Name);
+                        var propName = Methods.getMdSpecialName(md.Name);
 
                         PropertyTreeNode propertyNode;
                         if (!props.TryGetValue(propName, out propertyNode))
@@ -120,35 +115,37 @@ namespace PartCover.Browser.Controls
                             classNode.Nodes.Add(propertyNode);
                         }
 
-                        MethodTreeNode mdNode = new MethodTreeNode(md);
-                        mdNode.MethodName = mdSpecial.ToString().ToLowerInvariant();
+                        var mdNode = new MethodTreeNode(md)
+                        {
+                            MethodName = mdSpecial.ToString().ToLowerInvariant()
+                        };
 
                         switch (mdSpecial)
                         {
-                            case MdSpecial.Get:
-                                mdNode.ImageIndex = ImageSelector.forPropertyGet(md);
-                                mdNode.SelectedImageIndex = ImageSelector.forPropertyGet(md);
-                                propertyNode.Getter = mdNode;
-                                break;
-                            case MdSpecial.Remove:
-                                mdNode.ImageIndex = ImageSelector.forEventRemove(md);
-                                mdNode.SelectedImageIndex = ImageSelector.forEventRemove(md);
-                                propertyNode.Getter = mdNode;
-                                break;
-                            case MdSpecial.Set:
-                                mdNode.ImageIndex = ImageSelector.forPropertySet(md);
-                                mdNode.SelectedImageIndex = ImageSelector.forPropertySet(md);
-                                propertyNode.Setter = mdNode;
-                                break;
-                            case MdSpecial.Add:
-                                mdNode.ImageIndex = ImageSelector.forEventAdd(md);
-                                mdNode.SelectedImageIndex = ImageSelector.forEventAdd(md);
-                                propertyNode.Setter = mdNode;
-                                break;
+                        case MdSpecial.Get:
+                            mdNode.ImageIndex = ImageSelector.ForPropertyGet(md);
+                            mdNode.SelectedImageIndex = ImageSelector.ForPropertyGet(md);
+                            propertyNode.Getter = mdNode;
+                            break;
+                        case MdSpecial.Remove:
+                            mdNode.ImageIndex = ImageSelector.ForEventRemove(md);
+                            mdNode.SelectedImageIndex = ImageSelector.ForEventRemove(md);
+                            propertyNode.Getter = mdNode;
+                            break;
+                        case MdSpecial.Set:
+                            mdNode.ImageIndex = ImageSelector.ForPropertySet(md);
+                            mdNode.SelectedImageIndex = ImageSelector.ForPropertySet(md);
+                            propertyNode.Setter = mdNode;
+                            break;
+                        case MdSpecial.Add:
+                            mdNode.ImageIndex = ImageSelector.ForEventAdd(md);
+                            mdNode.SelectedImageIndex = ImageSelector.ForEventAdd(md);
+                            propertyNode.Setter = mdNode;
+                            break;
                         }
                     }
 
-                    foreach (KeyValuePair<string, PropertyTreeNode> kv in props)
+                    foreach (var kv in props)
                     {
                         if (kv.Value.Getter != null) kv.Value.Nodes.Add(kv.Value.Getter);
                         if (kv.Value.Setter != null) kv.Value.Nodes.Add(kv.Value.Setter);
@@ -172,7 +169,7 @@ namespace PartCover.Browser.Controls
         {
             foreach (TreeNode tn in nodes)
             {
-                NamespaceTreeNode ntn = tn as NamespaceTreeNode;
+                var ntn = tn as NamespaceTreeNode;
                 if (ntn != null && ntn.Namespace == iNamespace)
                     return ntn;
             }
@@ -183,7 +180,7 @@ namespace PartCover.Browser.Controls
         {
             foreach (TreeNode nd in nodes)
             {
-                ClassTreeNode csNode = nd as ClassTreeNode;
+                var csNode = nd as ClassTreeNode;
                 if (csNode != null && csNode.Class == iClass)
                     return csNode;
             }
@@ -195,12 +192,12 @@ namespace PartCover.Browser.Controls
             MethodTreeNode mdNode = null;
             foreach (TreeNode nd in nodes)
             {
-                if (mdNode != null) 
+                if (mdNode != null)
                     break;
 
                 mdNode = nd as MethodTreeNode;
 
-                if (mdNode != null && mdNode.Method == iMethod) 
+                if (mdNode != null && mdNode.Method == iMethod)
                     return mdNode;
 
                 if (mdNode == null && nd.Nodes.Count > 0)
@@ -211,23 +208,25 @@ namespace PartCover.Browser.Controls
 
         private static void AddMethodTreeNode(TreeNode classNode, IMethod md)
         {
-            MethodTreeNode mNode = new MethodTreeNode(md);
+            var mNode = new MethodTreeNode(md);
             classNode.Nodes.Add(mNode);
 
-            if (md.CoveredVariants.Length > 1)
+            if (md.CoveredVariants.Length <= 1)
             {
-                foreach (ICoveredVariant bData in md.CoveredVariants)
-                    mNode.Nodes.Add(new BlockVariantTreeNode(bData));
+                return;
             }
+
+            foreach (var bData in md.CoveredVariants)
+                mNode.Nodes.Add(new BlockVariantTreeNode(bData));
         }
 
         private static TreeNode GetNamespaceNode(TreeNode asmNode, IClass iClass)
         {
-            INamespace[] names = iClass.getNamespaceChain();
-            TreeNode parentNode = asmNode;
-            for (int i = 0; i < names.Length; ++i)
+            var names = iClass.getNamespaceChain();
+            var parentNode = asmNode;
+            for (var i = 0; i < names.Length; ++i)
             {
-                NamespaceTreeNode nextNode = FindNamespaceNode(parentNode.Nodes, names[i]);
+                var nextNode = FindNamespaceNode(parentNode.Nodes, names[i]);
                 if (nextNode == null)
                 {
                     nextNode = new NamespaceTreeNode(names[i]);
@@ -239,7 +238,7 @@ namespace PartCover.Browser.Controls
         }
 
 
-        private bool selecting = false;
+        private bool selecting;
         protected override void OnAfterSelect(TreeViewEventArgs e)
         {
             base.OnAfterSelect(e);
@@ -247,30 +246,30 @@ namespace PartCover.Browser.Controls
             if (selecting) return;
             selecting = true;
 
-            IReportItemSelectionService service = serviceContainer.getService<IReportItemSelectionService>();
+            var service = serviceContainer.getService<IReportItemSelectionService>();
             if (e.Node is MethodTreeNode)
             {
-                service.select(((MethodTreeNode)e.Node).Method);
+                service.Select(((MethodTreeNode)e.Node).Method);
             }
             else if (e.Node is BlockVariantTreeNode)
             {
-                service.select(((BlockVariantTreeNode)e.Node).VariantData);
+                service.Select(((BlockVariantTreeNode)e.Node).VariantData);
             }
             else if (e.Node is ClassTreeNode)
             {
-                service.select(((ClassTreeNode)e.Node).Class);
+                service.Select(((ClassTreeNode)e.Node).Class);
             }
             else if (e.Node is AssemblyTreeNode)
             {
-                service.select(((AssemblyTreeNode)e.Node).Assembly);
+                service.Select(((AssemblyTreeNode)e.Node).Assembly);
             }
             else if (e.Node is NamespaceTreeNode)
             {
-                service.select(((NamespaceTreeNode)e.Node).Namespace);
+                service.Select(((NamespaceTreeNode)e.Node).Namespace);
             }
             else
             {
-                service.selectNone();
+                service.SelectNone();
             }
 
             selecting = false;
@@ -289,13 +288,16 @@ namespace PartCover.Browser.Controls
         {
             TreeNode nmNode = FindNode(iNamespace.Assembly);
 
-            Queue<INamespace> namespaces = new Queue<INamespace>();
+            var namespaces = new Queue<INamespace>();
             while (iNamespace != null)
+            {
                 namespaces.Enqueue(iNamespace);
+                iNamespace = iNamespace.Parent;
+            }
 
             while (null != (iNamespace = namespaces.Dequeue()))
             {
-                NamespaceTreeNode treeNode = FindNamespaceNode(nmNode.Nodes, iNamespace);
+                var treeNode = FindNamespaceNode(nmNode.Nodes, iNamespace);
                 if (treeNode == null)
                     return null;
                 nmNode = treeNode;
@@ -306,18 +308,10 @@ namespace PartCover.Browser.Controls
 
         private ClassTreeNode FindNode(IClass iClass)
         {
-            TreeNodeCollection nodes;
-
-            INamespace[] namespaces = iClass.getNamespaceChain();
-            if (namespaces.Length > 0)
-            {
-                nodes = FindNode(namespaces[namespaces.Length - 1]).Nodes;
-            }
-            else
-            {
-                nodes = FindNode(iClass.Assembly).Nodes;
-            }
-
+            var namespaces = iClass.getNamespaceChain();
+            var nodes = namespaces.Length > 0
+                ? FindNode(namespaces[namespaces.Length - 1]).Nodes
+                : FindNode(iClass.Assembly).Nodes;
             return FindClassNode(nodes, iClass);
         }
 
@@ -327,5 +321,3 @@ namespace PartCover.Browser.Controls
         }
     }
 }
-
-class asdasd { }

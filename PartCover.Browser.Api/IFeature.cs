@@ -1,17 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace PartCover.Browser.Api
 {
     public interface IFeature : IService
     {
-        void attach(IServiceContainer container);
+        void Attach(IServiceContainer container);
 
-        void detach(IServiceContainer container);
+        void Detach(IServiceContainer container);
 
-        void build(IServiceContainer container);
+        void Build(IServiceContainer container);
 
-        void destroy(IServiceContainer container);
+        void Destroy(IServiceContainer container);
     }
 }

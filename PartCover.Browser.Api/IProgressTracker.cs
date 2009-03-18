@@ -1,33 +1,38 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace PartCover.Browser.Api
 {
     public interface IProgressTracker
     {
-        void setMessage(string message);
+        void AppendMessage(string message);
 
-        void queueBegin(string message);
-        void queuePush(string message);
-        void queueEnd(string message);
+        void QueueBegin(string message);
+        void QueuePush(string message);
+        void QueueEnd(string message);
 
-        void setPercent(float value);
-        float getPercent();
+        float Percent { get; set; }
     }
 
     public class DummyProgressTracker : IProgressTracker
     {
-        public void setMessage(string message) { }
+        public void AppendMessage(string message)
+        {
+        }
 
-        public void setPercent(float value) { }
+        public void QueueBegin(string message)
+        {
+        }
 
-        public float getPercent() { return 0; }
+        public void QueuePush(string message)
+        {
+        }
 
-        public void queueBegin(string message) { }
+        public void QueueEnd(string message)
+        {
+        }
 
-        public void queuePush(string message) { }
-
-        public void queueEnd(string message) { }
+        public float Percent
+        {
+            get { return 0; }
+            set { }
+        }
     }
 }

@@ -1,13 +1,11 @@
-using System;
 using System.Collections.Generic;
-using System.Text;
 using PartCover.Browser.Api;
 
 namespace PartCover.Browser
 {
     internal class ApplicationHost : IServiceContainer
     {
-        private List<object> services = new List<object>();
+        private readonly List<object> services = new List<object>();
 
         public T getService<T>() where T : class
         {
@@ -38,10 +36,7 @@ namespace PartCover.Browser
         {
             lock (services)
             {
-                return 0 < services.RemoveAll(delegate(object actual)
-                {
-                    return (service == actual);
-                });
+                return 0 < services.RemoveAll(actual => (service == actual));
             }
         }
 
@@ -51,12 +46,12 @@ namespace PartCover.Browser
             {
                 foreach (object o in services.ToArray())
                 {
-                    if (o is IFeature) ((IFeature)o).attach(this);
+                    if (o is IFeature) ((IFeature)o).Attach(this);
                 }
 
                 foreach (object o in services.ToArray())
                 {
-                    if (o is IFeature) ((IFeature)o).build(this);
+                    if (o is IFeature) ((IFeature)o).Build(this);
                 }
             }
         }
@@ -65,14 +60,14 @@ namespace PartCover.Browser
         {
             lock (services)
             {
-                foreach (object o in services.ToArray())
+                foreach (var o in services.ToArray())
                 {
-                    if (o is IFeature) ((IFeature)o).destroy(this);
+                    if (o is IFeature) ((IFeature)o).Destroy(this);
                 }
 
-                foreach (object o in services.ToArray())
+                foreach (var o in services.ToArray())
                 {
-                    if (o is IFeature) ((IFeature)o).detach(this);
+                    if (o is IFeature) ((IFeature)o).Detach(this);
                 }
                 services.Clear();
             }

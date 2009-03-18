@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using PartCover.Browser.Api;
 using PartCover.Browser.Features.Views;
 
@@ -10,21 +7,21 @@ namespace PartCover.Browser.Features
         : IFeature
         , IReportViewFactory
     {
-        public void build(IServiceContainer container)
+        public void Build(IServiceContainer container)
         {
             container.getService<IReportViewValve>().add(this);
         }
 
-        public void destroy(IServiceContainer container)
+        public void Destroy(IServiceContainer container)
         {
             container.getService<IReportViewValve>().remove(this);
         }
 
-        public void attach(IServiceContainer container) { }
+        public void Attach(IServiceContainer container) { }
 
-        public void detach(IServiceContainer container) { }
+        public void Detach(IServiceContainer container) { }
 
-        public ReportView create()
+        public ReportView Create()
         {
             return new RunHistoryView();
         }

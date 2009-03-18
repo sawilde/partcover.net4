@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 using PartCover.Browser.Api.ReportItems;
 using PartCover.Framework.Walkers;
@@ -9,16 +8,16 @@ namespace PartCover.Browser.Api
 {
     public interface ICoverageReport
     {
-        IAssembly[] getAssemblies();
+        ICollection<IAssembly> Assemblies { get; }
 
-        string getFilePath(uint file);
+        string ResolveFilePath(uint file);
 
-        void forEachBlock(Action<CoverageReport.InnerBlock> blockReceiver);
+        void ForEachBlock(Action<CoverageReport.InnerBlock> blockReceiver);
 
-        ICollection<CoverageReport.RunHistoryMessage> getRunHistory();
+        ICollection<CoverageReport.RunHistoryMessage> RunHistory { get; }
 
-        ICollection<CoverageReport.RunLogMessage> getLogEvents();
+        ICollection<CoverageReport.RunLogMessage> LogEvents { get; }
 
-        int? getExitCode();
+        int? ExitCode { get; }
     }
 }

@@ -1,14 +1,8 @@
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
 using PartCover.Browser.Stuff;
 using PartCover.Browser.Helpers;
 using PartCover.Framework.Walkers;
-using System.Diagnostics;
 using System.Globalization;
 
 namespace PartCover.Browser.Forms
@@ -37,59 +31,61 @@ namespace PartCover.Browser.Forms
         }
 
         private delegate void PutStringDelegate(string message);
-        public void setMessage(string message)
+        public void AppendMessage(string message)
         {
             if (!IsHandleCreated) return;
 
             if (InvokeRequired)
             {
-                Invoke(new PutStringDelegate(setMessage), message);
+                Invoke(new PutStringDelegate(AppendMessage), message);
                 return;
             }
 
             putText(message, true);
         }
 
-        public void queueBegin(string message)
+        public void QueueBegin(string message)
         {
             if (!IsHandleCreated) return;
 
             if (InvokeRequired)
             {
-                Invoke(new PutStringDelegate(queueBegin), message);
+                Invoke(new PutStringDelegate(QueueBegin), message);
                 return;
             }
 
             putText(message, true);
         }
 
-        public void queuePush(string message)
+        public void QueuePush(string message)
         {
             if (!IsHandleCreated) return;
 
             if (InvokeRequired)
             {
-                Invoke(new PutStringDelegate(queuePush), message);
+                Invoke(new PutStringDelegate(QueuePush), message);
                 return;
             }
             putText(message, false);
         }
 
-        public void queueEnd(string message)
+        public void QueueEnd(string message)
         {
             if (!IsHandleCreated) return;
 
             if (InvokeRequired)
             {
-                Invoke(new PutStringDelegate(queueEnd), message);
+                Invoke(new PutStringDelegate(QueueEnd), message);
                 return;
             }
             putText(message, false);
         }
 
-        public void setPercent(float value) { }
-
-        public float getPercent() { return 0; }
+        public float Percent
+        {
+            set { }
+            get { return 0; }
+        }
 
         protected override void BeforeStart()
         {
@@ -119,7 +115,7 @@ namespace PartCover.Browser.Forms
 
         public void add(CoverageReport.RunHistoryMessage runHistoryMessage)
         {
-            setMessage(runHistoryMessage.Message);
+            AppendMessage(runHistoryMessage.Message);
         }
 
         private void timer_Tick(object sender, EventArgs e)
@@ -139,9 +135,9 @@ namespace PartCover.Browser.Forms
 
         private void putTime()
         {
-            TimeSpan span = DateTime.Now - startedAt;
+            var span = DateTime.Now - startedAt;
 
-            string messsage = string.Empty;
+            var messsage = string.Empty;
             if (span.Minutes > 0)
             {
                 messsage += string.Format("{0,2} min ", span.Minutes);

@@ -1,9 +1,6 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 using PartCover.Browser.Api;
-using PartCover.Browser.Api.ReportItems;
 
 namespace PartCover.Browser.Features
 {
@@ -11,41 +8,37 @@ namespace PartCover.Browser.Features
         : IFeature
         , IReportItemSelectionService
     {
-        public void attach(IServiceContainer container) { }
+        public void Attach(IServiceContainer container) { }
 
-        public void detach(IServiceContainer container) { }
+        public void Detach(IServiceContainer container) { }
 
-        public void build(IServiceContainer container)
+        public void Build(IServiceContainer container)
         {
             container.getService<ICoverageReportService>().ReportClosing += onReportClosing;
             container.getService<ICoverageReportService>().ReportOpened += onReportOpened;
         }
 
-        public void destroy(IServiceContainer container)
+        public void Destroy(IServiceContainer container)
         {
             container.getService<ICoverageReportService>().ReportClosing -= onReportClosing;
             container.getService<ICoverageReportService>().ReportOpened -= onReportOpened;
         }
 
-        private IReportItem selectedItem;
-        public IReportItem SelectedItem
+        public IReportItem SelectedItem { get; private set; }
+
+        static void onReportOpened(object sender, EventArgs e) { }
+
+        static void onReportClosing(object sender, EventArgs e) { }
+
+        public void Select<T>(T item) where T : IReportItem
         {
-            get { return selectedItem; }
-        }
-
-        void onReportOpened(object sender, EventArgs e) { }
-
-        void onReportClosing(object sender, EventArgs e) { }
-
-        public void select<T>(T item) where T : IReportItem
-        {
-            selectedItem = item;
+            SelectedItem = item;
             fireSelectionChanged();
         }
 
-        public void selectNone()
+        public void SelectNone()
         {
-            selectedItem = null;
+            SelectedItem = null;
             fireSelectionChanged();
         }
 

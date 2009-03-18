@@ -1,28 +1,27 @@
 using System;
 using System.Collections;
 using System.Windows.Forms;
-
 using PartCover.Browser.Resources;
 using PartCover.Browser.Stuff;
 using PartCover.Framework.Stuff;
 using PartCover.Framework.Walkers;
 using PartCover.Browser.Api.ReportItems;
 
-namespace PartCover.Browser.Controls
+namespace PartCover.Browser.Features.Controls
 {
     internal class TreeNodeSorter : IComparer
     {
         private class NodeTypeDetector : INodeVisitor
         {
-            int level;
-            public int Level { get { return level; } }
-            public void forAssembly(AssemblyTreeNode node) { level = 0; }
-            public void forNamespace(NamespaceTreeNode node) { level = 1; }
-            public void forType(ClassTreeNode node) { level = 2; }
-            public void forProperty(PropertyTreeNode node) { level = 3; }
-            public void forMethod(MethodTreeNode node) { level = 3; }
-            public void forBlockVariant(BlockVariantTreeNode node) { level = 4; }
-            public void reset() { level = 0; }
+            public int Level { get; private set; }
+
+            public void OnAssembly(AssemblyTreeNode node) { Level = 0; }
+            public void OnNamespace(NamespaceTreeNode node) { Level = 1; }
+            public void OnType(ClassTreeNode node) { Level = 2; }
+            public void OnProperty(PropertyTreeNode node) { Level = 3; }
+            public void OnMethod(MethodTreeNode node) { Level = 3; }
+            public void OnBlockVariant(BlockVariantTreeNode node) { Level = 4; }
+            public void Reset() { Level = 0; }
         }
 
         private readonly MethodTreeNodeComparer methodComparer = MethodTreeNodeComparer.Default;
@@ -31,8 +30,8 @@ namespace PartCover.Browser.Controls
 
         public int Compare(object x, object y)
         {
-            TreeNodeBase nodeX = (TreeNodeBase)x;
-            TreeNodeBase nodeY = (TreeNodeBase)y;
+            var nodeX = (TreeNodeBase)x;
+            var nodeY = (TreeNodeBase)y;
 
             if (nodeX == null && nodeY == null) return 0;
             if (nodeY == null) return 1;
@@ -40,18 +39,18 @@ namespace PartCover.Browser.Controls
 
             if (ReferenceEquals(nodeX, nodeY)) return 0;
 
-            xDetector.reset();
-            nodeX.visit(xDetector);
-            yDetector.reset();
-            nodeY.visit(yDetector);
+            xDetector.Reset();
+            nodeX.Visit(xDetector);
+            yDetector.Reset();
+            nodeY.Visit(yDetector);
 
             if (0 != xDetector.Level.CompareTo(yDetector.Level))
                 return xDetector.Level.CompareTo(yDetector.Level);
 
             switch (xDetector.Level)
             {
-                case 3: return methodComparer.Compare(nodeX, nodeY);
-                default: return nodeX.Text.CompareTo(nodeY.Text);
+            case 3: return methodComparer.Compare(nodeX, nodeY);
+            default: return nodeX.Text.CompareTo(nodeY.Text);
             }
         }
     }
@@ -65,25 +64,23 @@ namespace PartCover.Browser.Controls
 
     interface INodeVisitor
     {
-        void forAssembly(AssemblyTreeNode node);
-        void forNamespace(NamespaceTreeNode node);
-        void forType(ClassTreeNode node);
-        void forProperty(PropertyTreeNode node);
-        void forMethod(MethodTreeNode node);
-        void forBlockVariant(BlockVariantTreeNode node);
+        void OnAssembly(AssemblyTreeNode node);
+        void OnNamespace(NamespaceTreeNode node);
+        void OnType(ClassTreeNode node);
+        void OnProperty(PropertyTreeNode node);
+        void OnMethod(MethodTreeNode node);
+        void OnBlockVariant(BlockVariantTreeNode node);
     }
 
     internal abstract class TreeNodeBase : TreeNode, IVisitable<INodeVisitor>
     {
-        public TreeNodeBase(string name, int imageIndex, int selectedImageIndex) : base(name, imageIndex, selectedImageIndex) { }
-        public TreeNodeBase(string name) : base(name) { }
+        protected TreeNodeBase(string name, int imageIndex, int selectedImageIndex) : base(name, imageIndex, selectedImageIndex) { }
+        protected TreeNodeBase(string name) : base(name) { }
 
-        public abstract void visit(INodeVisitor visitor);
+        public abstract void Visit(INodeVisitor visitor);
     }
 
-    internal class AssemblyTreeNode : TreeNodeBase
-        , ICoverageInfo
-        , IVisitable<INodeVisitor>
+    internal class AssemblyTreeNode : TreeNodeBase, ICoverageInfo
     {
         private readonly IAssembly assembly;
         public IAssembly Assembly
@@ -100,8 +97,8 @@ namespace PartCover.Browser.Controls
         }
 
         #region ICoverageInfo Members
-        private UInt32 codeSize = 0;
-        private UInt32 coveredCodeSize = 0;
+        private UInt32 codeSize;
+        private UInt32 coveredCodeSize;
 
         public UInt32 GetCodeSize() { return codeSize; }
         public UInt32 GetCoveredCodeSize() { return coveredCodeSize; }
@@ -125,34 +122,28 @@ namespace PartCover.Browser.Controls
         #endregion
 
         #region IVisitable Members
-        public override void visit(INodeVisitor visitor)
+        public override void Visit(INodeVisitor visitor)
         {
-            visitor.forAssembly(this);
+            visitor.OnAssembly(this);
         }
         #endregion IVisitable Members
     }
 
-    internal class NamespaceTreeNode : TreeNodeBase
-        , ICoverageInfo
-        , IVisitable<INodeVisitor>
+    internal class NamespaceTreeNode : TreeNodeBase, ICoverageInfo
     {
-        readonly INamespace iNamespace;
-        public INamespace Namespace
-        {
-            get { return iNamespace; }
-        }
+        public INamespace Namespace { get; private set; }
 
         public NamespaceTreeNode(INamespace iNamespace)
             : base(iNamespace.Name)
         {
-            this.iNamespace = iNamespace;
+            Namespace = iNamespace;
             ImageIndex = VSImage.Current.Namespace;
             SelectedImageIndex = VSImage.Current.Namespace;
         }
 
         #region ICoverageInfo Members
-        private UInt32 codeSize = 0;
-        private UInt32 coveredCodeSize = 0;
+        private UInt32 codeSize;
+        private UInt32 coveredCodeSize;
 
         public UInt32 GetCodeSize() { return codeSize; }
         public UInt32 GetCoveredCodeSize() { return coveredCodeSize; }
@@ -176,41 +167,35 @@ namespace PartCover.Browser.Controls
         #endregion
 
         #region IVisitable Members
-        public override void visit(INodeVisitor visitor)
+        public override void Visit(INodeVisitor visitor)
         {
-            visitor.forNamespace(this);
+            visitor.OnNamespace(this);
         }
         #endregion IVisitable Members
     }
 
-    internal class ClassTreeNode : TreeNodeBase
-        , ICoverageInfo
-        , IVisitable<INodeVisitor>
+    internal class ClassTreeNode : TreeNodeBase, ICoverageInfo
     {
-        readonly IClass dType;
-        public IClass Class
-        {
-            get { return dType; }
-        }
+        public IClass Class { get; private set; }
 
         public ClassTreeNode(IClass dType)
             : base(CoverageReportHelper.GetTypeDefName(dType.Name))
         {
-            this.dType = dType;
-            ImageIndex = ImageSelector.forType(dType);
-            SelectedImageIndex = ImageSelector.forType(dType);
+            Class = dType;
+            ImageIndex = ImageSelector.ForType(dType);
+            SelectedImageIndex = ImageSelector.ForType(dType);
         }
 
         #region IVisitable Members
-        public override void visit(INodeVisitor visitor)
+        public override void Visit(INodeVisitor visitor)
         {
-            visitor.forType(this);
+            visitor.OnType(this);
         }
         #endregion IVisitable Members
 
         #region ICoverageInfo Members
-        private UInt32 codeSize = 0;
-        private UInt32 coveredCodeSize = 0;
+        private UInt32 codeSize;
+        private UInt32 coveredCodeSize;
 
         public UInt32 GetCodeSize() { return codeSize; }
         public UInt32 GetCoveredCodeSize() { return coveredCodeSize; }
@@ -227,20 +212,16 @@ namespace PartCover.Browser.Controls
                 coveredCodeSize += iInfo.GetCoveredCodeSize();
             }
             float percent = codeSize == 0 ? 0 : coveredCodeSize / (float)codeSize * 100;
-            Text = string.Format("{0} ({1:#0}%)", CoverageReportHelper.GetTypeDefName(dType.Name), percent);
+            Text = string.Format("{0} ({1:#0}%)", CoverageReportHelper.GetTypeDefName(Class.Name), percent);
             ForeColor = Helpers.ColorProvider.GetForeColorForPercent(percent);
         }
 
         #endregion
     }
 
-    internal class PropertyTreeNode : TreeNodeBase
-        , ICoverageInfo
-        , IVisitable<INodeVisitor>
+    internal class PropertyTreeNode : TreeNodeBase, ICoverageInfo
     {
         readonly string _property;
-        MethodTreeNode _setter;
-        MethodTreeNode _getter;
 
         public PropertyTreeNode(string text)
             : base(text)
@@ -250,16 +231,8 @@ namespace PartCover.Browser.Controls
             _property = text;
         }
 
-        public MethodTreeNode Setter
-        {
-            get { return _setter; }
-            set { _setter = value; }
-        }
-        public MethodTreeNode Getter
-        {
-            get { return _getter; }
-            set { _getter = value; }
-        }
+        public MethodTreeNode Setter { get; set; }
+        public MethodTreeNode Getter { get; set; }
 
         public uint GetCodeSize()
         {
@@ -282,23 +255,21 @@ namespace PartCover.Browser.Controls
             if (Setter != null) Setter.UpdateCoverageInfo();
             if (Getter != null) Getter.UpdateCoverageInfo();
 
-            float percent = GetCodeSize() == 0 ? 0 : GetCoveredCodeSize() / (float)GetCodeSize() * 100;
+            var percent = GetCodeSize() == 0 ? 0 : GetCoveredCodeSize() / (float)GetCodeSize() * 100;
 
             Text = string.Format("{0} ({1:#0}%)", _property, percent);
             ForeColor = Helpers.ColorProvider.GetForeColorForPercent(percent);
         }
 
         #region IVisitable Members
-        public override void visit(INodeVisitor visitor)
+        public override void Visit(INodeVisitor visitor)
         {
-            visitor.forProperty(this);
+            visitor.OnProperty(this);
         }
         #endregion IVisitable Members
     }
 
-    internal class MethodTreeNode : TreeNodeBase
-        , ICoverageInfo
-        , IVisitable<INodeVisitor>
+    internal class MethodTreeNode : TreeNodeBase, ICoverageInfo
     {
         readonly IMethod md;
         public IMethod Method
@@ -322,13 +293,13 @@ namespace PartCover.Browser.Controls
         {
             this.md = md;
             MethodName = md.Name;
-            ImageIndex = ImageSelector.forMethod(md);
-            SelectedImageIndex = ImageSelector.forMethod(md);
+            ImageIndex = ImageSelector.ForMethod(md);
+            SelectedImageIndex = ImageSelector.ForMethod(md);
         }
 
         #region ICoverageInfo Members
-        private UInt32 codeSize = 0;
-        private UInt32 coveredCodeSize = 0;
+        private UInt32 codeSize;
+        private UInt32 coveredCodeSize;
 
         public UInt32 GetCodeSize() { return codeSize; }
         public UInt32 GetCoveredCodeSize() { return coveredCodeSize; }
@@ -340,28 +311,26 @@ namespace PartCover.Browser.Controls
 
             codeSize = 0;
             coveredCodeSize = 0;
-            foreach (ICoveredVariant bData in md.CoveredVariants)
+            foreach (var bData in md.CoveredVariants)
             {
                 codeSize = CoverageReportHelper.GetBlockCodeSize(bData.Blocks);
                 coveredCodeSize = CoverageReportHelper.GetBlockCoveredCodeSize(bData.Blocks);
             }
-            float percent = codeSize == 0 ? 0 : coveredCodeSize / (float)codeSize * 100;
+            var percent = codeSize == 0 ? 0 : coveredCodeSize / (float)codeSize * 100;
             Text = string.Format("{0} ({1:#0}%)", MethodName, percent);
             ForeColor = Helpers.ColorProvider.GetForeColorForPercent(percent);
         }
         #endregion
 
         #region IVisitable Members
-        public override void visit(INodeVisitor visitor)
+        public override void Visit(INodeVisitor visitor)
         {
-            visitor.forMethod(this);
+            visitor.OnMethod(this);
         }
         #endregion IVisitable Members
     }
 
-    internal class BlockVariantTreeNode : TreeNodeBase
-        , ICoverageInfo
-        , IVisitable<INodeVisitor>
+    internal class BlockVariantTreeNode : TreeNodeBase, ICoverageInfo
     {
         readonly ICoveredVariant bData;
         public ICoveredVariant VariantData
@@ -378,8 +347,8 @@ namespace PartCover.Browser.Controls
         }
 
         #region ICoverageInfo Members
-        private UInt32 codeSize = 0;
-        private UInt32 coveredCodeSize = 0;
+        private UInt32 codeSize;
+        private UInt32 coveredCodeSize;
 
         public UInt32 GetCodeSize() { return codeSize; }
         public UInt32 GetCoveredCodeSize() { return coveredCodeSize; }
@@ -389,16 +358,16 @@ namespace PartCover.Browser.Controls
             codeSize = CoverageReportHelper.GetBlockCodeSize(bData.Blocks);
             coveredCodeSize = CoverageReportHelper.GetBlockCoveredCodeSize(bData.Blocks);
 
-            float percent = codeSize == 0 ? 0 : coveredCodeSize / (float)codeSize * 100;
+            var percent = codeSize == 0 ? 0 : coveredCodeSize / (float)codeSize * 100;
             Text = string.Format("Block Data ({0:#0}%)", percent);
             ForeColor = Helpers.ColorProvider.GetForeColorForPercent(percent);
         }
         #endregion
 
         #region IVisitable Members
-        public override void visit(INodeVisitor visitor)
+        public override void Visit(INodeVisitor visitor)
         {
-            visitor.forBlockVariant(this);
+            visitor.OnBlockVariant(this);
         }
         #endregion IVisitable Members
     }

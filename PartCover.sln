@@ -6,6 +6,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PartCover.Console", "PartCo
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PartCover.Framework", "PartCover.Framework\PartCover.Framework.csproj", "{18D29461-7890-4EB6-8A8C-DAC5E6AB4B57}"
+	ProjectSection(ProjectDependencies) = postProject
+		{D179C0D8-461A-4FF1-8119-40CC73C520DB} = {D179C0D8-461A-4FF1-8119-40CC73C520DB}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PartCover.Browser", "PartCover.Browser\PartCover.Browser.csproj", "{482B7B52-E92B-49EF-B4B5-57F2A1AFAFD3}"
 EndProject
@@ -16,6 +19,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PartViewer", "PartViewer\PartViewer.csproj", "{B5ED842D-8E9D-435B-A246-614E2BE7F5E0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PartViewer.Demo", "PartViewer.Demo\PartViewer.Demo.csproj", "{B8DC5C79-EA3B-423C-874B-815E0A619877}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PartCover", "PartCover.CorDriver\PartCover.CorDriver.vcproj", "{D179C0D8-461A-4FF1-8119-40CC73C520DB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -156,6 +161,26 @@ Global
 		{B8DC5C79-EA3B-423C-874B-815E0A619877}.Test|Any CPU.ActiveCfg = Release|Any CPU
 		{B8DC5C79-EA3B-423C-874B-815E0A619877}.Test|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{B8DC5C79-EA3B-423C-874B-815E0A619877}.Test|Win32.ActiveCfg = Release|Any CPU
+		{D179C0D8-461A-4FF1-8119-40CC73C520DB}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{D179C0D8-461A-4FF1-8119-40CC73C520DB}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{D179C0D8-461A-4FF1-8119-40CC73C520DB}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{D179C0D8-461A-4FF1-8119-40CC73C520DB}.Debug|Win32.ActiveCfg = Debug|Win32
+		{D179C0D8-461A-4FF1-8119-40CC73C520DB}.Debug|Win32.Build.0 = Debug|Win32
+		{D179C0D8-461A-4FF1-8119-40CC73C520DB}.Release|Any CPU.ActiveCfg = Release|Win32
+		{D179C0D8-461A-4FF1-8119-40CC73C520DB}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{D179C0D8-461A-4FF1-8119-40CC73C520DB}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{D179C0D8-461A-4FF1-8119-40CC73C520DB}.Release|Win32.ActiveCfg = Release|Win32
+		{D179C0D8-461A-4FF1-8119-40CC73C520DB}.Release|Win32.Build.0 = Release|Win32
+		{D179C0D8-461A-4FF1-8119-40CC73C520DB}.Setup|Any CPU.ActiveCfg = Release|Win32
+		{D179C0D8-461A-4FF1-8119-40CC73C520DB}.Setup|Mixed Platforms.ActiveCfg = Release|Win32
+		{D179C0D8-461A-4FF1-8119-40CC73C520DB}.Setup|Mixed Platforms.Build.0 = Release|Win32
+		{D179C0D8-461A-4FF1-8119-40CC73C520DB}.Setup|Win32.ActiveCfg = Release|Win32
+		{D179C0D8-461A-4FF1-8119-40CC73C520DB}.Setup|Win32.Build.0 = Release|Win32
+		{D179C0D8-461A-4FF1-8119-40CC73C520DB}.Test|Any CPU.ActiveCfg = Release|Win32
+		{D179C0D8-461A-4FF1-8119-40CC73C520DB}.Test|Mixed Platforms.ActiveCfg = Release|Win32
+		{D179C0D8-461A-4FF1-8119-40CC73C520DB}.Test|Mixed Platforms.Build.0 = Release|Win32
+		{D179C0D8-461A-4FF1-8119-40CC73C520DB}.Test|Win32.ActiveCfg = Release|Win32
+		{D179C0D8-461A-4FF1-8119-40CC73C520DB}.Test|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

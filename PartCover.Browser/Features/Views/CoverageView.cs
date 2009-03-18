@@ -1,10 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.IO;
-using System.Text;
 using System.Windows.Forms;
 
 using PartCover.Browser.Api;
@@ -26,28 +23,23 @@ namespace PartCover.Browser.Features.Views
             InitializeComponent();
         }
 
-        protected override void OnPaint(PaintEventArgs pe)
-        {
-            base.OnPaint(pe);
-        }
-
         public override void attach(IServiceContainer container, IProgressTracker tracker)
         {
             base.attach(container, tracker);
-            tracker.setMessage("Advise for selection events");
+            tracker.AppendMessage("Advise for selection events");
             Services.getService<IReportItemSelectionService>().SelectionChanged += ReportItemSelectionChanged;
         }
 
         public override void detach(IServiceContainer container, IProgressTracker tracker)
         {
-            tracker.setMessage("Unadvise for selection events");
+            tracker.AppendMessage("Unadvise for selection events");
             Services.getService<IReportItemSelectionService>().SelectionChanged -= ReportItemSelectionChanged;
             base.detach(container, tracker);
         }
 
         void ReportItemSelectionChanged(object sender, EventArgs e)
         {
-            IReportItemSelectionService service = Services.getService<IReportItemSelectionService>();
+            var service = Services.getService<IReportItemSelectionService>();
 
             if (service.SelectedItem is IMethod)
             {
@@ -75,13 +67,14 @@ namespace PartCover.Browser.Features.Views
             }
         }
 
-        private void ClearPane() {
+        private void ClearPane()
+        {
             lbBlocks.Clear();
         }
 
-        private void ShowMethodBlocks(ICoveredVariant variant)
+        private void ShowMethodBlocks(ICoveredVariant coveredVariant)
         {
-            this.variant = variant;
+            variant = coveredVariant;
 
             lbBlocks.BeginUpdate();
             lbBlocks.Clear();
@@ -94,14 +87,15 @@ namespace PartCover.Browser.Features.Views
                 lbBlocks.Columns.Add("Have Source", 100, HorizontalAlignment.Right);
             }
 
-            foreach (CoverageReport.InnerBlock ib in variant.Blocks)
+            foreach (var ib in coveredVariant.Blocks)
             {
-                Color itemColor = ColorProvider.GetForeColorForBlock(CoverageReportHelper.GetBlockCoverage(ib));
+                var itemColor = ColorProvider.GetForeColorForBlock(CoverageReportHelper.GetBlockCoverage(ib));
 
-                ListViewItem lvi = new ListViewItem();
-                lvi.ForeColor = itemColor;
+                var lvi = new ListViewItem {
+                    ForeColor = itemColor, 
+                    Text = ("Block " + ib.position)
+                };
 
-                lvi.Text = "Block " + ib.position;
                 lvi.SubItems.Add(ib.blockLen.ToString());
                 lvi.SubItems.Add(ib.visitCount.ToString());
                 lvi.SubItems.Add(ib.fileId > 0 ? "yes" : "no");
@@ -121,44 +115,47 @@ namespace PartCover.Browser.Features.Views
 
         private void BuildSourceViews()
         {
-            List<uint> files = new List<uint>();
-            foreach (CoverageReport.InnerBlock ib in variant.Blocks)
+            var files = new List<uint>();
+            foreach (var ib in variant.Blocks)
             {
                 if (!files.Contains(ib.fileId)) files.Add(ib.fileId);
             }
 
-            foreach (uint file in files)
+            foreach (var file in files)
             {
-                ParseFile(file, Array.FindAll(variant.Blocks, delegate(CoverageReport.InnerBlock b)
-                    {
-                        return b.fileId == file;
-                    }));
+                var u = file;
+                ParseFile(file, Array.FindAll(variant.Blocks, b => b.fileId == u));
             }
         }
 
         private void ParseFile(uint file, IEnumerable<CoverageReport.InnerBlock> filePoints)
         {
-            string filePath = Services.getService<ICoverageReportService>().Report.getFilePath(file);
+            var filePath = Services.getService<ICoverageReportService>().Report.ResolveFilePath(file);
             if (filePath == null || !File.Exists(filePath))
                 return;
 
-            ViewControl sourceViewer = GetFileTextBox(file);
-
+            var sourceViewer = GetFileTextBox(file);
             if (sourceViewer == null)
             {
-                sourceViewer = new ViewControl();
-                sourceViewer.Dock = DockStyle.Fill;
-                sourceViewer.Document = CreateDocument(filePath);
-                sourceViewer.BorderStyle = BorderStyle.FixedSingle;
+                sourceViewer = new ViewControl
+                {
+                    Dock = DockStyle.Fill,
+                    Document = CreateDocument(filePath),
+                    BorderStyle = BorderStyle.FixedSingle
+                };
                 sourceViewer.View.ViewStyle.HideInactiveCursor = false;
                 sourceViewer.View.ViewStyle.HideInactiveSelection = false;
 
-                FileTag record = new FileTag();
-                record.fileId = file;
+                var record = new FileTag
+                {
+                    FileId = file
+                };
 
-                TabPage page = new TabPage();
-                page.Tag = record;
-                page.Text = Path.GetFileName(filePath);
+                var page = new TabPage
+                {
+                    Tag = record,
+                    Text = Path.GetFileName(filePath)
+                };
                 page.Controls.Add(sourceViewer);
 
                 pnTabs.TabPages.Add(page);
@@ -172,24 +169,21 @@ namespace PartCover.Browser.Features.Views
             {
                 bList = new List<CoverageReport.InnerBlock>();
 
-                Services.getService<ICoverageReportService>().Report.forEachBlock(
-                    delegate(CoverageReport.InnerBlock bd)
-                    {
-                        if (bd.fileId == file) bList.Add(bd);
-                    });
+                Services.getService<ICoverageReportService>().Report.ForEachBlock(
+                    bd => { if (bd.fileId == file) bList.Add(bd); });
             }
             else
             {
-                sourceViewer.Document.removeStylizers();
+                sourceViewer.Document.RemoveStylizerAll();
                 bList = new List<CoverageReport.InnerBlock>(filePoints);
             }
 
-            sourceViewer.Document.addStylizer(new BlockStylizer(bList.ToArray()));
+            sourceViewer.Document.Add(new BlockStylizer(bList.ToArray()));
         }
 
         private ViewControl GetFileTextBox(uint file)
         {
-            TabPage page = GetFileTab(file);
+            var page = GetFileTab(file);
             if (page != null)
                 return (ViewControl)page.Controls[0];
             return null;
@@ -197,13 +191,11 @@ namespace PartCover.Browser.Features.Views
 
         private static Document CreateDocument(string filePath)
         {
-            Document document = Document.createFromFile(filePath);
-
+            var document = Document.CreateFromFile(filePath);
             document.Style.FontName = Settings.Default.ViewPaneFont.Name;
             document.Style.FontHeight = Settings.Default.ViewPaneFont.SizeInPoints;
             document.Style.Foreground = Settings.Default.ViewPaneForeground;
             document.Style.Background = Settings.Default.ViewPaneBackground;
-
             return document;
         }
 
@@ -211,13 +203,14 @@ namespace PartCover.Browser.Features.Views
         {
             foreach (TabPage page in pnTabs.TabPages)
             {
-                if (page.Tag is FileTag)
+                if (!(page.Tag is FileTag))
                 {
-                    FileTag tag = (FileTag)page.Tag;
-
-                    if (tag.fileId == file)
-                        return page;
+                    continue;
                 }
+
+                var tag = (FileTag)page.Tag;
+                if (tag.FileId == file)
+                    return page;
             }
             return null;
         }
@@ -227,12 +220,12 @@ namespace PartCover.Browser.Features.Views
             if (lbBlocks.SelectedIndices.Count == 0)
                 return;
 
-            int blockIndex = lbBlocks.SelectedIndices[0];
-            CoverageReport.InnerBlock ib = variant.Blocks[blockIndex];
+            var blockIndex = lbBlocks.SelectedIndices[0];
+            var ib = variant.Blocks[blockIndex];
             if (ib.fileId == 0)
                 return;
 
-            TabPage page = GetFileTab(ib.fileId);
+            var page = GetFileTab(ib.fileId);
             if (page == null)
                 return;
 
@@ -240,20 +233,20 @@ namespace PartCover.Browser.Features.Views
             lbBlocks.Focus();
             lbBlocks.Select();
 
-            ViewControl rtb = GetFileTextBox(ib.fileId);
+            var rtb = GetFileTextBox(ib.fileId);
             if (rtb == null)
                 return;
 
-            rtb.View.moveCaretTo(new Point((int)ib.startColumn - 1, (int)ib.startLine - 1));
+            rtb.View.MoveCaretTo(new Point((int)ib.startColumn - 1, (int)ib.startLine - 1));
         }
 
 
         private class FileTag
         {
-            public uint fileId;
+            public uint FileId { get; set; }
         }
 
-        private class BlockStylizer : Stylizer
+        private class BlockStylizer : IStylizer
         {
             private const string CoveredStyle = "blockstylizer-good";
             private const string UncoveredStyle = "blockstylizer-bad";
@@ -265,30 +258,30 @@ namespace PartCover.Browser.Features.Views
                 this.points = points;
             }
 
-            public void stylize(StylizerSource source)
+            public void Stylize(IStylizerSource source)
             {
-                foreach (CoverageReport.InnerBlock b in points)
+                foreach (var b in points)
                 {
                     if (b.fileId <= 0)
                         continue;
 
-                    DocumentRange range = new DocumentRange();
-                    range.Start = new DocumentPoint((int)(b.startLine - 1), (int)(b.startColumn - 1));
-                    range.End = new DocumentPoint((int)(b.endLine - 1), (int)(b.endColumn - 1));
+                    var range = new DocumentRange
+                    {
+                        Start = new DocumentPoint((int)(b.startLine - 1), (int)(b.startColumn - 1)),
+                        End = new DocumentPoint((int)(b.endLine - 1), (int)(b.endColumn - 1))
+                    };
 
-                    StyleFace face = getFace(source, b.visitCount);
-
-                    source.setFace(range, face);
+                    source.AssignFace(range, getFace(source, b.visitCount));
                 }
             }
 
-            private StyleFace getFace(StylizerSource source, uint count)
+            private IStyleFace getFace(IStylizerSource source, uint count)
             {
-                string faceName = count > 0 ? CoveredStyle : UncoveredStyle;
+                var faceName = count > 0 ? CoveredStyle : UncoveredStyle;
 
-                StyleFace face = source.Document.createFace(this, faceName);
+                var face = source.Document.CreateFace(this, faceName);
                 if (face == null)
-                    return source.Document.getFace(faceName);
+                    return source.Document.FindFace(faceName);
 
                 face.FaceStyle.Background = count > 0
                     ? Settings.Default.ViewPaneCoveredBlockBackroung

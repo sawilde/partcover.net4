@@ -1,8 +1,6 @@
-using PartCover.Browser.Dialogs;
 using PartCover.Browser.Helpers;
 using PartCover.Framework.Walkers;
 using PartCover.Browser.Api;
-using System;
 using PartCover.Framework;
 using PartCover.Browser.Forms;
 
@@ -31,11 +29,11 @@ namespace PartCover.Browser.Stuff
 
         protected override void doWork()
         {
-            Framework.Connector connector = new Framework.Connector();
+            var connector = new Connector();
             connector.ProcessCallback.OnMessage += connectorOnMessage;
             connector.OnEventMessage += connectorOnEventMessage;
 
-            Tracker.setMessage("Create connector");
+            Tracker.AppendMessage("Create connector");
 
             if (runTargetForm.InvokeRequired)
             {
@@ -47,10 +45,10 @@ namespace PartCover.Browser.Stuff
             }
 
 
-            Tracker.setMessage("Store report");
+            Tracker.AppendMessage("Store report");
             report = connector.BlockWalker.Report;
 
-            Tracker.setMessage("Done");
+            Tracker.AppendMessage("Done");
             connector.OnEventMessage -= connectorOnEventMessage;
             connector.ProcessCallback.OnMessage -= connectorOnMessage;
         }
@@ -58,8 +56,8 @@ namespace PartCover.Browser.Stuff
         delegate void InitializeConnectorDelegate(Connector connector);
         private void InitializeConnector(Connector connector)
         {
-            foreach (string s in runTargetForm.IncludeItems) connector.IncludeItem(s);
-            foreach (string s in runTargetForm.ExcludeItems) connector.ExcludeItem(s);
+            foreach (var s in runTargetForm.IncludeItems) connector.IncludeItem(s);
+            foreach (var s in runTargetForm.ExcludeItems) connector.ExcludeItem(s);
 
             connector.SetLogging(runTargetForm.LogLevel);
             connector.UseFileLogging(false);
@@ -71,18 +69,13 @@ namespace PartCover.Browser.Stuff
                 false, false);
         }
 
-        private event EventHandler<EventArgs<CoverageReport.RunHistoryMessage>> OnMessage;
-        private event EventHandler<EventArgs<CoverageReport.RunLogMessage>> OnEventMessage;
-
         void connectorOnEventMessage(object sender, EventArgs<CoverageReport.RunLogMessage> e)
         {
-            if (OnEventMessage != null) OnEventMessage(this, e);
             Tracker.add(e.Data);
         }
 
         void connectorOnMessage(object sender, EventArgs<CoverageReport.RunHistoryMessage> e)
         {
-            if (OnMessage != null) OnMessage(this, e);
             Tracker.add(e.Data);
         }
     }

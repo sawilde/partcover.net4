@@ -59,14 +59,14 @@ void Instrumentator::InstrumentModule(ModuleID module, const String& moduleName,
     desc.loaded = true;
 
     if(FAILED(hr = profilerInfo->GetModuleInfo(module, NULL, 0, NULL, NULL, &desc.assembly))) {
-        LOGINFO3(METHOD_INSTRUMENT, "Cannot instrument module %X '%s' (error %X on get module info)", module, moduleName, hr);
+		LOGINFO3(METHOD_INSTRUMENT, "Cannot instrument module %X '%s' (error %X on get module info)", module, moduleName.c_str(), hr);
         Unlock();
         return;
     }
 
     desc.assemblyName = CorHelper::GetAssemblyName(profilerInfo, desc.assembly);
     if (desc.assemblyName.length() == 0) {
-        LOGINFO3(METHOD_INSTRUMENT, "Cannot instrument module %X '%s' (no assembly name)", module, moduleName, hr);
+		LOGINFO3(METHOD_INSTRUMENT, "Cannot instrument module %X '%s' (no assembly name)", module, moduleName.c_str(), hr);
         Unlock();
         return;
     }
@@ -75,7 +75,7 @@ void Instrumentator::InstrumentModule(ModuleID module, const String& moduleName,
 	hr = profilerInfo->GetModuleMetaData(module, ofRead, IID_IMetaDataImport, (IUnknown**) &mdImport);
     if(S_OK != hr) 
 	{
-        LOGINFO3(METHOD_INSTRUMENT, "Cannot instrument module %X '%s' (error %X on get meta data import)", module, moduleName, hr);
+		LOGINFO3(METHOD_INSTRUMENT, "Cannot instrument module %X '%s' (error %X on get meta data import)", module, moduleName.c_str(), hr);
         Unlock();
         return;
     }
@@ -98,7 +98,7 @@ void Instrumentator::InstrumentModule(ModuleID module, const String& moduleName,
 
     mdImport->CloseEnum(hEnum);
     if (desc.typeDefs.size() == 0) {
-        LOGINFO3(METHOD_INSTRUMENT, "In module %X '%s' instrumented %d items. Skip it", module, moduleName, desc.typeDefs.size());
+		LOGINFO3(METHOD_INSTRUMENT, "In module %X '%s' instrumented %d items. Skip it", module, moduleName.c_str(), desc.typeDefs.size());
         Unlock();
         return;
     }
@@ -304,7 +304,7 @@ void Instrumentator::InstrumentMethod(TypeDef& typeDef, mdMethodDef methodDef, I
 
         LOGINFO4(METHOD_INSTRUMENT, "      Asm %X: Method %s.%s (0x%X) was instrumented and stored", helper.module->assembly, typeDef.typeDefName.c_str(), method.methodDefName.c_str(), method.methodDef);
     } catch(std::exception& ex) {
-        LOGERROR1("Instrumentator", "InstrumentMethod", "Instrumentation breaked. %s", ex.what());
+		LOGERROR1("Instrumentator", "InstrumentMethod", "Instrumentation breaked. %s", std::string(ex.what()).c_str());
     }
 }
 

@@ -21,42 +21,27 @@ namespace PartCover.Framework
             public readonly string key;
             public readonly OptionHandler handler;
             public readonly ActivateHandler activator;
-            public bool optional;
-            public string arguments;
-            public string description;
 
             public ArgumentOption(string key, OptionHandler handler)
-                : this(key, handler, null, true, string.Empty, string.Empty)
+                : this(key, handler, null)
             {
             }
 
             public ArgumentOption(string key, ActivateHandler activator)
-                : this(key, null, activator, true, string.Empty, string.Empty)
+                : this(key, null, activator)
             {
             }
 
-            public ArgumentOption(string key, ActivateHandler activator, bool optional, string arguments, string description)
-                : this(key, null, activator, optional, arguments, description)
-            {
-            }
-
-            public ArgumentOption(string key, OptionHandler handler, bool optional, string arguments, string description)
-                : this(key, handler, null, optional, arguments, description)
-            {
-            }
-
-            public ArgumentOption(string key, OptionHandler handler, ActivateHandler activator, bool optional, string arguments, string description)
+            private ArgumentOption(string key, OptionHandler handler, ActivateHandler activator)
             {
                 this.key = key;
                 this.handler = handler;
                 this.activator = activator;
-                this.optional = optional;
-                this.arguments = arguments;
-                this.description = description;
             }
 
-            public delegate void OptionHandler(WorkSettings settings, string value);
-            public delegate void ActivateHandler(WorkSettings settings);
+            internal delegate void OptionHandler(WorkSettings settings, string value);
+
+            internal delegate void ActivateHandler(WorkSettings settings);
         }
 
         #endregion ArgumentOption
@@ -150,8 +135,8 @@ namespace PartCover.Framework
 
         #region Parse Args
 
-        private bool printVersion = false;
-        private bool printLongHelp = false;
+        private bool printVersion;
+        private bool printLongHelp;
 
         public bool InitializeFromCommandLine(string[] args)
         {
@@ -208,8 +193,9 @@ namespace PartCover.Framework
                 PrintVersion();
             }
 
-            if (TargetPath != null && TargetPath.Length > 0)
+            if (!string.IsNullOrEmpty(TargetPath))
                 return true;
+
             if (showShort)
             {
                 PrintShortUsage(true);
@@ -326,7 +312,7 @@ namespace PartCover.Framework
             set { generateSettingsFileName = value; }
         }
 
-        private int logLevel = 0;
+        private int logLevel;
         public int LogLevel
         {
             get { return logLevel; }
@@ -359,14 +345,14 @@ namespace PartCover.Framework
             set { targetWorkingDir = value; }
         }
 
-        private string targetArgs = null;
+        private string targetArgs;
         public string TargetArgs
         {
             get { return targetArgs; }
             set { targetArgs = value; }
         }
 
-        private string outputFile = null;
+        private string outputFile;
         public string FileNameForReport
         {
             get { return outputFile; }
@@ -391,7 +377,7 @@ namespace PartCover.Framework
 
         public void GenerateSettingsFile()
         {
-            XmlDocument xmlDoc = new XmlDocument();
+            var xmlDoc = new XmlDocument();
             xmlDoc.AppendChild(xmlDoc.CreateElement("PartCoverSettings"));
             if (targetPath != null) AppendValue(xmlDoc.DocumentElement, "Target", targetPath);
             if (targetWorkingDir != null) AppendValue(xmlDoc.DocumentElement, "TargetWorkDir", targetWorkingDir);
@@ -419,13 +405,13 @@ namespace PartCover.Framework
 
         public void ReadSettingsFile()
         {
-            XmlDocument xmlDoc = new XmlDocument();
+            var xmlDoc = new XmlDocument();
             try
             {
                 xmlDoc.Load(settingsFile);
                 logLevel = 0;
 
-                XmlNode node = xmlDoc.SelectSingleNode("/PartCoverSettings/Target/text()");
+                var node = xmlDoc.SelectSingleNode("/PartCoverSettings/Target/text()");
                 if (node != null && node.Value != null) targetPath = node.Value;
                 node = xmlDoc.SelectSingleNode("/PartCoverSettings/TargetWorkDir/text()");
                 if (node != null && node.Value != null) targetWorkingDir = node.Value;
@@ -440,25 +426,31 @@ namespace PartCover.Framework
                 node = xmlDoc.SelectSingleNode("/PartCoverSettings/ShowVersion/text()");
                 if (node != null && node.Value != null) printVersion = bool.Parse(node.Value);
 
-                XmlNodeList list = xmlDoc.SelectNodes("/PartCoverSettings/Rule");
+                var list = xmlDoc.SelectNodes("/PartCoverSettings/Rule");
                 if (list != null)
                 {
                     foreach (XmlNode rule in list)
                     {
-                        XmlNode ruleText = rule.SelectSingleNode("text()");
-                        if (ruleText == null || ruleText.Value == null || ruleText.Value.Length == 0)
+                        var ruleText = rule.SelectSingleNode("text()");
+                        if (ruleText == null || string.IsNullOrEmpty(ruleText.Value))
                             continue;
-                        string[] rules = ruleText.Value.Split(',');
-                        foreach (string s in rules)
+
+                        var rules = ruleText.Value.Split(',');
+                        foreach (var s in rules)
                         {
                             if (s.Length <= 1)
                                 continue;
-                            if (s[0] == '+')
-                                includeItems.Add(s.Substring(1));
-                            else if (s[0] == '-')
-                                excludeItems.Add(s.Substring(1));
-                            else
-                                throw new SettingsException("Wrong rule format (" + s + ")");
+                            switch (s[0])
+                            {
+                                case '+':
+                                    includeItems.Add(s.Substring(1));
+                                    break;
+                                case '-':
+                                    excludeItems.Add(s.Substring(1));
+                                    break;
+                                default:
+                                    throw new SettingsException("Wrong rule format (" + s + ")");
+                            }
                         }
                     }
                 }

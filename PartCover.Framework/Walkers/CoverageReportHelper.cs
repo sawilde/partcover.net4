@@ -1,6 +1,5 @@
 using System;
 using System.Globalization;
-using System.Collections;
 using System.IO;
 using System.Diagnostics;
 using System.Xml;
@@ -10,21 +9,21 @@ using System.Collections.Generic;
 
 namespace PartCover.Framework.Walkers
 {
-    public sealed class CoverageReportHelper
+    public static class CoverageReportHelper
     {
-        private CoverageReportHelper() { }
-
         public static void AddFile(CoverageReport report, UInt32 id, String url)
         {
-            CoverageReport.FileDescriptor file = new CoverageReport.FileDescriptor();
-            file.fileId = id;
-            file.fileUrl = url;
+            var file = new CoverageReport.FileDescriptor
+            {
+                fileId = id,
+                fileUrl = url
+            };
             report.files.Add(file);
         }
 
         private static CoverageReport.TypeDescriptor FindExistingType(CoverageReport report, CoverageReport.TypeDescriptor dType)
         {
-            foreach (CoverageReport.TypeDescriptor td in report.types)
+            foreach (var td in report.types)
                 if (td.assemblyName == dType.assemblyName && td.typeName == dType.typeName && td.flags == dType.flags)
                     return td;
             return null;
@@ -32,23 +31,24 @@ namespace PartCover.Framework.Walkers
 
         private static CoverageReport.MethodDescriptor FindExistingMethod(CoverageReport.TypeDescriptor dType, CoverageReport.MethodDescriptor dMethod)
         {
-            foreach (CoverageReport.MethodDescriptor md in dType.methods)
+            foreach (var md in dType.methods)
                 if (md.methodName == dMethod.methodName && md.methodSig == dMethod.methodSig && md.flags == dMethod.flags && md.implFlags == dMethod.implFlags)
                     return md;
             return null;
         }
 
-        private static CoverageReport.InnerBlockData FindExistingBlockData(CoverageReport.InnerBlockData[] datas, CoverageReport.InnerBlockData bData)
+        private static CoverageReport.InnerBlockData FindExistingBlockData(IEnumerable<CoverageReport.InnerBlockData> datas, CoverageReport.InnerBlockData bData)
         {
-            foreach (CoverageReport.InnerBlockData dataBlock in datas)
+            foreach (var dataBlock in datas)
             {
                 if (dataBlock.blocks.Length != bData.blocks.Length)
                     continue;
-                bool validBlock = true;
-                for (int i = 0; validBlock && i < dataBlock.blocks.Length; ++i)
+
+                var validBlock = true;
+                for (var i = 0; validBlock && i < dataBlock.blocks.Length; ++i)
                 {
-                    CoverageReport.InnerBlock existingBlock = dataBlock.blocks[i];
-                    CoverageReport.InnerBlock newBlock = FindBlock(bData.blocks, existingBlock);
+                    var existingBlock = dataBlock.blocks[i];
+                    var newBlock = FindBlock(bData.blocks, existingBlock);
                     validBlock = newBlock != null;
                 }
                 if (validBlock)
@@ -57,9 +57,9 @@ namespace PartCover.Framework.Walkers
             return null;
         }
 
-        private static CoverageReport.InnerBlock FindBlock(CoverageReport.InnerBlock[] blocks, CoverageReport.InnerBlock block)
+        private static CoverageReport.InnerBlock FindBlock(IEnumerable<CoverageReport.InnerBlock> blocks, CoverageReport.InnerBlock block)
         {
-            foreach (CoverageReport.InnerBlock dataBlock in blocks)
+            foreach (var dataBlock in blocks)
             {
                 if (dataBlock.position != block.position || dataBlock.blockLen != block.blockLen)
                     continue;
@@ -73,19 +73,19 @@ namespace PartCover.Framework.Walkers
 
         public static void AddType(CoverageReport report, CoverageReport.TypeDescriptor dType)
         {
-            CoverageReport.TypeDescriptor existingType = FindExistingType(report, dType);
+            var existingType = FindExistingType(report, dType);
             if (existingType == null)
             {
                 report.types.Add(dType);
                 return;
             }
 
-            foreach (CoverageReport.MethodDescriptor md in dType.methods)
+            foreach (var md in dType.methods)
             {
-                CoverageReport.MethodDescriptor existingMethod = FindExistingMethod(existingType, md);
+                var existingMethod = FindExistingMethod(existingType, md);
                 if (existingMethod == null)
                 {
-                    CoverageReport.MethodDescriptor[] newMethods = new CoverageReport.MethodDescriptor[existingType.methods.Length + 1];
+                    var newMethods = new CoverageReport.MethodDescriptor[existingType.methods.Length + 1];
                     existingType.methods.CopyTo(newMethods, 1);
                     newMethods[0] = md;
                     existingType.methods = newMethods;
@@ -94,21 +94,21 @@ namespace PartCover.Framework.Walkers
 
                 Debug.Assert(md.insBlocks.Length == 1);
 
-                CoverageReport.InnerBlockData existingBlockData = FindExistingBlockData(existingMethod.insBlocks, md.insBlocks[0]);
+                var existingBlockData = FindExistingBlockData(existingMethod.insBlocks, md.insBlocks[0]);
 
                 if (existingBlockData == null)
                 {
-                    CoverageReport.InnerBlockData[] newBlocks = new CoverageReport.InnerBlockData[existingMethod.insBlocks.Length + 1];
+                    var newBlocks = new CoverageReport.InnerBlockData[existingMethod.insBlocks.Length + 1];
                     existingMethod.insBlocks.CopyTo(newBlocks, 1);
                     newBlocks[0] = md.insBlocks[0];
                     existingMethod.insBlocks = newBlocks;
                 }
                 else
                 {
-                    for (int i = 0; i < existingBlockData.blocks.Length; ++i)
+                    for (var i = 0; i < existingBlockData.blocks.Length; ++i)
                     {
-                        CoverageReport.InnerBlock existingBlock = existingBlockData.blocks[i];
-                        CoverageReport.InnerBlock newBlock = FindBlock(md.insBlocks[0].blocks, existingBlock);
+                        var existingBlock = existingBlockData.blocks[i];
+                        var newBlock = FindBlock(md.insBlocks[0].blocks, existingBlock);
                         Debug.Assert(newBlock != null);
                         existingBlock.visitCount += newBlock.visitCount;
                     }
@@ -118,7 +118,7 @@ namespace PartCover.Framework.Walkers
 
         public static void AddMethod(CoverageReport.TypeDescriptor dType, CoverageReport.MethodDescriptor dMethod)
         {
-            CoverageReport.MethodDescriptor[] newMethods = new CoverageReport.MethodDescriptor[dType.methods.Length + 1];
+            var newMethods = new CoverageReport.MethodDescriptor[dType.methods.Length + 1];
             dType.methods.CopyTo(newMethods, 1);
 
             newMethods[0] = dMethod;
@@ -128,9 +128,9 @@ namespace PartCover.Framework.Walkers
 
         public static void AddMethodBlock(CoverageReport.MethodDescriptor dMethod, CoverageReport.InnerBlock inner)
         {
-            CoverageReport.InnerBlockData bData = dMethod.insBlocks[0];
+            var bData = dMethod.insBlocks[0];
 
-            CoverageReport.InnerBlock[] newBlocks = new CoverageReport.InnerBlock[bData.blocks.Length + 1];
+            var newBlocks = new CoverageReport.InnerBlock[bData.blocks.Length + 1];
             bData.blocks.CopyTo(newBlocks, 1);
 
             newBlocks[0] = inner;
@@ -140,7 +140,7 @@ namespace PartCover.Framework.Walkers
 
         public static void AddBlock(CoverageReport.InnerBlockData bData, CoverageReport.InnerBlock inner)
         {
-            CoverageReport.InnerBlock[] newBlocks = new CoverageReport.InnerBlock[bData.blocks.Length + 1];
+            var newBlocks = new CoverageReport.InnerBlock[bData.blocks.Length + 1];
             bData.blocks.CopyTo(newBlocks, 1);
             newBlocks[0] = inner;
             bData.blocks = newBlocks;
@@ -148,7 +148,7 @@ namespace PartCover.Framework.Walkers
 
         public static void AddBlockData(CoverageReport.MethodDescriptor dMethod, CoverageReport.InnerBlockData bData)
         {
-            CoverageReport.InnerBlockData[] newBlocks = new CoverageReport.InnerBlockData[dMethod.insBlocks.Length + 1];
+            var newBlocks = new CoverageReport.InnerBlockData[dMethod.insBlocks.Length + 1];
             dMethod.insBlocks.CopyTo(newBlocks, 1);
             newBlocks[0] = bData;
             dMethod.insBlocks = newBlocks;
@@ -156,18 +156,19 @@ namespace PartCover.Framework.Walkers
 
         public static string[] GetAssemblies(CoverageReport report)
         {
-            SortedList list = new SortedList();
-            foreach (CoverageReport.TypeDescriptor dType in report.types)
+            var list = new Dictionary<string, bool>();
+            foreach (var dType in report.types)
                 list[dType.assemblyName] = true;
-            string[] res = new string[list.Count];
-            list.Keys.CopyTo(res, 0);
-            return res;
+
+            var listInst = new List<string>(list.Keys);
+            listInst.Sort();
+            return listInst.ToArray();
         }
 
         public static ICollection<CoverageReport.TypeDescriptor> GetTypes(CoverageReport report, string assembly)
         {
-            List<CoverageReport.TypeDescriptor> res = new List<CoverageReport.TypeDescriptor>();
-            foreach (CoverageReport.TypeDescriptor dType in report.types)
+            var res = new List<CoverageReport.TypeDescriptor>();
+            foreach (var dType in report.types)
                 if (dType.assemblyName == assembly)
                     res.Add(dType);
             return res;
@@ -229,36 +230,36 @@ namespace PartCover.Framework.Walkers
             return Assembly.GetAssembly(typeof(CoverageReportHelper));
         }
 
-        public static string VersionString(System.Version version)
+        public static string VersionString(Version version)
         {
             return string.Format("{0}.{1}.{2}.{3}", version.Major, version.Minor, version.Build, version.Revision);
         }
 
-        public static bool IsEqual(System.Version version, string versionString)
+        public static bool IsEqual(Version version, string versionString)
         {
             return versionString != null && VersionString(version) == versionString;
         }
 
         public static void WriteReport(CoverageReport report, TextWriter writer)
         {
-            XmlDocument xml = new XmlDocument();
+            var xml = new XmlDocument();
 
-            XmlNode root = xml.AppendChild(xml.CreateElement("PartCoverReport"));
+            var root = xml.AppendChild(xml.CreateElement("PartCoverReport"));
             root.Attributes.Append(xml.CreateAttribute("ver")).Value = VersionString(GetHelperAssembly().GetName().Version);
 
             if (report.ExitCode.HasValue)
                 root.Attributes.Append(xml.CreateAttribute("exitCode")).Value = report.ExitCode.Value.ToString(CultureInfo.InvariantCulture);
 
-            foreach (CoverageReport.FileDescriptor dFile in report.files)
+            foreach (var dFile in report.files)
             {
-                XmlNode fileNode = root.AppendChild(xml.CreateElement("file"));
+                var fileNode = root.AppendChild(xml.CreateElement("file"));
                 fileNode.Attributes.Append(xml.CreateAttribute("id")).Value = dFile.fileId.ToString(CultureInfo.InvariantCulture);
                 fileNode.Attributes.Append(xml.CreateAttribute("url")).Value = dFile.fileUrl;
             }
 
-            foreach (CoverageReport.TypeDescriptor dType in report.types)
+            foreach (var dType in report.types)
             {
-                XmlNode typeNode = root.AppendChild(xml.CreateElement("type"));
+                var typeNode = root.AppendChild(xml.CreateElement("type"));
                 typeNode.Attributes.Append(xml.CreateAttribute("asm")).Value = dType.assemblyName;
                 typeNode.Attributes.Append(xml.CreateAttribute("name")).Value = dType.typeName;
                 typeNode.Attributes.Append(xml.CreateAttribute("flags")).Value = dType.flags.ToString(CultureInfo.InvariantCulture);
@@ -354,14 +355,14 @@ namespace PartCover.Framework.Walkers
 
         public static void ReadReport(CoverageReport report, TextReader reader)
         {
-            XmlDocument xml = new XmlDocument();
+            var xml = new XmlDocument();
             xml.Load(reader);
 
-            XmlNode root = xml.SelectSingleNode("/PartCoverReport");
+            var root = xml.SelectSingleNode("/PartCoverReport");
             if (root == null) throw new ReportException("Wrong report format");
-            XmlAttribute verAttribute = root.Attributes["ver"];
+            var verAttribute = root.Attributes["ver"];
             if (verAttribute == null) throw new ReportException("Wrong report format");
-            XmlAttribute exitCodeAttribute = root.Attributes["exitCode"];
+            var exitCodeAttribute = root.Attributes["exitCode"];
             if (exitCodeAttribute != null) report.ExitCode = GetIntAttribute(root, exitCodeAttribute.Name);
 
             foreach (XmlNode fileNode in xml.SelectNodes("/PartCoverReport/file"))
@@ -369,28 +370,35 @@ namespace PartCover.Framework.Walkers
 
             foreach (XmlNode typeNode in xml.SelectNodes("/PartCoverReport/type"))
             {
-                CoverageReport.TypeDescriptor dType = new CoverageReport.TypeDescriptor();
-                dType.assemblyName = GetStringAttribute(typeNode, "asm");
-                dType.typeName = GetStringAttribute(typeNode, "name");
-                dType.flags = GetUInt32Attribute(typeNode, "flags");
+                var dType = new CoverageReport.TypeDescriptor
+                {
+                    assemblyName = GetStringAttribute(typeNode, "asm"),
+                    typeName = GetStringAttribute(typeNode, "name"),
+                    flags = GetUInt32Attribute(typeNode, "flags")
+                };
 
                 foreach (XmlNode methodNode in typeNode.SelectNodes("method"))
                 {
-                    CoverageReport.MethodDescriptor dMethod = new CoverageReport.MethodDescriptor(0);
-                    dMethod.methodName = GetStringAttribute(methodNode, "name");
-                    dMethod.methodSig = GetStringAttribute(methodNode, "sig");
-                    dMethod.flags = GetUInt32Attribute(methodNode, "flags");
-                    dMethod.implFlags = GetUInt32Attribute(methodNode, "iflags");
+                    var dMethod = new CoverageReport.MethodDescriptor(0)
+                    {
+                        methodName = GetStringAttribute(methodNode, "name"),
+                        methodSig = GetStringAttribute(methodNode, "sig"),
+                        flags = GetUInt32Attribute(methodNode, "flags"),
+                        implFlags = GetUInt32Attribute(methodNode, "iflags")
+                    };
 
                     foreach (XmlNode blockNode in methodNode.SelectNodes("code"))
                     {
-                        CoverageReport.InnerBlockData dBlock = new CoverageReport.InnerBlockData();
+                        var dBlock = new CoverageReport.InnerBlockData();
                         foreach (XmlNode pointNode in blockNode.SelectNodes("pt"))
                         {
-                            CoverageReport.InnerBlock dPoint = new CoverageReport.InnerBlock();
-                            dPoint.visitCount = GetUInt32Attribute(pointNode, "visit");
-                            dPoint.position = GetUInt32Attribute(pointNode, "pos");
-                            dPoint.blockLen = GetUInt32Attribute(pointNode, "len");
+                            var dPoint = new CoverageReport.InnerBlock
+                            {
+                                visitCount = GetUInt32Attribute(pointNode, "visit"),
+                                position = GetUInt32Attribute(pointNode, "pos"),
+                                blockLen = GetUInt32Attribute(pointNode, "len")
+                            };
+
                             if (pointNode.Attributes["fid"] != null)
                             {
                                 dPoint.fileId = GetUInt32Attribute(pointNode, "fid");
@@ -417,18 +425,22 @@ namespace PartCover.Framework.Walkers
 
         private static void AddLogFileMessage(CoverageReport report, XmlNode messageNode)
         {
-            CoverageReport.RunLogMessage message = new CoverageReport.RunLogMessage();
-            message.ThreadId = GetIntAttribute(messageNode, "tr");
-            message.MsOffset = GetIntAttribute(messageNode, "ms");
-            message.Message = messageNode.InnerText;
+            var message = new CoverageReport.RunLogMessage
+            {
+                ThreadId = GetIntAttribute(messageNode, "tr"),
+                MsOffset = GetIntAttribute(messageNode, "ms"),
+                Message = messageNode.InnerText
+            };
             report.runLog.Add(message);
         }
 
         private static void AddTrackerMessage(CoverageReport report, XmlNode messageNode)
         {
-            CoverageReport.RunHistoryMessage message = new CoverageReport.RunHistoryMessage();
-            message.Time = new DateTime(GetLongAttribute(messageNode, "tm"), DateTimeKind.Utc);
-            message.Message = messageNode.InnerText;
+            var message = new CoverageReport.RunHistoryMessage
+            {
+                Time = new DateTime(GetLongAttribute(messageNode, "tm"), DateTimeKind.Utc),
+                Message = messageNode.InnerText
+            };
             report.runHistory.Add(message);
         }
 
