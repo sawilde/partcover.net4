@@ -1,51 +1,38 @@
 using System;
 using System.IO;
-using PartCover.Framework.Walkers;
+using PartCover.Framework.Data;
 
 namespace PartCover.Framework
 {
-    public class Connector
+    public partial class Connector
     {
         readonly PartCoverConnector2Class connector = new PartCoverConnector2Class();
+        readonly ReportReceiver receiver = new ReportReceiver();
+        readonly ConnectorActionCallback actionCallback;
+
+        EventHandler<StatusEventArgs> statusMessageReceived;
+        public event EventHandler<StatusEventArgs> StatusMessageReceived
+        {
+            add { statusMessageReceived += value; }
+            remove { statusMessageReceived -= value; }
+        }
+
+        EventHandler<LogEntryEventArgs> logEntryReceived;
+        public event EventHandler<LogEntryEventArgs> LogEntryReceived
+        {
+            add { logEntryReceived += value; }
+            remove { logEntryReceived -= value; }
+        }
 
         public Connector()
         {
-            ActionCallback = new ConnectorActionCallback(this);
-            ProcessCallback = new ProcessCallback();
-            ProcessCallback.OnMessage += processCallbackOnMessage;
+            actionCallback = new ConnectorActionCallback(this);
         }
 
-        public event EventHandler<EventArgs<CoverageReport.RunLogMessage>> OnEventMessage;
-
-        public ProcessCallback ProcessCallback { get; set; }
-
-        internal ConnectorActionCallback ActionCallback { get; set; }
-
-        public void SetLogging(Logging logging)
-        {
-            connector.LoggingLevel = (int)logging;
-        }
-
-        public void UseFileLogging(bool logging)
-        {
-            connector.FileLoggingEnable = logging;
-        }
-
-        public void UsePipeLogging(bool logging)
-        {
-            connector.PipeLoggingEnable = logging;
-        }
-
-        private InstrumentedBlocksWalkerInner blockWalker;
-        public InstrumentedBlocksWalker BlockWalker
-        {
-            get { return blockWalker; }
-        }
+        public Report Report { get { return receiver.Report; } }
 
         public void StartTarget(string path, string directory, string args, bool redirectOutput, bool delayClose)
         {
-            blockWalker = new InstrumentedBlocksWalkerInner();
-
             // set mode
             connector.EnableOption(ProfilerMode.COUNT_COVERAGE);
 
@@ -70,44 +57,22 @@ namespace PartCover.Framework
             }
 
             // start target
-            ProcessCallback.writeStatus("Start target");
-            connector.StartTarget(path, directory, args, redirectOutput, ActionCallback);
+            //  ProcessCallback.writeStatus("Start target");
+            connector.StartTarget(path, directory, args, redirectOutput, actionCallback);
 
             // wait results
-            ProcessCallback.writeStatus("Wait results");
-            connector.WaitForResults(delayClose, ActionCallback);
+            //ProcessCallback.writeStatus("Wait results");
+            connector.WaitForResults(delayClose, actionCallback);
 
             // walk results
-            ProcessCallback.writeStatus("Walk results");
-            connector.WalkInstrumentedResults(blockWalker);
-
-            if (connector.HasTargetExitCode) blockWalker.Report.ExitCode = connector.TargetExitCode;
-        }
-
-        internal void OnLogMessage(CoverageReport.RunLogMessage message)
-        {
-            blockWalker.Report.runLog.Add(message);
-            if (OnEventMessage != null) OnEventMessage(this, new EventArgs<CoverageReport.RunLogMessage>(message));
-        }
-
-        private void processCallbackOnMessage(object sender, EventArgs<CoverageReport.RunHistoryMessage> e)
-        {
-            blockWalker.Report.runHistory.Add(e.Data);
+            //ProcessCallback.writeStatus("Walk results");
+            receiver.Report = new Report();
+            connector.GetReport(receiver);
         }
 
         public void CloseTarget()
         {
             connector.CloseTarget();
-        }
-
-        public void IncludeItem(string item)
-        {
-            connector.IncludeItem(item);
-        }
-
-        public void ExcludeItem(string item)
-        {
-            connector.ExcludeItem(item);
         }
 
         public int? TargetExitCode
@@ -140,5 +105,18 @@ namespace PartCover.Framework
             }
         }
 
+        internal void OnLogMessage(LogEntry message)
+        {
+            var eventHandler = logEntryReceived;
+            if (eventHandler == null) { return; }
+            eventHandler.Invoke(this, new LogEntryEventArgs(message));
+        }
+
+        internal void OnStatusReceive(string message)
+        {
+            var eventHandler = statusMessageReceived;
+            if (eventHandler == null) { return; }
+            eventHandler.Invoke(this, new StatusEventArgs(message));
+        }
     }
 }

@@ -1,22 +1,19 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
-using PartCover.Framework.Walkers;
+using PartCover.Framework.Data;
 
 namespace PartCover.Browser.Api
 {
-    public interface ICoverageReportService
+    public interface IReportService
     {
-        event EventHandler<EventArgs> ReportClosing;
-        event EventHandler<EventArgs> ReportOpened;
+        event EventHandler ReportClosing;
+        event EventHandler ReportOpened;
 
-        ICoverageReport Report { get;}
-        string ReportFileName { get;}
+        Report Report { get; }
+        string ReportFileName { get; }
 
         void LoadFromFile(string fileName);
-
         void SaveToFile(string fileName);
 
-        void Load(CoverageReport report);
+        void Open(Report report);
     }
 }

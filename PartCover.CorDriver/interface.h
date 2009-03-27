@@ -31,23 +31,41 @@ enum ProfilerMode : char {
 
 #ifndef REMOVE_ATTRIBUTES
 [
+    export
+    ,uuid(METHODBLOCK_GUID)
+    ,helpstring("CorDriver.MethodBlockData")
+    ,library_block
+]
+#endif
+typedef struct BLOCK_DATA {
+	INT position;
+	INT blockLen;
+	INT visitCount;
+	INT fileId;
+	INT startLine;
+	INT startColumn;
+	INT endLine;
+	INT endColumn;
+} BLOCK_DATA;
+
+#ifndef REMOVE_ATTRIBUTES
+[
     object
     ,uuid(IINSTRUMENTEDBLOCKWALKER_GUID)
     ,helpstring("CorDriver.IInstrumentedBlockWalker interface")
     ,library_block
 ]
 #endif
-__interface IInstrumentedBlockWalker : IUnknown {
-    HRESULT BeginReport();
+__interface IReportReceiver : IUnknown {
+    HRESULT RegisterFile([in] INT fileId, [in] BSTR fileUrl);
 
-    HRESULT EnterTypedef(BSTR assemblyName, BSTR typedefName, DWORD flags);
-    HRESULT EnterMethod(BSTR methodName, BSTR methodSig, DWORD flags, DWORD implFlags);
-    HRESULT MethodBlock(ULONG position, ULONG blockLen, DWORD visitCount, ULONG32 fileId, ULONG32 startLine, ULONG32 startColumn, ULONG32 endLine, ULONG32 endColumn);
+	HRESULT EnterAssembly([in] BSTR assemblyName, [in] BSTR moduleName);
+    HRESULT EnterTypedef([in] BSTR typedefName, [in] DWORD flags);
+    HRESULT EnterMethod([in] BSTR methodName, [in] BSTR methodSig, [in] DWORD flags, [in] DWORD implFlags);
+    HRESULT AddCoverageBlock([in] BLOCK_DATA blockData);
     HRESULT LeaveMethod();
     HRESULT LeaveTypedef();
-
-    HRESULT RegisterFile(ULONG32 fileId, BSTR fileUrl);
-    HRESULT EndReport();
+	HRESULT LeaveAssembly();
 };
 
 #ifndef REMOVE_ATTRIBUTES
@@ -119,7 +137,7 @@ __interface IPartCoverConnector2
     HRESULT WaitForResults([in] VARIANT_BOOL delayClose, [in, optional] IConnectorActionCallback* callback);
     HRESULT CloseTarget();
 
-    HRESULT WalkInstrumentedResults([in] IInstrumentedBlockWalker* walker);
+    HRESULT GetReport([in] IReportReceiver* receiver);
 
     HRESULT IncludeItem([in] BSTR item);
     HRESULT ExcludeItem([in] BSTR item);

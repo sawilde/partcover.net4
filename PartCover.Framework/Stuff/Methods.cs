@@ -13,22 +13,22 @@ namespace PartCover.Framework.Stuff
 
     public static class Methods
     {
-        public static MethodAttributes getAccess(uint flags)
+        public static MethodAttributes GetAccess(MethodAttributes flags)
         {
-            return (MethodAttributes)flags & MethodAttributes.MemberAccessMask;
+            return flags & MethodAttributes.MemberAccessMask;
         }
 
-        public static bool isStatic(uint flags)
+        public static bool IsStatic(MethodAttributes flags)
         {
-            return ((MethodAttributes)flags & MethodAttributes.Static) == MethodAttributes.Static;
+            return (flags & MethodAttributes.Static) == MethodAttributes.Static;
         }
 
-        public static bool isSpecial(uint flags)
+        public static bool IsSpecial(MethodAttributes flags)
         {
-            return ((MethodAttributes)flags & MethodAttributes.SpecialName) == MethodAttributes.SpecialName;
+            return (flags & MethodAttributes.SpecialName) == MethodAttributes.SpecialName;
         }
 
-        public static MdSpecial getMdSpecial(string name)
+        public static MdSpecial GetMdSpecial(string name)
         {
             if (name.StartsWith("set_")) return MdSpecial.Set;
             if (name.StartsWith("get_")) return MdSpecial.Get;
@@ -37,9 +37,9 @@ namespace PartCover.Framework.Stuff
             return MdSpecial.Unknown;
         }
 
-        public static string getMdSpecialName(string name)
+        public static string GetMdSpecialName(string name)
         {
-            switch (getMdSpecial(name))
+            switch (GetMdSpecial(name))
             {
             case MdSpecial.Add:
             case MdSpecial.Get:

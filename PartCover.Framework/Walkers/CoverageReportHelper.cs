@@ -9,6 +9,7 @@ using System.Collections.Generic;
 
 namespace PartCover.Framework.Walkers
 {
+    /*
     public static class CoverageReportHelper
     {
         public static void AddFile(CoverageReport report, UInt32 id, String url)
@@ -446,4 +447,5 @@ namespace PartCover.Framework.Walkers
 
         #endregion //Save/Load
     }
+    */
 }

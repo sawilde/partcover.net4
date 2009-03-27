@@ -1,8 +1,7 @@
 using System;
 using System.IO;
-
+using System.Xml;
 using PartCover.Framework;
-using PartCover.Framework.Walkers;
 
 namespace PartCover
 {
@@ -13,21 +12,21 @@ namespace PartCover
         {
             try
             {
-                WorkSettings settings = new WorkSettings();
+                var settings = new WorkSettings();
                 if (!settings.InitializeFromCommandLine(args))
                 {
                     return -1;
                 }
 
-                Connector connector = new Connector();
-                connector.OnEventMessage += connector_OnEventMessage;
-                connector.ProcessCallback.OnMessage += ProcessCallback_OnMessage;
+                var connector = new Connector();
+                connector.StatusMessageReceived += connector_StatusMessageReceived;
+                connector.LogEntryReceived += connector_LogEntryReceived;
 
                 connector.UseFileLogging(true);
                 connector.UsePipeLogging(false);
                 connector.SetLogging((Logging)settings.LogLevel);
 
-                foreach (string item in settings.IncludeItems)
+                foreach (var item in settings.IncludeItems)
                 {
                     try
                     {
@@ -39,7 +38,7 @@ namespace PartCover
                     }
                 }
 
-                foreach (string item in settings.ExcludeItems)
+                foreach (var item in settings.ExcludeItems)
                 {
                     try
                     {
@@ -60,17 +59,13 @@ namespace PartCover
 
                 try
                 {
-                    if (settings.OutputToFile)
+                    XmlWriter writer = settings.OutputToFile
+                        ? new XmlTextWriter(File.CreateText(settings.FileNameForReport))
+                        : new XmlTextWriter(Console.Out);
+                    using (writer)
                     {
-                        StreamWriter writer = File.CreateText(settings.FileNameForReport);
-                        CoverageReportHelper.WriteReport(connector.BlockWalker.Report, writer);
-                        writer.Close();
+                        ReportSerializer.Save(writer, connector.Report);
                     }
-                    else
-                    {
-                        CoverageReportHelper.WriteReport(connector.BlockWalker.Report, Console.Out);
-                    }
-
                 }
                 catch (Exception ex)
                 {
@@ -95,12 +90,14 @@ namespace PartCover
             return 0;
         }
 
-        static void ProcessCallback_OnMessage(object sender, EventArgs<CoverageReport.RunHistoryMessage> e)
+        static void connector_LogEntryReceived(object sender, LogEntryEventArgs e)
         {
+            Console.Error.WriteLine(e.Data.ToHumanString());
         }
 
-        static void connector_OnEventMessage(object sender, EventArgs<CoverageReport.RunLogMessage> e)
+        static void connector_StatusMessageReceived(object sender, StatusEventArgs e)
         {
+            Console.Error.WriteLine(e.Data);
         }
     }
 }

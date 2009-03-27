@@ -132,21 +132,13 @@
     <Compile Include="FeatureSeeker.cs" />
     <Compile Include="Features\BrowserFormFeature.cs" />
     <Compile Include="Features\CoverageReportService.cs" />
-    <Compile Include="Features\FeatureViewRunHistory.cs" />
     <Compile Include="Features\Views\CoverageView.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Features\Views\CoverageView.Designer.cs">
       <DependentUpon>CoverageView.cs</DependentUpon>
     </Compile>
-    <Compile Include="Features\FeatureReportItemSelection.cs" />
     <Compile Include="Features\FeatureViewCoverage.cs" />
-    <Compile Include="Features\Views\RunHistoryView.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Features\Views\RunHistoryView.Designer.cs">
-      <DependentUpon>RunHistoryView.cs</DependentUpon>
-    </Compile>
     <Compile Include="Forms\RunTargetTracker.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -188,16 +180,10 @@
     </Compile>
     <Compile Include="Settings.cs" />
     <Compile Include="Resources\VSImage.cs" />
-    <Compile Include="Stuff\CoverageReportWrapper.cs" />
     <Compile Include="Stuff\HtmlPreview.cs" />
     <Compile Include="Stuff\ImageSelector.cs" />
     <Compile Include="Stuff\MethodSort.cs" />
     <Compile Include="Stuff\MethodTreeNodeComparer.cs" />
-    <Compile Include="Stuff\ReportItems\AssemblyItem.cs" />
-    <Compile Include="Stuff\ReportItems\ClassItem.cs" />
-    <Compile Include="Stuff\ReportItems\CoveredVariantItem.cs" />
-    <Compile Include="Stuff\ReportItems\MethodItem.cs" />
-    <Compile Include="Stuff\ReportItems\NamespaceItem.cs" />
     <Compile Include="Stuff\TargetRunner.cs" />
     <Compile Include="Features\Controls\TreeNodes.cs">
       <SubType>Code</SubType>
@@ -456,10 +442,6 @@
     <EmbeddedResource Include="Features\Views\CoverageView.resx">
       <SubType>Designer</SubType>
       <DependentUpon>CoverageView.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Features\Views\RunHistoryView.resx">
-      <SubType>Designer</SubType>
-      <DependentUpon>RunHistoryView.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\RunTargetTracker.resx">
       <SubType>Designer</SubType>

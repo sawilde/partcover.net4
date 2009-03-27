@@ -1,18 +1,17 @@
 using PartCover.Browser.Helpers;
-using PartCover.Framework.Walkers;
-using PartCover.Browser.Api;
+using PartCover.Framework.Data;
 using PartCover.Framework;
 using PartCover.Browser.Forms;
 
 namespace PartCover.Browser.Stuff
 {
-    internal interface IRunTargetProgressTracker : IProgressTracker
+    internal interface ITargetProgressTracker
     {
-        void add(CoverageReport.RunLogMessage runLogMessage);
-        void add(CoverageReport.RunHistoryMessage runHistoryMessage);
+        void ShowStatus(string data);
+        void ShowLogMessage(string data);
     }
 
-    internal class TargetRunner : AsyncUserProcess<RunTargetTracker, IRunTargetProgressTracker>
+    internal class TargetRunner : AsyncUserProcess<RunTargetTracker, ITargetProgressTracker>
     {
         private RunTargetForm runTargetForm;
         public RunTargetForm RunTargetForm
@@ -21,8 +20,8 @@ namespace PartCover.Browser.Stuff
             set { runTargetForm = value; }
         }
 
-        CoverageReport report;
-        public CoverageReport Report
+        Report report;
+        public Report Report
         {
             get { return report; }
         }
@@ -30,10 +29,10 @@ namespace PartCover.Browser.Stuff
         protected override void doWork()
         {
             var connector = new Connector();
-            connector.ProcessCallback.OnMessage += connectorOnMessage;
-            connector.OnEventMessage += connectorOnEventMessage;
+            connector.StatusMessageReceived += connector_StatusMessageReceived;
+            connector.LogEntryReceived += connector_LogEntryReceived;
 
-            Tracker.AppendMessage("Create connector");
+            Tracker.ShowStatus("Create connector");
 
             if (runTargetForm.InvokeRequired)
             {
@@ -45,12 +44,12 @@ namespace PartCover.Browser.Stuff
             }
 
 
-            Tracker.AppendMessage("Store report");
-            report = connector.BlockWalker.Report;
+            Tracker.ShowStatus("Store report");
+            report = connector.Report;
 
-            Tracker.AppendMessage("Done");
-            connector.OnEventMessage -= connectorOnEventMessage;
-            connector.ProcessCallback.OnMessage -= connectorOnMessage;
+            Tracker.ShowStatus("Done");
+            connector.StatusMessageReceived -= connector_StatusMessageReceived;
+            connector.LogEntryReceived -= connector_LogEntryReceived;
         }
 
         delegate void InitializeConnectorDelegate(Connector connector);
@@ -69,14 +68,14 @@ namespace PartCover.Browser.Stuff
                 false, false);
         }
 
-        void connectorOnEventMessage(object sender, EventArgs<CoverageReport.RunLogMessage> e)
+        void connector_StatusMessageReceived(object sender, StatusEventArgs e)
         {
-            Tracker.add(e.Data);
+            Tracker.ShowStatus(e.Data);
         }
 
-        void connectorOnMessage(object sender, EventArgs<CoverageReport.RunHistoryMessage> e)
+        void connector_LogEntryReceived(object sender, LogEntryEventArgs e)
         {
-            Tracker.add(e.Data);
+            Tracker.ShowLogMessage(e.Data.ToHumanString());
         }
     }
 }

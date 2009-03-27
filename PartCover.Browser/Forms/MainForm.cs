@@ -1,21 +1,25 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Text;
 using System.Windows.Forms;
-
+using System.Xml;
 using PartCover.Browser.Dialogs;
 using PartCover.Browser.Properties;
 using PartCover.Browser.Stuff;
-using PartCover.Framework.Walkers;
+using PartCover.Framework;
 using PartCover.Browser.Api;
 using PartCover.Browser.Helpers;
+using PartCover.Framework.Data;
 
 namespace PartCover.Browser.Forms
 {
     /// <summary>
     /// Summary description for Form1.
     /// </summary>
-    public partial class MainForm : Form, IReportViewValve
+    public partial class MainForm
+        : Form
+        , IReportViewValve
+        , ITreeItemSelectionHandler
     {
         private readonly Dictionary<IReportViewFactory, ReportView> viewFactories = new Dictionary<IReportViewFactory, ReportView>();
 
@@ -32,8 +36,11 @@ namespace PartCover.Browser.Forms
 
         public MainForm()
         {
+            SelectionHandlers = new List<ITreeItemSelectionHandler>();
             InitializeComponent();
             BuildTransformMenu();
+
+            tvItems.TreeItemSelectionHandler = this;
         }
 
 
@@ -43,7 +50,7 @@ namespace PartCover.Browser.Forms
                 return;
 
             CloseViews();
-            ServiceContainer.getService<ICoverageReportService>().LoadFromFile(dlgOpen.FileName);
+            ServiceContainer.getService<IReportService>().LoadFromFile(dlgOpen.FileName);
         }
 
         private void mmFileExit_Click(object sender, EventArgs e)
@@ -56,7 +63,7 @@ namespace PartCover.Browser.Forms
         {
             if (dlgSave.ShowDialog(this) != DialogResult.OK)
                 return;
-            ServiceContainer.getService<ICoverageReportService>().SaveToFile(dlgSave.FileName);
+            ServiceContainer.getService<IReportService>().SaveToFile(dlgSave.FileName);
         }
 
         readonly RunTargetForm runTargetForm = new RunTargetForm();
@@ -82,11 +89,11 @@ namespace PartCover.Browser.Forms
             {
                 RunTargetForm = runTargetForm
             };
-            runner.execute(this);
+            runner.Execute(this);
 
             try
             {
-                if (runner.Report.types.Count == 0)
+                if (runner.Report.Assemblies.Count == 0)
                 {
                     ShowInformation("Report is empty. Check settings and run target again.");
                     return;
@@ -101,14 +108,17 @@ namespace PartCover.Browser.Forms
 
             if (runTargetForm.OutputToFile)
             {
-                using (var writer = new StreamWriter(dlgSave.FileName))
+                using (var writer = new XmlTextWriter(dlgSave.FileName, Encoding.UTF8))
                 {
-                    CoverageReportHelper.WriteReport(runner.Report, writer);
+                    writer.Formatting = Formatting.Indented;
+                    writer.Indentation = 1;
+                    writer.IndentChar = ' ';
+                    ReportSerializer.Save(writer, runner.Report);
                 }
             }
             else
             {
-                ServiceContainer.getService<ICoverageReportService>().Load(runner.Report);
+                ServiceContainer.getService<IReportService>().Open(runner.Report);
             }
         }
 
@@ -154,21 +164,20 @@ namespace PartCover.Browser.Forms
 
         private void MakeHtmlPreview(string transform)
         {
-            if (ServiceContainer.getService<ICoverageReportService>().ReportFileName == null)
+            if (ServiceContainer.getService<IReportService>().ReportFileName == null)
             {
                 mmFileSaveAs.PerformClick();
             }
 
-            if (ServiceContainer.getService<ICoverageReportService>().ReportFileName == null)
+            if (ServiceContainer.getService<IReportService>().ReportFileName == null)
                 return;
 
             var asyncProcess = new TinyAsyncUserProcess
             {
-                Action = tracker => HtmlPreview.DoTransform(tracker, ServiceContainer.getService<ICoverageReportService>().ReportFileName, transform)
+                Action = tracker => HtmlPreview.DoTransform(tracker, ServiceContainer.getService<IReportService>().ReportFileName, transform)
             };
 
-            asyncProcess.execute(this);
-
+            asyncProcess.Execute(this);
         }
 
         public void add(IReportViewFactory factory)
@@ -201,14 +210,24 @@ namespace PartCover.Browser.Forms
                 view.MdiParent = this;
                 view.Text = factory.ViewName;
 
+                if (view is ITreeItemSelectionHandler)
+                {
+                    SelectionHandlers.Add((ITreeItemSelectionHandler)view);
+                }
+
                 var asyncProcess = new TinyAsyncUserProcess
                 {
                     Action = tracker => view.attach(serviceContainer, tracker)
                 };
-                asyncProcess.execute(this);
+                asyncProcess.Execute(this);
 
                 view.FormClosed += delegate
                 {
+                    if (view is ITreeItemSelectionHandler)
+                    {
+                        SelectionHandlers.Remove((ITreeItemSelectionHandler)view);
+                    }
+
                     view.detach(serviceContainer, new DummyProgressTracker());
                     viewFactories[factory] = null;
                 };
@@ -227,8 +246,39 @@ namespace PartCover.Browser.Forms
 
         private void miAbout_Click(object sender, EventArgs e)
         {
-            using (AboutForm form = new AboutForm())
+            using (var form = new AboutForm())
                 form.ShowDialog(this);
         }
+
+        List<ITreeItemSelectionHandler> SelectionHandlers { get; set; }
+
+        #region Implementation of ITreeItemSelectionHandler
+
+        public void Select(AssemblyEntry assembly)
+        {
+            SelectionHandlers.ForEach(x => x.Select(assembly));
+        }
+
+        public void Select(AssemblyEntry assembly, string namespacePath)
+        {
+            SelectionHandlers.ForEach(x => x.Select(assembly, namespacePath));
+        }
+
+        public void Select(TypedefEntry typedef)
+        {
+            SelectionHandlers.ForEach(x => x.Select(typedef));
+        }
+
+        public void Select(MethodEntry method)
+        {
+            SelectionHandlers.ForEach(x => x.Select(method));
+        }
+
+        public void Deselect()
+        {
+            SelectionHandlers.ForEach(x => x.Deselect());
+        }
+
+        #endregion
     }
 }

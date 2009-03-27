@@ -46,7 +46,7 @@ public:
     STDMETHOD(CloseTarget)();
 
     STDMETHOD(WalkFunctions)(IFunctionMapWalker* walker);
-    STDMETHOD(WalkInstrumentedResults)(IInstrumentedBlockWalker* walker);
+	STDMETHOD(GetReport)(IReportReceiver* walker);
 
     STDMETHOD(IncludeItem)(BSTR item);
     STDMETHOD(ExcludeItem)(BSTR item);

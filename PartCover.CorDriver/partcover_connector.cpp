@@ -239,10 +239,10 @@ STDMETHODIMP PartCoverConnector2::WalkFunctions(IFunctionMapWalker* walker) {
     return S_OK;
 }
 
-STDMETHODIMP PartCoverConnector2::WalkInstrumentedResults(IInstrumentedBlockWalker* walker) {
+STDMETHODIMP PartCoverConnector2::GetReport(IReportReceiver* walker) {
     if (walker == 0)
         return E_INVALIDARG;
-    m_instrumentResults.WalkResults(*walker);
+	m_instrumentResults.GetReport(*walker);
     return S_OK;
 }
 

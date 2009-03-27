@@ -14,7 +14,6 @@ namespace PartCover.Browser.Stuff
             public void OnType(ClassTreeNode node) { Level = 0; }
             public void OnProperty(PropertyTreeNode node) { Level = 1; }
             public void OnMethod(MethodTreeNode node) { Level = 2; }
-            public void OnBlockVariant(BlockVariantTreeNode node) { Level = 0; }
 
             public void Reset() { Level = 0; }
         }
