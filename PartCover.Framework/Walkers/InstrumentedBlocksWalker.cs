@@ -2,14 +2,10 @@ using System;
 
 namespace PartCover.Framework.Walkers
 {
-    public interface InstrumentedBlocksWalker
-    {
-        CoverageReport Report { get; }
-    }
-
+    /*
     internal class InstrumentedBlocksWalkerInner :
         InstrumentedBlocksWalker,
-        IInstrumentedBlockWalker
+        IReportReceiver
     {
         readonly CoverageReport coverage;
         public CoverageReport Report
@@ -82,4 +78,5 @@ namespace PartCover.Framework.Walkers
             CoverageReportHelper.AddMethodBlock(currentMethod, inner);
         }
     }
+     */
 }

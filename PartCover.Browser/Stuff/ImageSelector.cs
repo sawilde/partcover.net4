@@ -2,8 +2,8 @@ using System.Collections.Generic;
 using System.Reflection;
 
 using PartCover.Browser.Resources;
+using PartCover.Framework.Data;
 using PartCover.Framework.Stuff;
-using PartCover.Browser.Api.ReportItems;
 
 namespace PartCover.Browser.Stuff
 {
@@ -59,30 +59,30 @@ namespace PartCover.Browser.Stuff
 
         }
 
-        public static int ForPropertyGet(IMethod md)
+        public static int ForPropertyGet(MethodEntry md)
         {
             return VSImage.Current.PropertyGet;
         }
 
-        public static int ForPropertySet(IMethod md)
+        public static int ForPropertySet(MethodEntry md)
         {
             return VSImage.Current.PropertySet;
         }
 
-        public static int ForEventAdd(IMethod md)
+        public static int ForEventAdd(MethodEntry md)
         {
             return VSImage.Current.EventAdd;
         }
 
-        public static int ForEventRemove(IMethod md)
+        public static int ForEventRemove(MethodEntry md)
         {
             return VSImage.Current.EventRemove;
         }
 
-        public static int ForType(IClass type)
+        public static int ForType(TypedefEntry type)
         {
-            var visibilityAndSemantic = Types.GetAccessAndSemantic(type.Flags);
-            if (Types.IsPrivate(type.Flags))
+            var visibilityAndSemantic = Types.GetAccessAndSemantic(type.Attributes);
+            if (Types.IsPrivate(type.Attributes))
             {
                 var nested = type.Name.IndexOf('+');
                 var generic = type.Name.IndexOf('<');
@@ -90,7 +90,7 @@ namespace PartCover.Browser.Stuff
                     visibilityAndSemantic |= TypeAttributes.NestedAssembly;
             }
 
-            if (Types.IsValueType(type.Flags))
+            if (Types.IsValueType(type.Attributes))
             {
                 visibilityAndSemantic |= TypeAttributes.LayoutMask;
             }
@@ -102,10 +102,10 @@ namespace PartCover.Browser.Stuff
             return -1;
         }
 
-        public static int ForMethod(IMethod md)
+        public static int ForMethod(MethodEntry md)
         {
-            var access = Methods.getAccess(md.Flags);
-            if (Methods.isStatic(md.Flags))
+            var access = Methods.GetAccess(md.Flags);
+            if (Methods.IsStatic(md.Flags))
             {
                 access |= MethodAttributes.Static;
             }

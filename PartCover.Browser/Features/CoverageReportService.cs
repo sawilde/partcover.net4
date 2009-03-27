@@ -1,63 +1,57 @@
 using System;
+using System.Text;
+using System.Xml;
 using PartCover.Browser.Api;
-using PartCover.Framework.Walkers;
 using System.IO;
-using PartCover.Browser.Stuff;
+using PartCover.Framework;
+using PartCover.Framework.Data;
 
 namespace PartCover.Browser.Features
 {
     public class CoverageReportService
         : IFeature
-        , ICoverageReportService
+        , IReportService
     {
-        public event EventHandler<EventArgs> ReportClosing;
-        public event EventHandler<EventArgs> ReportOpened;
+        public event EventHandler ReportClosing;
+        public event EventHandler ReportOpened;
 
-        CoverageReportWrapper reportWrapper;
-        public ICoverageReport Report
-        {
-            get { return reportWrapper; }
-        }
+        public Report Report { get; internal set; }
 
         public string ReportFileName { get; private set; }
 
         public void LoadFromFile(string fileName)
         {
-            var report = new CoverageReport();
-            using (var reader = new StreamReader(fileName))
+            var report = new Report();
+            using (var reader = new XmlTextReader(fileName))
             {
-                CoverageReportHelper.ReadReport(report, reader);
+                ReportSerializer.Load(reader, report);
             }
-            setReport(report);
+            SetReport(report);
             ReportFileName = fileName;
         }
 
-        private void setReport(CoverageReport report)
+        private void SetReport(Report report)
         {
             if (Report != null && ReportClosing != null)
                 ReportClosing(this, EventArgs.Empty);
-
-            var wrapper = new CoverageReportWrapper(report);
-            wrapper.build();
-
             ReportFileName = null;
-            reportWrapper = wrapper;
+            Report = report;
             if (Report != null && ReportOpened != null)
                 ReportOpened(this, EventArgs.Empty);
         }
 
         public void SaveToFile(string fileName)
         {
-            using (var writer = new StreamWriter(fileName))
+            using (var writer = new XmlTextWriter(fileName, Encoding.UTF8))
             {
-                CoverageReportHelper.WriteReport(reportWrapper.Report, writer);
+                ReportSerializer.Save(writer, Report);
                 ReportFileName = fileName;
             }
         }
 
-        public void Load(CoverageReport report)
+        public void Open(Report report)
         {
-            setReport(report);
+            SetReport(report);
         }
 
         public void Attach(IServiceContainer container) { }

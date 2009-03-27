@@ -1,13 +1,13 @@
 using System;
 using System.Windows.Forms;
-using PartCover.Browser.Stuff;
 using PartCover.Browser.Helpers;
-using PartCover.Framework.Walkers;
-using System.Globalization;
+using PartCover.Browser.Stuff;
 
 namespace PartCover.Browser.Forms
 {
-    internal partial class RunTargetTracker : AsyncUserProcessForm, IRunTargetProgressTracker
+    internal partial class RunTargetTracker
+        : AsyncUserProcessForm
+        , ITargetProgressTracker
     {
         DateTime startedAt;
 
@@ -31,91 +31,37 @@ namespace PartCover.Browser.Forms
         }
 
         private delegate void PutStringDelegate(string message);
-        public void AppendMessage(string message)
+
+        public void ShowStatus(string message)
         {
             if (!IsHandleCreated) return;
 
             if (InvokeRequired)
             {
-                Invoke(new PutStringDelegate(AppendMessage), message);
+                Invoke(new PutStringDelegate(ShowStatus), message);
                 return;
             }
 
             putText(message, true);
         }
 
-        public void QueueBegin(string message)
+        public void ShowLogMessage(string data)
         {
             if (!IsHandleCreated) return;
 
             if (InvokeRequired)
             {
-                Invoke(new PutStringDelegate(QueueBegin), message);
+                Invoke(new PutStringDelegate(ShowLogMessage), data);
                 return;
             }
 
-            putText(message, true);
-        }
-
-        public void QueuePush(string message)
-        {
-            if (!IsHandleCreated) return;
-
-            if (InvokeRequired)
-            {
-                Invoke(new PutStringDelegate(QueuePush), message);
-                return;
-            }
-            putText(message, false);
-        }
-
-        public void QueueEnd(string message)
-        {
-            if (!IsHandleCreated) return;
-
-            if (InvokeRequired)
-            {
-                Invoke(new PutStringDelegate(QueueEnd), message);
-                return;
-            }
-            putText(message, false);
-        }
-
-        public float Percent
-        {
-            set { }
-            get { return 0; }
+            tbLog.AppendText(data + Environment.NewLine);
         }
 
         protected override void BeforeStart()
         {
             startedAt = DateTime.Now;
             timer.Enabled = true;
-        }
-
-        public void add(CoverageReport.RunLogMessage runLogMessage)
-        {
-            putLogEntry(runLogMessage);
-        }
-
-        delegate void PutLogEntryDelegate(CoverageReport.RunLogMessage item);
-        private void putLogEntry(CoverageReport.RunLogMessage item)
-        {
-            if (InvokeRequired)
-            {
-                Invoke(new PutLogEntryDelegate(putLogEntry), item);
-                return;
-            }
-
-            tbLog.AppendText(string.Format(CultureInfo.CurrentCulture,
-                "[{0,6}][{1,6}]{2}{3}",
-                item.ThreadId, item.MsOffset, item.Message, Environment.NewLine));
-
-        }
-
-        public void add(CoverageReport.RunHistoryMessage runHistoryMessage)
-        {
-            AppendMessage(runHistoryMessage.Message);
         }
 
         private void timer_Tick(object sender, EventArgs e)
@@ -152,5 +98,6 @@ namespace PartCover.Browser.Forms
                 tssTime.Text = messsage;
             }
         }
+
     }
 }

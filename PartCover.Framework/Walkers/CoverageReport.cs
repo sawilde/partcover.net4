@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 namespace PartCover.Framework.Walkers
 {
+    /*
     public sealed class CoverageReport
     {
         public struct FileDescriptor
@@ -101,4 +102,5 @@ namespace PartCover.Framework.Walkers
                         Array.ForEach(ib.blocks, action))));
         }
     }
+    */
 }

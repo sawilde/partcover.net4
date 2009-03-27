@@ -221,30 +221,34 @@ bool InstrumentResults::ReceiveData(MessagePipe& pipe) {
 	return true;
 }
 
-void InstrumentResults::Assign(FileItems& results) { m_fileTable.swap(results); }
+void InstrumentResults::Assign(FileItems& results) 
+{
+	m_fileTable.swap(results); 
+}
 
-void InstrumentResults::WalkResults(IInstrumentedBlockWalker& walker) {
-    if(FAILED(walker.BeginReport()))
-        return;
-
+void InstrumentResults::GetReport(IReportReceiver& walker) {
     for(FileItems::const_iterator fileIt = m_fileTable.begin(); fileIt != m_fileTable.end(); fileIt++) {
         const FileItem& item = *fileIt;
         CComBSTR fileName(item.fileUrl.c_str());
-        if(FAILED(walker.RegisterFile(item.fileId, fileName)))
+		if(FAILED(walker.RegisterFile(item.fileId, fileName)))
             return;
     }
+
+	BLOCK_DATA data;
 
     for(AssemblyResults::const_iterator asmIt = m_results.begin(); asmIt != m_results.end(); asmIt++) {
         const AssemblyResult& asmResult = *asmIt;
 
         CComBSTR asmName(asmResult.name.c_str());
         CComBSTR moduleName(asmResult.moduleName.c_str());
+		if(FAILED(walker.EnterAssembly(asmName, moduleName)))
+            return;
 
         for(TypedefResults::const_iterator typeIt = asmResult.types.begin(); typeIt != asmResult.types.end(); typeIt++) {
             const TypedefResult& typedefResult = *typeIt;
 
             CComBSTR typedefName(typedefResult.fullName.c_str());
-            if(FAILED(walker.EnterTypedef(asmName, typedefName, typedefResult.flags)))
+			if(FAILED(walker.EnterTypedef(typedefName, typedefResult.flags)))
                 return;
 
             for(MethodResults::const_iterator methodIt = typedefResult.methods.begin(); methodIt != typedefResult.methods.end(); methodIt++) {
@@ -252,27 +256,42 @@ void InstrumentResults::WalkResults(IInstrumentedBlockWalker& walker) {
 
                 CComBSTR methodName(methodResult.name.c_str());
                 CComBSTR methodSig(methodResult.sig.c_str());
-                if(FAILED(walker.EnterMethod(methodName, methodSig, methodResult.flags, methodResult.implFlags)))
+				if(FAILED(walker.EnterMethod(methodName, methodSig, methodResult.flags, methodResult.implFlags)))
                     return;
 
                 for(MethodBlocks::const_iterator blockIt = methodResult.blocks.begin(); blockIt != methodResult.blocks.end(); blockIt++) {
                     const MethodBlock& block = *blockIt;
 
-                    if(FAILED(walker.MethodBlock(block.position, block.blockLength, block.visitCount, 
-                        block.haveSource ? block.sourceFileId : 0, 
-                        block.startLine, block.startColumn, block.endLine, block.endColumn)))
+					data.position = block.position;
+					data.blockLen = block.blockLength;
+					data.visitCount = block.visitCount;
+					data.fileId = block.haveSource ? block.sourceFileId : -1;
+					data.startLine = block.startLine;
+					data.startColumn = block.startColumn;
+					data.endLine = block.endLine;
+					data.endColumn = block.endColumn;
+
+					if(FAILED(walker.AddCoverageBlock(data)))
+					{
                         return;
+					}
                 }
 
-                if(FAILED(walker.LeaveMethod()))
+				if(FAILED(walker.LeaveMethod()))
+				{
                     return;
-            }
-
-            if(FAILED(walker.LeaveTypedef()))
+				}
+			}
+		
+			if(FAILED(walker.LeaveTypedef())) 
+			{
                 return;
-        }
-    }
+			}
+		}
 
-    if(FAILED(walker.EndReport()))
-        return;
+		if(FAILED(walker.LeaveAssembly()))
+		{
+            return;
+		}
+   }
 }

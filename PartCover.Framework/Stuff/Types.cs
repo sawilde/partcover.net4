@@ -1,18 +1,17 @@
-using System;
 using System.Reflection;
 
 namespace PartCover.Framework.Stuff
 {
     public static class Types
     {
-        public static TypeAttributes GetAccessAndSemantic(UInt32 flags)
+        public static TypeAttributes GetAccessAndSemantic(TypeAttributes flags)
         {
-            return (TypeAttributes)flags & (TypeAttributes.VisibilityMask | TypeAttributes.ClassSemanticsMask);
+            return flags & (TypeAttributes.VisibilityMask | TypeAttributes.ClassSemanticsMask);
         }
 
-        public static bool IsPrivate(UInt32 flags)
+        public static bool IsPrivate(TypeAttributes flags)
         {
-            return ((TypeAttributes)flags & TypeAttributes.VisibilityMask) == TypeAttributes.NotPublic;
+            return (flags & TypeAttributes.VisibilityMask) == TypeAttributes.NotPublic;
         }
 
         public static bool IsInterface(uint flags)
@@ -20,9 +19,9 @@ namespace PartCover.Framework.Stuff
             return ((TypeAttributes)flags & TypeAttributes.Interface) == TypeAttributes.Interface;
         }
 
-        public static bool IsValueType(UInt32 flags)
+        public static bool IsValueType(TypeAttributes flags)
         {
-            return ((TypeAttributes)flags & TypeAttributes.LayoutMask) != TypeAttributes.AutoLayout;
+            return (flags & TypeAttributes.LayoutMask) != TypeAttributes.AutoLayout;
         }
     }
 }

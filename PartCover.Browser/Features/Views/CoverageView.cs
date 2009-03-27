@@ -5,61 +5,32 @@ using System.IO;
 using System.Windows.Forms;
 
 using PartCover.Browser.Api;
-using PartCover.Browser.Api.ReportItems;
 using PartCover.Browser.Helpers;
 using PartCover.Browser.Properties;
-using PartCover.Framework.Walkers;
+using PartCover.Framework;
+using PartCover.Framework.Data;
 using PartViewer;
 using PartViewer.Model;
 
 namespace PartCover.Browser.Features.Views
 {
-    public partial class CoverageView : ReportView
+    public partial class CoverageView 
+        : ReportView
+        , ITreeItemSelectionHandler
     {
-        private ICoveredVariant variant;
+        public MethodEntry Method { get; private set; }
 
         public CoverageView()
         {
             InitializeComponent();
         }
 
-        public override void attach(IServiceContainer container, IProgressTracker tracker)
+        public void ShowMethodBlocks(MethodEntry methodEntry)
         {
-            base.attach(container, tracker);
-            tracker.AppendMessage("Advise for selection events");
-            Services.getService<IReportItemSelectionService>().SelectionChanged += ReportItemSelectionChanged;
-        }
-
-        public override void detach(IServiceContainer container, IProgressTracker tracker)
-        {
-            tracker.AppendMessage("Unadvise for selection events");
-            Services.getService<IReportItemSelectionService>().SelectionChanged -= ReportItemSelectionChanged;
-            base.detach(container, tracker);
-        }
-
-        void ReportItemSelectionChanged(object sender, EventArgs e)
-        {
-            var service = Services.getService<IReportItemSelectionService>();
-
-            if (service.SelectedItem is IMethod)
+            Method = methodEntry;
+            if (methodEntry != null)
             {
-                ShowMethodBlocks((IMethod)service.SelectedItem);
-            }
-            else if (service.SelectedItem is ICoveredVariant)
-            {
-                ShowMethodBlocks((ICoveredVariant)service.SelectedItem);
-            }
-            else
-            {
-                ClearPane();
-            }
-        }
-
-        private void ShowMethodBlocks(IMethod iMethod)
-        {
-            if (iMethod.CoveredVariants.Length == 1)
-            {
-                ShowMethodBlocks(iMethod.CoveredVariants[0]);
+                BindMethodBlocks(methodEntry.Blocks);
             }
             else
             {
@@ -72,10 +43,8 @@ namespace PartCover.Browser.Features.Views
             lbBlocks.Clear();
         }
 
-        private void ShowMethodBlocks(ICoveredVariant coveredVariant)
+        private void BindMethodBlocks(IEnumerable<MethodBlock> blocks)
         {
-            variant = coveredVariant;
-
             lbBlocks.BeginUpdate();
             lbBlocks.Clear();
 
@@ -87,18 +56,19 @@ namespace PartCover.Browser.Features.Views
                 lbBlocks.Columns.Add("Have Source", 100, HorizontalAlignment.Right);
             }
 
-            foreach (var ib in coveredVariant.Blocks)
+            foreach (var ib in blocks)
             {
-                var itemColor = ColorProvider.GetForeColorForBlock(CoverageReportHelper.GetBlockCoverage(ib));
+                var itemColor = ColorProvider.GetForeColorForBlock(ReportHelper.GetBlockCoverage(ib));
 
-                var lvi = new ListViewItem {
-                    ForeColor = itemColor, 
-                    Text = ("Block " + ib.position)
+                var lvi = new ListViewItem
+                {
+                    ForeColor = itemColor,
+                    Text = ("Block " + ib.Offset)
                 };
 
-                lvi.SubItems.Add(ib.blockLen.ToString());
-                lvi.SubItems.Add(ib.visitCount.ToString());
-                lvi.SubItems.Add(ib.fileId > 0 ? "yes" : "no");
+                lvi.SubItems.Add(ib.Length.ToString());
+                lvi.SubItems.Add(ib.VisitCount.ToString());
+                lvi.SubItems.Add(ib.File > 0 ? "yes" : "no");
 
                 lbBlocks.Items.Add(lvi);
             }
@@ -115,22 +85,23 @@ namespace PartCover.Browser.Features.Views
 
         private void BuildSourceViews()
         {
-            var files = new List<uint>();
-            foreach (var ib in variant.Blocks)
+            var files = new List<int>();
+            foreach (var ib in Method.Blocks)
             {
-                if (!files.Contains(ib.fileId)) files.Add(ib.fileId);
+                if (ib.File > 0 && !files.Contains(ib.File)) files.Add(ib.File);
             }
 
             foreach (var file in files)
             {
                 var u = file;
-                ParseFile(file, Array.FindAll(variant.Blocks, b => b.fileId == u));
+                ParseFile(file,
+                    new List<MethodBlock>(Method.Blocks).FindAll(b => b.File == u));
             }
         }
 
-        private void ParseFile(uint file, IEnumerable<CoverageReport.InnerBlock> filePoints)
+        private void ParseFile(int file, IEnumerable<MethodBlock> filePoints)
         {
-            var filePath = Services.getService<ICoverageReportService>().Report.ResolveFilePath(file);
+            var filePath = Services.getService<IReportService>().Report.ResolveFilePath(file);
             if (filePath == null || !File.Exists(filePath))
                 return;
 
@@ -163,25 +134,25 @@ namespace PartCover.Browser.Features.Views
                 pnTabs.SelectedTab = page;
             }
 
-            List<CoverageReport.InnerBlock> bList;
+            List<MethodBlock> bList;
 
             if (Settings.Default.HighlightAllFile)
             {
-                bList = new List<CoverageReport.InnerBlock>();
+                bList = new List<MethodBlock>();
 
-                Services.getService<ICoverageReportService>().Report.ForEachBlock(
-                    bd => { if (bd.fileId == file) bList.Add(bd); });
+                ReportHelper.ForEachBlock(Services.getService<IReportService>().Report,
+                    bd => { if (bd.File == file) bList.Add(bd); });
             }
             else
             {
                 sourceViewer.Document.RemoveStylizerAll();
-                bList = new List<CoverageReport.InnerBlock>(filePoints);
+                bList = new List<MethodBlock>(filePoints);
             }
 
             sourceViewer.Document.Add(new BlockStylizer(bList.ToArray()));
         }
 
-        private ViewControl GetFileTextBox(uint file)
+        private ViewControl GetFileTextBox(int file)
         {
             var page = GetFileTab(file);
             if (page != null)
@@ -199,7 +170,7 @@ namespace PartCover.Browser.Features.Views
             return document;
         }
 
-        private TabPage GetFileTab(uint file)
+        private TabPage GetFileTab(int file)
         {
             foreach (TabPage page in pnTabs.TabPages)
             {
@@ -221,11 +192,11 @@ namespace PartCover.Browser.Features.Views
                 return;
 
             var blockIndex = lbBlocks.SelectedIndices[0];
-            var ib = variant.Blocks[blockIndex];
-            if (ib.fileId == 0)
+            var ib = Method.Blocks[blockIndex];
+            if (ib.File == 0)
                 return;
 
-            var page = GetFileTab(ib.fileId);
+            var page = GetFileTab(ib.File);
             if (page == null)
                 return;
 
@@ -233,17 +204,17 @@ namespace PartCover.Browser.Features.Views
             lbBlocks.Focus();
             lbBlocks.Select();
 
-            var rtb = GetFileTextBox(ib.fileId);
+            var rtb = GetFileTextBox(ib.File);
             if (rtb == null)
                 return;
 
-            rtb.View.MoveCaretTo(new Point((int)ib.startColumn - 1, (int)ib.startLine - 1));
+            rtb.View.MoveCaretTo(new Point(ib.Start.Column - 1, ib.Start.Line - 1));
         }
 
 
         private class FileTag
         {
-            public uint FileId { get; set; }
+            public int FileId { get; set; }
         }
 
         private class BlockStylizer : IStylizer
@@ -251,9 +222,9 @@ namespace PartCover.Browser.Features.Views
             private const string CoveredStyle = "blockstylizer-good";
             private const string UncoveredStyle = "blockstylizer-bad";
 
-            private readonly CoverageReport.InnerBlock[] points;
+            private readonly MethodBlock[] points;
 
-            public BlockStylizer(CoverageReport.InnerBlock[] points)
+            public BlockStylizer(MethodBlock[] points)
             {
                 this.points = points;
             }
@@ -262,20 +233,20 @@ namespace PartCover.Browser.Features.Views
             {
                 foreach (var b in points)
                 {
-                    if (b.fileId <= 0)
+                    if (b.File <= 0)
                         continue;
 
                     var range = new DocumentRange
                     {
-                        Start = new DocumentPoint((int)(b.startLine - 1), (int)(b.startColumn - 1)),
-                        End = new DocumentPoint((int)(b.endLine - 1), (int)(b.endColumn - 1))
+                        Start = new DocumentPoint(b.Start.Line - 1, b.Start.Column - 1),
+                        End = new DocumentPoint(b.End.Line - 1, b.End.Column - 1)
                     };
 
-                    source.AssignFace(range, getFace(source, b.visitCount));
+                    source.AssignFace(range, getFace(source, b.VisitCount));
                 }
             }
 
-            private IStyleFace getFace(IStylizerSource source, uint count)
+            private IStyleFace getFace(IStylizerSource source, int count)
             {
                 var faceName = count > 0 ? CoveredStyle : UncoveredStyle;
 
@@ -289,6 +260,31 @@ namespace PartCover.Browser.Features.Views
 
                 return face;
             }
+        }
+
+        public void Select(AssemblyEntry assembly)
+        {
+            Deselect();
+        }
+
+        public void Select(AssemblyEntry assembly, string namespacePath)
+        {
+            Deselect();
+        }
+
+        public void Select(TypedefEntry typedef)
+        {
+            Deselect();
+        }
+
+        public void Select(MethodEntry method)
+        {
+            ShowMethodBlocks(method);
+        }
+
+        public void Deselect()
+        {
+            ShowMethodBlocks(null);
         }
     }
 }

@@ -55,7 +55,7 @@ public:
 
 public:
 
-    void WalkResults(IInstrumentedBlockWalker& walker);
+    void GetReport(IReportReceiver& receiver);
 
     void Assign(AssemblyResults& results) { m_results.swap(results); }
     void Assign(FileItems& results);
