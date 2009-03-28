@@ -113,7 +113,7 @@ STDMETHODIMP CorProfiler::Shutdown( void )
 {
     ATLTRACE("CorProfiler::Shutdown");
 
-    m_instrumentator.StoreResults(m_instrumentResults);
+	m_instrumentator.StoreResults(m_instrumentResults, m_profilerInfo);
 
 	ITransferrable* results[] = {
 		&m_functions, 
@@ -194,13 +194,13 @@ HRESULT CoCreateInstanceWithoutModel( REFCLSID rclsid, REFIID riid, void **ppv )
     HRESULT hr = S_OK;
     OLECHAR guidString[128];
 
-	wchar_t keyString[1024];
-    wchar_t dllName[MAX_PATH];
+	TCHAR keyString[1024];
+    TCHAR dllName[MAX_PATH];
 
     StringFromGUID2( rclsid, guidString, NumItems( guidString ) );
 
 #ifndef _UNICODE
-    wchar_t szID[64];              // the class ID to register.
+    TCHAR szID[64];              // the class ID to register.
 
     WideCharToMultiByte( CP_ACP, 0, guidString, -1, szID, sizeof( szID ), NULL, NULL );
     _stprintf_s( keyString, 1024, _T("CLSID\\%s\\InprocServer32"), szID );
@@ -314,6 +314,8 @@ STDMETHODIMP CorProfiler::ModuleAttachedToAssembly(ModuleID module, AssemblyID a
 
 	if (!m_instrumentator.IsAssemblyAcceptable(assemblyName))
 	{
+		m_instrumentator.AddSkippedAssembly(assemblyName);
+
 		LOGINFO2(SKIP_BY_RULES, " module '%s' was skipped, because no include rule was specified for this assembly '%s'", 
 			moduleName.length() == 0 ? _T("noname") : moduleName.c_str(),
 			assemblyName.length() == 0 ? _T("noname") : assemblyName.c_str());

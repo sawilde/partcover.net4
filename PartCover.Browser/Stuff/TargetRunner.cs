@@ -1,3 +1,4 @@
+using System.Text;
 using PartCover.Browser.Helpers;
 using PartCover.Framework.Data;
 using PartCover.Framework;
@@ -20,14 +21,13 @@ namespace PartCover.Browser.Stuff
             set { runTargetForm = value; }
         }
 
-        Report report;
-        public Report Report
-        {
-            get { return report; }
-        }
+        public StringBuilder RunLog { get; private set; }
+        public Report Report { get; private set; }
 
         protected override void doWork()
         {
+            RunLog = new StringBuilder();
+
             var connector = new Connector();
             connector.StatusMessageReceived += connector_StatusMessageReceived;
             connector.LogEntryReceived += connector_LogEntryReceived;
@@ -45,7 +45,7 @@ namespace PartCover.Browser.Stuff
 
 
             Tracker.ShowStatus("Store report");
-            report = connector.Report;
+            Report = connector.Report;
 
             Tracker.ShowStatus("Done");
             connector.StatusMessageReceived -= connector_StatusMessageReceived;
@@ -75,6 +75,7 @@ namespace PartCover.Browser.Stuff
 
         void connector_LogEntryReceived(object sender, LogEntryEventArgs e)
         {
+            RunLog.AppendLine(e.Data.ToHumanString());
             Tracker.ShowLogMessage(e.Data.ToHumanString());
         }
     }

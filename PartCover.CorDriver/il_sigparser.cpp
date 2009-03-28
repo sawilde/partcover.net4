@@ -57,10 +57,9 @@ bool SigParser::Parse(sig_byte *pb, sig_count cbBuffer)
 
 	default:
 		// unknown signature
+		return false;
 		break;
 	}
-
-	return false;
 }
 
 
@@ -126,9 +125,9 @@ bool SigParser::ParseMethod(sig_elem_type elem_type)
 		if (i != param_count - 1)
 			NotifyHasMoreParameters();
 	}
+
 	NotifyEndMethodParamList();
 	NotifyEndMethod();
-
 	return true;
 }
 

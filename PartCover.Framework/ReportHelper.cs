@@ -17,10 +17,5 @@ namespace PartCover.Framework
                     t.Methods.ForEach(m =>
                         m.Blocks.ForEach(blockVisitor))));
         }
-
-        public static string[] GetNamespaceChain(TypedefEntry entry)
-        {
-            return entry.Name.Split('.');
-        }
     }
 }

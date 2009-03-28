@@ -188,48 +188,114 @@ public:
 	MethodSigWriter(String* value, IMetaDataImport* md) : _value(value), _md(md) {}
 
 protected:
-	void Append(LPCTSTR w) { *_value += w; }
-	void Append(const String& w) { *_value += w; }
-	void Append(const unsigned int& i) { 
-		WCHAR buffer[10];
-		swprintf_s(buffer, 10, _T("%d"), i);
-		Append(buffer); 
+	void Append(const String& w) 
+	{ 
+		_value->append(w);
+	}
+
+	void AppendNumber(int i) 
+	{ 
+		TCHAR buffer[10];
+		int written = _stprintf_s(buffer, 9, _T("%d"), i);
+		if (written >= 0) 
+		{
+			Append(String(buffer, written)); 
+		}
 	}
 
 
-	virtual void NotifyByref() { Append(_T("ref "));}
-	virtual void NotifyVoid() { Append(_T("void")); }
-	virtual void NotifyEndRetType() { Append(_T(" ")); }
+	virtual void NotifyByref() 
+	{ 
+		Append(_T("ref "));
+	}
 
-	virtual void NotifySentinal() { Append(_T(" ...")); }
-	virtual void NotifyBeginMethodParamList() { Append(_T(" (")); }
-	virtual void NotifyHasMoreParameters() { Append(_T(", ")); }
-	virtual void NotifyEndMethodParamList() { Append(_T(")")); }
+	virtual void NotifyVoid() 
+	{ 
+		Append(_T("void")); 
+	}
+
+	virtual void NotifyEndRetType() 
+	{ 
+		Append(_T(" ")); 
+	}
+
+	virtual void NotifySentinal() 
+	{
+		Append(_T(" ...")); 
+	}
+
+	virtual void NotifyBeginMethodParamList() 
+	{
+		Append(_T(" (")); 
+	}
+
+	virtual void NotifyHasMoreParameters() 
+	{
+		Append(_T(", ")); 
+	}
+
+	virtual void NotifyEndMethodParamList() 
+	{
+		Append(_T(")")); 
+	}
 
 	virtual void NotifyTypeDefOrRef(mdToken token);
 	virtual void NotifyTypeSimple(sig_elem_type elem_type);
 
-	virtual void NotifyGenericParamCount(sig_count count) { Append(_T("<")); Append(count); Append(_T(">")); }
+	virtual void NotifyGenericParamCount(sig_count count) 
+	{
+		Append(_T("<")); 
+		AppendNumber(count); 
+		Append(_T(">")); 
+	}
 
-	virtual void NotifyCustomMod(sig_elem_type cmod, mdToken token) { Append(_T("const ")); }
+	virtual void NotifyCustomMod(sig_elem_type cmod, mdToken token) 
+	{
+		Append(_T("const ")); 
+	}
 
 		// starting array shape information for array types
-	virtual void NotifyBeginArrayShape() { Append(_T("[")); }
-	virtual void NotifyEndArrayShape() { Append(_T("]")); }
+	virtual void NotifyBeginArrayShape() 
+	{
+		Append(_T("[")); 
+	}
+
+	virtual void NotifyEndArrayShape() 
+	{
+		Append(_T("]")); 
+	}
 
 	// array rank (total number of dimensions)
-	virtual void NotifyRank(sig_count count) { Append(count); Append(_T(":")); }
+	virtual void NotifyRank(sig_count count) 
+	{
+		AppendNumber(count); 
+		Append(_T(":")); 
+	}
 
 	// number of dimensions with specified sizes followed by the size of each
 	virtual void NotifyNumSizes(sig_count count) {}
-	virtual void NotifyNextSize() { Append(_T(" ")); };
+	virtual void NotifyNextSize() 
+	{
+		Append(_T(" ")); 
+	};
 	virtual void NotifySize(sig_count count) {}
 
 	// BUG BUG lower bounds can be negative, how can this be encoded?
 	// number of dimensions with specified lower bounds followed by lower bound of each 
-	virtual void NotifyNumLoBounds(sig_count count) { Append(_T(":")); }  
-	virtual void NotifyNextLoBound() { Append(_T(" ")); };
+	virtual void NotifyNumLoBounds(sig_count count) 
+	{
+		Append(_T(":")); 
+	}  
+
+	virtual void NotifyNextLoBound() 
+	{
+		Append(_T(" ")); 
+	}
+
 	virtual void NotifyLoBound(sig_count count) {}
 
-	virtual void NotifyTypeSzArray() { Append(_T("[]")); }
+	virtual void NotifyTypeSzArray() 
+	{
+		Append(_T("[]")); 
+	}
 };

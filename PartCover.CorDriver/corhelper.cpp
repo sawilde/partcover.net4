@@ -9,8 +9,8 @@ namespace CorHelper {
 		ULONG buffSize = 0;
 		if (S_OK != info->GetModuleInfo(module, NULL, 0, &buffSize, NULL, NULL)) 
 			return String();
-		DynamicArray<WCHAR> buffer(buffSize + 1);
-		if (S_OK != info->GetModuleInfo(module, NULL, buffSize + 1, &buffSize, buffer, NULL))
+		DynamicArray<TCHAR> buffer(buffSize);
+		if (S_OK != info->GetModuleInfo(module, NULL, buffSize, &buffSize, buffer, NULL))
 			return String();
 		return String(buffer);
 	}
@@ -19,8 +19,8 @@ namespace CorHelper {
 		ULONG bufferSize = 0;
 		if (S_OK != info->GetAssemblyInfo(assembly, 0, &bufferSize, NULL, NULL, NULL)) 
 			return String();
-		DynamicArray<WCHAR> buffer(bufferSize + 1);
-		if (S_OK != info->GetAssemblyInfo(assembly, bufferSize + 1, &bufferSize, buffer, NULL, NULL))
+		DynamicArray<TCHAR> buffer(bufferSize);
+		if (S_OK != info->GetAssemblyInfo(assembly, bufferSize, &bufferSize, buffer, NULL, NULL))
 			return String();
 		return String(buffer);
 	}
@@ -31,12 +31,13 @@ namespace CorHelper {
 		if(S_OK == mdImport->GetTypeDefProps(typeDef, NULL, 0, &bufferSize, &typeDefFlags, NULL)) {
 			if (p_typeDefFlags != 0) *p_typeDefFlags = typeDefFlags;
 
-			DynamicArray<TCHAR> buffer(bufferSize + 1);
-			mdImport->GetTypeDefProps(typeDef, buffer, bufferSize+1, &bufferSize, NULL, NULL);
-			String typedefName = buffer;
+			DynamicArray<TCHAR> buffer(bufferSize);
+			mdImport->GetTypeDefProps(typeDef, buffer, bufferSize, &bufferSize, NULL, NULL);
+
+			String typedefName(buffer);
 			
 			if (innerTypeDefName.length() > 0)
-				typedefName += String(connectStr) + innerTypeDefName;
+				typedefName += connectStr + innerTypeDefName;
 
 			if (!IsTdNested(typeDefFlags)) 
 				return typedefName;
@@ -62,18 +63,32 @@ namespace CorHelper {
 		if (S_OK != mdImport->GetTypeDefProps(typeDef, NULL, 0, &bufferSize, NULL, NULL))
 			return String();
 
-		DynamicArray<WCHAR> buffer(bufferSize + 1);
-		if (S_OK != mdImport->GetTypeDefProps(typeDef, buffer, bufferSize + 1, &bufferSize, NULL, NULL))
+		DynamicArray<TCHAR> buffer(bufferSize);
+		if (S_OK != mdImport->GetTypeDefProps(typeDef, buffer, bufferSize, &bufferSize, NULL, NULL))
 			return String();
 
 		return GetTypedefFullName(mdImport, typeDef, 0, _T("+"), String(buffer));
 	}
 
-	const wchar_t* StrCalling[] = {
+	String GetMethodName(IMetaDataImport* mdImport, mdMethodDef methodDef, DWORD* attrs, DWORD* implFlags) 
+	{
+	    HRESULT hr;
+		ULONG bufferSize;
+		if(FAILED(hr = mdImport->GetMethodProps(methodDef, NULL, NULL, 0, &bufferSize, attrs, NULL, NULL, NULL, implFlags))) {
+			return String();
+		}
+
+		DynamicArray<TCHAR> buffer(bufferSize);
+		mdImport->GetMethodProps(methodDef, NULL, buffer, bufferSize, &bufferSize, NULL, NULL, NULL, NULL, NULL);
+
+		return String(buffer);
+	}
+
+	LPCTSTR StrCalling[] = {
 		_T("default"), _T("C"), _T("stdcall"), _T("thiscall"), _T("fastcall"), _T("vararg"), _T("field"), _T("localsig"), _T("property"), _T("unmanaged")
 	};
 
-	const wchar_t* MapElementType[] = 
+	LPCTSTR MapElementType[] = 
 	{
 		_T("End"), _T("Void"), _T("Boolean"), _T("Char"), _T("I1"), _T("UI1"), _T("I2"), _T("UI2"), _T("I4"), _T("UI4"), _T("I8"), _T("UI8"), _T("R4"),
 		_T("R8"), _T("String"), _T("Ptr"), _T("ByRef"), _T("ValueClass"), _T("Class"), _T("CopyCtor"), _T("MDArray"), _T("GENArray"), _T("TypedByRef"),
@@ -85,18 +100,18 @@ namespace CorHelper {
 		ULONG bufferSize;
 		if(S_OK != mdImport->GetTypeRefProps(tr, NULL, NULL, 0, &bufferSize))
 			return String();
-		DynamicArray<WCHAR> buffer(bufferSize + 1);
+		DynamicArray<TCHAR> buffer(bufferSize);
 		if(S_OK != mdImport->GetTypeRefProps(tr, NULL, buffer, (ULONG)buffer.size(), &bufferSize))
 			return String();
-		return String(buffer.ptr(), buffer.size());
+		
+		return String(buffer);
 	}
 
 	struct UncompressHelper 
 	{
 		IMetaDataImport* import;
-		void AddString(const String& str) { AddString(str.c_str()); }
 
-		virtual void AddString(LPCTSTR str) = 0;
+		virtual void AddString(const String& str) = 0;
 	};
 
 	String GetTypeRefOrDefName(mdToken inToken, UncompressHelper& hlp)
@@ -208,9 +223,13 @@ namespace CorHelper {
 
 		cb += CorSigUncompressData(&pSigBlob[cb], 1, &rank, &numSizes);
 		{
-			WCHAR buffer[10];
-			swprintf_s(buffer, 10, _T("!%d"), rank);
-			hlp.AddString(buffer);
+			TCHAR buffer[10];
+			int written = _stprintf_s(buffer, 10, _T("!%d"), rank);
+
+			if (written >= 0) {
+				buffer[written] = 0;
+				hlp.AddString(buffer);
+			}
 		}
 		break;
 
@@ -289,7 +308,7 @@ namespace CorHelper {
 
 	struct UncompressHelperGetSig : public UncompressHelper {
 		String *val;
-		void AddString(LPCTSTR str) { *val += str; }
+		void AddString(const String& str) { val->append(str); }
 	};
 
 	void GetMethodSig(ICorProfilerInfo* info, IMetaDataImport* mdImport, mdMethodDef methodDef, String* sigVal) {
@@ -298,8 +317,6 @@ namespace CorHelper {
 		if(FAILED(mdImport->GetMethodProps(methodDef, NULL, NULL, 0, NULL, NULL, &pSigBlob, &sigSize, NULL, NULL)))
 			return;
 
-		MethodSigWriter writer(sigVal, mdImport);
-
-		writer.Parse((sig_byte*)pSigBlob, sigSize);
+		MethodSigWriter(sigVal, mdImport).Parse((sig_byte*)pSigBlob, sigSize);
 	}
 }

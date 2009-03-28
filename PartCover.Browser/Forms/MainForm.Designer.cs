@@ -40,6 +40,8 @@ namespace PartCover.Browser.Forms
             this.mm = new System.Windows.Forms.MainMenu(this.components);
             this.mmFile = new System.Windows.Forms.MenuItem();
             this.mmRunTarget = new System.Windows.Forms.MenuItem();
+            this.mmFileShowSkipped = new System.Windows.Forms.MenuItem();
+            this.mmFileShowLog = new System.Windows.Forms.MenuItem();
             this.mmSep2 = new System.Windows.Forms.MenuItem();
             this.mmFileOpen = new System.Windows.Forms.MenuItem();
             this.mmFileSaveAs = new System.Windows.Forms.MenuItem();
@@ -55,27 +57,34 @@ namespace PartCover.Browser.Forms
             this.dlgOpen = new System.Windows.Forms.OpenFileDialog();
             this.dlgSave = new System.Windows.Forms.SaveFileDialog();
             this.splitter1 = new System.Windows.Forms.Splitter();
-            this.tvItems = new ReportTree();
+            this.rtbNodeProps = new System.Windows.Forms.RichTextBox();
+            this.panel1 = new System.Windows.Forms.Panel();
+            this.gbProps = new System.Windows.Forms.GroupBox();
+            this.tvItems = new PartCover.Browser.Features.Controls.ReportTree();
+            this.panel1.SuspendLayout();
+            this.gbProps.SuspendLayout();
             this.SuspendLayout();
             // 
             // mm
             // 
             this.mm.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
-                                                                               this.mmFile,
-                                                                               this.miViews,
-                                                                               this.miWindows,
-                                                                               this.miHelp});
+            this.mmFile,
+            this.miViews,
+            this.miWindows,
+            this.miHelp});
             // 
             // mmFile
             // 
             this.mmFile.Index = 0;
             this.mmFile.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
-                                                                                   this.mmRunTarget,
-                                                                                   this.mmSep2,
-                                                                                   this.mmFileOpen,
-                                                                                   this.mmFileSaveAs,
-                                                                                   this.mmSep1,
-                                                                                   this.mmFileExit});
+            this.mmRunTarget,
+            this.mmFileShowSkipped,
+            this.mmFileShowLog,
+            this.mmSep2,
+            this.mmFileOpen,
+            this.mmFileSaveAs,
+            this.mmSep1,
+            this.mmFileExit});
             this.mmFile.Text = "&File";
             // 
             // mmRunTarget
@@ -84,33 +93,45 @@ namespace PartCover.Browser.Forms
             this.mmRunTarget.Text = "&Run Target...";
             this.mmRunTarget.Click += new System.EventHandler(this.mmRunTarget_Click);
             // 
+            // mmFileShowSkipped
+            // 
+            this.mmFileShowSkipped.Index = 1;
+            this.mmFileShowSkipped.Text = "Show skipped items...";
+            this.mmFileShowSkipped.Click += new System.EventHandler(this.mmFileShowSkipped_Click);
+            // 
+            // mmFileShowLog
+            // 
+            this.mmFileShowLog.Index = 2;
+            this.mmFileShowLog.Text = "Show run log...";
+            this.mmFileShowLog.Click += new System.EventHandler(this.mmFileShowLog_Click);
+            // 
             // mmSep2
             // 
-            this.mmSep2.Index = 1;
+            this.mmSep2.Index = 3;
             this.mmSep2.Text = "-";
             // 
             // mmFileOpen
             // 
-            this.mmFileOpen.Index = 2;
+            this.mmFileOpen.Index = 4;
             this.mmFileOpen.Shortcut = System.Windows.Forms.Shortcut.CtrlO;
             this.mmFileOpen.Text = "&Open Report...";
             this.mmFileOpen.Click += new System.EventHandler(this.mmFileOpen_Click);
             // 
             // mmFileSaveAs
             // 
-            this.mmFileSaveAs.Index = 3;
+            this.mmFileSaveAs.Index = 5;
             this.mmFileSaveAs.Shortcut = System.Windows.Forms.Shortcut.CtrlS;
             this.mmFileSaveAs.Text = "&Save Report As ...";
             this.mmFileSaveAs.Click += new System.EventHandler(this.mmFileSaveAs_Click);
             // 
             // mmSep1
             // 
-            this.mmSep1.Index = 4;
+            this.mmSep1.Index = 6;
             this.mmSep1.Text = "-";
             // 
             // mmFileExit
             // 
-            this.mmFileExit.Index = 5;
+            this.mmFileExit.Index = 7;
             this.mmFileExit.Text = "E&xit";
             this.mmFileExit.Click += new System.EventHandler(this.mmFileExit_Click);
             // 
@@ -118,8 +139,8 @@ namespace PartCover.Browser.Forms
             // 
             this.miViews.Index = 1;
             this.miViews.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
-                                                                                    this.miHtml,
-                                                                                    this.menuItem1});
+            this.miHtml,
+            this.menuItem1});
             this.miViews.Text = "&Views";
             // 
             // miHtml
@@ -142,8 +163,8 @@ namespace PartCover.Browser.Forms
             // 
             this.miHelp.Index = 3;
             this.miHelp.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
-                                                                                   this.miSettings,
-                                                                                   this.miAbout});
+            this.miSettings,
+            this.miAbout});
             this.miHelp.Text = "&Help";
             // 
             // miSettings
@@ -168,35 +189,71 @@ namespace PartCover.Browser.Forms
             // 
             // splitter1
             // 
-            this.splitter1.Location = new System.Drawing.Point(197, 0);
+            this.splitter1.Location = new System.Drawing.Point(200, 0);
             this.splitter1.Name = "splitter1";
-            this.splitter1.Size = new System.Drawing.Size(3, 422);
+            this.splitter1.Size = new System.Drawing.Size(3, 380);
             this.splitter1.TabIndex = 2;
             this.splitter1.TabStop = false;
             // 
+            // rtbNodeProps
+            // 
+            this.rtbNodeProps.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.rtbNodeProps.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.rtbNodeProps.Location = new System.Drawing.Point(3, 16);
+            this.rtbNodeProps.Name = "rtbNodeProps";
+            this.rtbNodeProps.ReadOnly = true;
+            this.rtbNodeProps.Size = new System.Drawing.Size(184, 81);
+            this.rtbNodeProps.TabIndex = 4;
+            this.rtbNodeProps.Text = "";
+            this.rtbNodeProps.WordWrap = false;
+            // 
+            // panel1
+            // 
+            this.panel1.Controls.Add(this.tvItems);
+            this.panel1.Controls.Add(this.gbProps);
+            this.panel1.Dock = System.Windows.Forms.DockStyle.Left;
+            this.panel1.Location = new System.Drawing.Point(0, 0);
+            this.panel1.Name = "panel1";
+            this.panel1.Padding = new System.Windows.Forms.Padding(5);
+            this.panel1.Size = new System.Drawing.Size(200, 380);
+            this.panel1.TabIndex = 5;
+            // 
+            // gbProps
+            // 
+            this.gbProps.Controls.Add(this.rtbNodeProps);
+            this.gbProps.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.gbProps.Location = new System.Drawing.Point(5, 275);
+            this.gbProps.Name = "gbProps";
+            this.gbProps.Size = new System.Drawing.Size(190, 100);
+            this.gbProps.TabIndex = 5;
+            this.gbProps.TabStop = false;
+            this.gbProps.Text = "Node properties";
+            // 
             // tvItems
             // 
-            this.tvItems.Dock = System.Windows.Forms.DockStyle.Left;
+            this.tvItems.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tvItems.ImageIndex = 0;
-            this.tvItems.Location = new System.Drawing.Point(0, 0);
+            this.tvItems.Location = new System.Drawing.Point(5, 5);
             this.tvItems.Name = "tvItems";
             this.tvItems.SelectedImageIndex = 0;
             this.tvItems.ServiceContainer = null;
-            this.tvItems.Size = new System.Drawing.Size(197, 422);
+            this.tvItems.Size = new System.Drawing.Size(190, 270);
             this.tvItems.Sorted = true;
             this.tvItems.TabIndex = 0;
             // 
             // MainForm
             // 
             this.AutoScaleBaseSize = new System.Drawing.Size(5, 13);
-            this.ClientSize = new System.Drawing.Size(680, 422);
+            this.ClientSize = new System.Drawing.Size(680, 380);
             this.Controls.Add(this.splitter1);
-            this.Controls.Add(this.tvItems);
+            this.Controls.Add(this.panel1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.IsMdiContainer = true;
             this.Menu = this.mm;
             this.Name = "MainForm";
             this.Text = "PartCover coverage browser";
+            this.panel1.ResumeLayout(false);
+            this.gbProps.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -210,5 +267,10 @@ namespace PartCover.Browser.Forms
         private System.Windows.Forms.MenuItem miViews;
         private System.Windows.Forms.MenuItem menuItem1;
         private System.Windows.Forms.MenuItem miHelp;
+        private System.Windows.Forms.MenuItem mmFileShowSkipped;
+        private System.Windows.Forms.MenuItem mmFileShowLog;
+        private System.Windows.Forms.RichTextBox rtbNodeProps;
+        private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.GroupBox gbProps;
     }
 }

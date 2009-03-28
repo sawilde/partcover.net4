@@ -9,11 +9,13 @@ namespace PartCover.Framework.Data
         {
             Files = new List<FileEntry>();
             Assemblies = new List<AssemblyEntry>();
+            SkippedItems = new List<SkippedEntry>();
             Date = DateTime.Now;
         }
 
         public List<FileEntry> Files { get; private set; }
         public List<AssemblyEntry> Assemblies { get; private set; }
+        public List<SkippedEntry> SkippedItems { get; private set; }
         public DateTime Date { get; set; }
 
         public string ResolveFilePath(int file)

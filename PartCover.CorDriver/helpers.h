@@ -16,7 +16,11 @@ private:
 	const size_t _size;
 
 public:
-    DynamicArray(size_t count) : _size(count), _data(new value_type[count]) {}
+    DynamicArray(size_t count) : _size(count), _data(new value_type[count]) 
+	{
+		ZeroMemory(_data, sizeof(ValueType) * _size);
+	}
+
     ~DynamicArray() { delete[] _data; }
 
 	size_t size() const { return _size; }

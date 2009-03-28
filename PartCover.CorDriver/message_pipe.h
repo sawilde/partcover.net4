@@ -7,7 +7,7 @@ class MessagePipe
 
 	ITransferrableFactory* m_factories[100];
 
-	MessagePipe(const MessagePipe& pipe) {}
+	MessagePipe(const MessagePipe& pipe);
 	
 	HRESULT read(void* buffer, int dwSize);
 	HRESULT write(const void* buffer, int dwSize);
@@ -25,7 +25,7 @@ public:
     HRESULT WaitForClient();
 
     LPCTSTR getId() const;
-    bool isOpen() const { return m_pipe != INVALID_HANDLE_VALUE; }
+    bool isOpen() const;
 
 	template<typename T> bool write(T value) { return SUCCEEDED(write(&value, sizeof T)); }
 	template<typename T> bool read(T* value) { return SUCCEEDED(read(value, sizeof T)); }

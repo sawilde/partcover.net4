@@ -4,6 +4,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.Xml;
 using PartCover.Browser.Dialogs;
+using PartCover.Browser.Features;
 using PartCover.Browser.Properties;
 using PartCover.Browser.Stuff;
 using PartCover.Framework;
@@ -68,10 +69,10 @@ namespace PartCover.Browser.Forms
 
         readonly RunTargetForm runTargetForm = new RunTargetForm();
 
-        private void ShowError(string error)
-        {
-            MessageBox.Show(this, error, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-        }
+        //private void ShowError(string error)
+        //{
+        //    MessageBox.Show(this, error, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        //}
 
         private void ShowInformation(string error)
         {
@@ -89,23 +90,59 @@ namespace PartCover.Browser.Forms
             {
                 RunTargetForm = runTargetForm
             };
+
             runner.Execute(this);
 
-            try
+            ServiceContainer.getService<IReportService>().Open(runner.Report);
+            var reportService = ServiceContainer.getService<IReportService>() as CoverageReportService;
+            if (reportService != null)
             {
-                if (runner.Report.Assemblies.Count == 0)
-                {
-                    ShowInformation("Report is empty. Check settings and run target again.");
-                    return;
-                }
-
+                reportService.LastRunLog = runner.RunLog.ToString();
             }
-            catch (Exception ex)
+
+            if (runner.Report.Assemblies.Count == 0)
             {
-                ShowError("Cannot get report! (" + ex.Message + ")");
+                ShowEmptyReportDialog(runner.Report);
+            }
+            else
+            {
+                ProcessReportReceived(runner.Report);
+            }
+        }
+
+        private void ShowEmptyReportDialog(Report report)
+        {
+            DialogResult dlgResult;
+            using (var dialog = new RunEmptyReport())
+            {
+                dlgResult = dialog.ShowDialog(this);
+            }
+
+            switch (dlgResult)
+            {
+            case DialogResult.Cancel:
+                return;
+            case DialogResult.Retry:
+                mmRunTarget.PerformClick();
+                return;
+            case DialogResult.OK:
+                ShowSkippedItems(report);
                 return;
             }
+        }
 
+        private void ShowSkippedItems(Report report)
+        {
+            using (var dlg = new SkippedItemsReport())
+            {
+                dlg.Items = report.SkippedItems;
+                dlg.RuleReceiver = runTargetForm.AddIncludeRule;
+                dlg.ShowDialog(this);
+            }
+        }
+
+        private void ProcessReportReceived(Report report)
+        {
             if (runTargetForm.OutputToFile)
             {
                 using (var writer = new XmlTextWriter(dlgSave.FileName, Encoding.UTF8))
@@ -113,12 +150,12 @@ namespace PartCover.Browser.Forms
                     writer.Formatting = Formatting.Indented;
                     writer.Indentation = 1;
                     writer.IndentChar = ' ';
-                    ReportSerializer.Save(writer, runner.Report);
+                    ReportSerializer.Save(writer, report);
                 }
             }
             else
             {
-                ServiceContainer.getService<IReportService>().Open(runner.Report);
+                ServiceContainer.getService<IReportService>().Open(report);
             }
         }
 
@@ -280,5 +317,33 @@ namespace PartCover.Browser.Forms
         }
 
         #endregion
+
+        private void mmFileShowSkipped_Click(object sender, EventArgs e)
+        {
+            var service = ServiceContainer.getService<IReportService>();
+            if (service.Report == null || service.Report.SkippedItems.Count == 0)
+            {
+                ShowInformation("No skipped items are available. Run the report first.");
+                return;
+            }
+
+            ShowSkippedItems(service.Report);
+        }
+
+        private void mmFileShowLog_Click(object sender, EventArgs e)
+        {
+            var service = ServiceContainer.getService<IReportService>();
+            if (service.LastRunLog == null)
+            {
+                return;
+            }
+            
+            using (var dlg = new RunLogReport()) {
+                dlg.AttachLog(service.LastRunLog);
+                dlg.ShowDialog(this);
+            }
+        }
+
+    
     }
 }

@@ -136,6 +136,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Connector.Configuration.cs" />
+    <Compile Include="Data\SkippedEntry.cs" />
     <Compile Include="ReportHelper.cs" />
     <Compile Include="ReportSerializer.cs" />
   </ItemGroup>

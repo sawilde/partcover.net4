@@ -77,7 +77,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="true"
-				AdditionalDependencies="mscoree.lib comsupp.lib corguids.lib comsuppw.lib"
+				AdditionalDependencies="mscoree.lib comsupp.lib corguids.lib comsuppw.lib Psapi.lib"
 				OutputFile="$(OutDir)/PartCover.CorDriver.dll"
 				LinkIncremental="2"
 				ModuleDefinitionFile=""
@@ -175,7 +175,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="true"
-				AdditionalDependencies="mscoree.lib comsupp.lib corguids.lib comsuppw.lib"
+				AdditionalDependencies="mscoree.lib comsupp.lib corguids.lib comsuppw.lib psapi.lib"
 				OutputFile="$(OutDir)/PartCover.CorDriver.dll"
 				LinkIncremental="1"
 				IgnoreDefaultLibraryNames="atlmincrt.lib"
@@ -271,6 +271,10 @@
 			</File>
 			<File
 				RelativePath=".\logging.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\message.cpp"
 				>
 			</File>
 			<File
@@ -410,6 +414,10 @@
 				>
 			</File>
 		</Filter>
+		<File
+			RelativePath=".\readme.txt"
+			>
+		</File>
 	</Files>
 	<Globals>
 	</Globals>

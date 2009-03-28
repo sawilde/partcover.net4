@@ -9,6 +9,7 @@ namespace PartCover.Browser.Api
         event EventHandler ReportOpened;
 
         Report Report { get; }
+        string LastRunLog { get; }
         string ReportFileName { get; }
 
         void LoadFromFile(string fileName);

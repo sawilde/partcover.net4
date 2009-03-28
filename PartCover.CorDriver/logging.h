@@ -16,7 +16,7 @@ public:
 
     void Initialize(const String& fileName);
 	void SetPipe(MessagePipe* pipe);
-    bool Active() const { return log_fp != INVALID_HANDLE_VALUE && m_pipe != 0; }
+    bool Active() const { return log_fp != INVALID_HANDLE_VALUE || m_pipe != 0; }
     void Deinitialize();
 
     void WriteLine(LPCTSTR message, ...);

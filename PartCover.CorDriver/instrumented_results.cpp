@@ -197,10 +197,52 @@ bool PopResults(InstrumentResults::AssemblyResults& assemblies, MessagePipe& pip
 	return result;
 }
 
+bool PushResults(InstrumentResults::SkippedItems& items, MessagePipe& pipe) {
+	if(!pipe.write(items.size()))
+		return false;
+	bool result = true;
+    for(InstrumentResults::SkippedItems::const_iterator it = items.begin(); result && it != items.end(); it++) {
+		result = 
+			pipe.write(it->assemblyName) && 
+			pipe.write(it->typedefName);
+    }
+	return result;
+}
+
+bool PopResults(InstrumentResults::SkippedItems& items, MessagePipe& pipe, IConnectorActionCallback* callback) {
+	if (callback) callback->InstrumentDataReceiveSkippedBegin();
+
+    size_t itemsSize;
+	if(!pipe.read(&itemsSize))
+		return false;
+
+	if (callback) callback->InstrumentDataReceiveSkippedCount(itemsSize);
+
+	size_t step = max(1, itemsSize / 100);
+
+	bool result = true;
+    items.resize(itemsSize);
+    for(size_t i = 0; result && i < itemsSize; ++i) 
+	{
+		InstrumentResults::SkippedItem& item = items[i];
+		result = 
+			pipe.read(&item.assemblyName) &&
+			pipe.read(&item.typedefName);
+
+		if (i % step == 0 && callback) callback->InstrumentDataReceiveSkippedStat(i);
+    }
+
+	if (callback) callback->InstrumentDataReceiveSkippedEnd();
+
+	return result;
+}
+
+
 bool InstrumentResults::SendData(MessagePipe& pipe) {
     ATLTRACE("InstrumentResults::SendResults - send eResult");
     return PushResults(m_results, pipe) 
-		&& PushResults(m_fileTable, pipe);
+		&& PushResults(m_fileTable, pipe)
+		&& PushResults(m_skippedItems, pipe);
 }
 
 bool InstrumentResults::ReceiveData(MessagePipe& pipe) {
@@ -209,11 +251,15 @@ bool InstrumentResults::ReceiveData(MessagePipe& pipe) {
 
     m_results.clear();
     m_fileTable.clear();
+	m_skippedItems.clear();
 
 	if (!PopResults(m_results, pipe, m_callback))
 		return false;
 
 	if(!PopResults(m_fileTable, pipe, m_callback))
+		return false;
+
+	if(!PopResults(m_skippedItems, pipe, m_callback))
 		return false;
 
 	if(m_callback) m_callback->InstrumentDataReceiveEnd();
@@ -231,6 +277,14 @@ void InstrumentResults::GetReport(IReportReceiver& walker) {
         const FileItem& item = *fileIt;
         CComBSTR fileName(item.fileUrl.c_str());
 		if(FAILED(walker.RegisterFile(item.fileId, fileName)))
+            return;
+    }
+
+    for(SkippedItems::const_iterator itemIt = m_skippedItems.begin(); itemIt != m_skippedItems.end(); itemIt++) {
+        const SkippedItem& item = *itemIt;
+		CComBSTR assemblyName(item.assemblyName.c_str());
+		CComBSTR typedefName(item.typedefName.c_str());
+		if(FAILED(walker.RegisterSkippedItem(assemblyName, typedefName)))
             return;
     }
 

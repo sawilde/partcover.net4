@@ -1,5 +1,11 @@
 #pragma once
 
+struct SkippedTypedef {
+    String assemblyName;
+	String typedefName;
+};
+typedef std::vector<SkippedTypedef> SkippedTypedefs;
+
 struct LoadedClassInfo;
 class Rules;
 
@@ -7,47 +13,32 @@ struct MethodDef {
     MethodDef() {
         bodyUpdated = false;
         methodDef = 0;
-        instrumentedBody = 0;
     }   
 
-    bool                bodyUpdated;
     mdMethodDef         methodDef;
-    String        methodDefName;
-
-    String        methodSig;
-    DWORD               flags;
-    DWORD               implFlags;
-
-    InstrumentedILBody* instrumentedBody;
+    bool                bodyUpdated;
+	InstrumentedBlocks  bodyBlocks;
 };
+
 typedef stdext::hash_map<mdMethodDef, MethodDef> MethodDefMap;
 typedef std::pair<mdMethodDef, MethodDef> MethodDefMapPair;
 
 struct TypeDef {
     mdTypeDef    typeDef;
-    String typeDefName;
-    String typeDefNamespace;
-
-    DWORD flags;
-
     MethodDefMap methodDefs;
 
     void swap(TypeDef& source) {
         typeDef = source.typeDef;
-		flags = source.flags;
-        typeDefName.swap(source.typeDefName);
-        typeDefNamespace.swap(source.typeDefNamespace);
         methodDefs.swap(source.methodDefs);
     }
 };
+
 typedef stdext::hash_map<mdTypeDef, TypeDef> TypedefDescriptorMap;
 typedef std::pair<mdTypeDef, TypeDef> TypedefDescriptorMapPair;
 
 struct ModuleDescriptor {
     ModuleID     module;
-    String moduleName;
     AssemblyID   assembly;
-    String assemblyName;
     bool         loaded;
 
     CComPtr<ISymUnmanagedReader> symReader;
@@ -59,7 +50,7 @@ typedef std::vector<ModuleDescriptor> ModuleDescriptors;
 struct InstrumentHelper {
     ICorProfilerInfo* profilerInfo;
     ModuleDescriptor* module;
-    IMetaDataImport* mdImport;
+    IMetaDataImport*  mdImport;
 };
 
 class InstrumentResults;
@@ -72,14 +63,13 @@ class Instrumentator
     void Unlock() { m_cs.Leave(); }
 
     Rules& m_rules;
-
     ModuleDescriptors m_descriptors;
+	SkippedTypedefs m_skippedItems;
 
     void InstrumentTypedef(mdTypeDef typeDef, InstrumentHelper& helper);
-    void InstrumentMethod(TypeDef& typeDef, mdMethodDef methodDef, InstrumentHelper& helper);
+    void InstrumentMethod(TypeDef& typeDef, mdMethodDef methodDef, InstrumentHelper& helper, const String& typedefName);
 
     ULONG32 GetFileUrlId(const String&);
-
     ModuleDescriptor* GetModuleDescriptor(ModuleID assembly);
 
 public:
@@ -93,5 +83,8 @@ public:
 
     void UpdateClassCode(ClassID classId, ICorProfilerInfo* profilerInfo, ISymUnmanagedBinder2* binder);
 
-    void StoreResults(InstrumentResults&);
+    void StoreResults(InstrumentResults&, ICorProfilerInfo* info);
+
+	void AddSkippedAssembly(const String& assemblyName);
+	void AddSkippedTypedef(const String& assemblyName, const String& typedefName);
 };

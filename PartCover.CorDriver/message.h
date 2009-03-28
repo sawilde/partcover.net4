@@ -58,12 +58,12 @@ namespace Messages {
 	{
 		const MessageType m_type;
 	public:
-		GenericMessage(MessageType type) : m_type(type) {}
+		GenericMessage(MessageType type);
 
-		MessageType getType() const { return m_type; }
-		bool SendData(MessagePipe&) { return true; }
-		bool ReceiveData(MessagePipe&) { return true; }
-		void visit(ITransferrableVisitor& visitor) { visitor.on(getType()); }
+		MessageType getType() const;
+		bool SendData(MessagePipe&);
+		bool ReceiveData(MessagePipe&);
+		void visit(ITransferrableVisitor& visitor);
 	};
 
 	template<MessageType CODE> struct Message : public ITransferrable
@@ -79,20 +79,16 @@ namespace Messages {
 struct LogMessage : public Messages::Message<Messages::C_LogMessage>
 {
 public:
-	LogMessage(String message, long tick) : m_message(message), m_tick(tick)
-	{
-		m_threadId = ::GetCurrentThreadId();
-	}
-
-	LogMessage() : m_threadId(0), m_tick(0) {}
+	LogMessage(String message, long tick);
+	LogMessage();
 
 	bool SendData(MessagePipe& pipe);
 	bool ReceiveData(MessagePipe&);
-	void visit(ITransferrableVisitor& visitor) { visitor.on(*this); }
+	void visit(ITransferrableVisitor& visitor);
 
-	int getThreadId() const { return m_threadId; }
-	long getTicks() const { return m_tick; }
-	const String& getMessage() const { return m_message; }
+	int getThreadId() const;
+	long getTicks() const;
+	const String& getMessage() const;
 
 private:
 	int m_threadId;
