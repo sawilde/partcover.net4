@@ -5,7 +5,6 @@ using System.Windows.Forms;
 using PartCover.Browser.Api;
 using PartCover.Browser.Resources;
 using PartCover.Browser.Stuff;
-using PartCover.Framework;
 using PartCover.Framework.Data;
 using PartCover.Framework.Stuff;
 
@@ -157,9 +156,9 @@ namespace PartCover.Browser.Features.Controls
 
         private static TreeNode GetNamespaceNode(AssemblyTreeNode asmNode, TypedefEntry iClass)
         {
-            var names = ReportHelper.GetNamespaceChain(iClass);
+            var names = Types.GetNamespaceChain(iClass.Name);
             TreeNode parentNode = asmNode;
-            for (var i = 0; i < names.Length; ++i)
+            for (var i = 0; i < names.Length - 1; ++i)
             {
                 var nextNode = FindNamespaceNode(parentNode.Nodes, names[i]);
                 if (nextNode == null)

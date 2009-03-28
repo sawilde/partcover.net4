@@ -139,11 +139,29 @@
       <DependentUpon>CoverageView.cs</DependentUpon>
     </Compile>
     <Compile Include="Features\FeatureViewCoverage.cs" />
+    <Compile Include="Forms\RunEmptyReport.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\RunEmptyReport.Designer.cs">
+      <DependentUpon>RunEmptyReport.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\RunLogReport.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\RunLogReport.Designer.cs">
+      <DependentUpon>RunLogReport.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\RunTargetTracker.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Forms\RunTargetTracker.Designer.cs">
       <DependentUpon>RunTargetTracker.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\SkippedItemsReport.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\SkippedItemsReport.Designer.cs">
+      <DependentUpon>SkippedItemsReport.cs</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
@@ -443,9 +461,21 @@
       <SubType>Designer</SubType>
       <DependentUpon>CoverageView.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Forms\RunEmptyReport.resx">
+      <DependentUpon>RunEmptyReport.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\RunLogReport.resx">
+      <DependentUpon>RunLogReport.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\RunTargetTracker.resx">
       <SubType>Designer</SubType>
       <DependentUpon>RunTargetTracker.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\SkippedItemsReport.resx">
+      <DependentUpon>SkippedItemsReport.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\VSObject\VSObject_MethodFriend_S.bmp" />
     <EmbeddedResource Include="Resources\VSObject\VSObject_MethodPrivate_S.bmp" />

@@ -42,6 +42,7 @@
 #include <atlsync.h>
 #include <comutil.h>
 #include <atlrx.h>
+#include <psapi.h>
 
 using namespace ATL;
 

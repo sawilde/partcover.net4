@@ -39,7 +39,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ICoverageReport.cs" />
     <Compile Include="ICoverageReportService.cs" />
     <Compile Include="IFeature.cs" />
     <Compile Include="IProgressTracker.cs" />

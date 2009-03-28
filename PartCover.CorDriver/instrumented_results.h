@@ -6,6 +6,12 @@ class InstrumentResults : public ITransferrable
 {
 public:
     struct MethodBlock {
+		MethodBlock() 
+			: haveSource(false)
+			, sourceFileId(0), startLine(0), startColumn(0), endLine(0), endColumn(0)
+			, position(0), blockLength(0), visitCount(0)
+		{}
+
         bool haveSource;
 
         int sourceFileId;
@@ -21,6 +27,10 @@ public:
     typedef std::vector<MethodBlock> MethodBlocks;
 
     struct MethodResult {
+		MethodResult() 
+			: flags(0), implFlags(0)
+		{}
+
         String name;
         String sig;
 
@@ -32,6 +42,10 @@ public:
     typedef std::vector<MethodResult> MethodResults;
 
     struct TypedefResult {
+		TypedefResult() 
+			: flags(0)
+		{}
+
         String fullName;
 
         DWORD flags;
@@ -48,10 +62,19 @@ public:
     typedef std::vector<AssemblyResult> AssemblyResults;
 
     struct FileItem {
+		FileItem() : fileId(0) {}
+
         ULONG32      fileId;
         String fileUrl;
     };
     typedef std::vector<FileItem> FileItems;
+
+	struct SkippedItem
+	{
+        String assemblyName;
+		String typedefName;
+	};
+	typedef std::vector<SkippedItem> SkippedItems;
 
 public:
 
@@ -59,6 +82,7 @@ public:
 
     void Assign(AssemblyResults& results) { m_results.swap(results); }
     void Assign(FileItems& results);
+	void Assign(SkippedItems& results) { m_skippedItems.swap(results); }
 
 	MessageType getType() const { return Messages::C_InstrumentResults; }
 	void visit(ITransferrableVisitor& visitor) { visitor.on(*this); }
@@ -74,4 +98,5 @@ private:
 
     AssemblyResults m_results;
     FileItems m_fileTable;
+	SkippedItems m_skippedItems;
 };

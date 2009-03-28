@@ -567,5 +567,13 @@ namespace PartCover.Browser
             }
 
         }
+
+        public void AddIncludeRule(string rule)
+        {
+            var prefix = "+";
+            if (tbRules.Text.Length > 0 && !tbRules.Text.EndsWith(Environment.NewLine))
+                prefix = Environment.NewLine + "+";
+            tbRules.AppendText(prefix + rule);
+        }
     }
 }

@@ -23,8 +23,8 @@ HRESULT MessagePipe::Open() {
 
     // create pipe name
     TCHAR buffer[128];
-	_stprintf_s(buffer, 128, _T("%s.%d.%d"), MESS_PIPID, GetCurrentProcessId(), GetTickCount());
-    m_pipename = buffer;
+	int written = _stprintf_s(buffer, 128, _T("%s.%d.%d"), MESS_PIPID, GetCurrentProcessId(), GetTickCount());
+	m_pipename = String(buffer, written).c_str();
 
     m_pipe = CreateNamedPipe(buffer, 
         PIPE_ACCESS_DUPLEX|FILE_FLAG_FIRST_PIPE_INSTANCE|FILE_FLAG_OVERLAPPED,
@@ -207,3 +207,15 @@ bool LogMessage::ReceiveData(MessagePipe &pipe) {
 		pipe.read(&this->m_tick) &&
 		pipe.read(&this->m_message);
 }
+
+//0----------------------------------
+// from header
+
+MessagePipe::MessagePipe(const MessagePipe& pipe) {}
+
+bool MessagePipe::isOpen() const 
+{ 
+	return m_pipe != INVALID_HANDLE_VALUE; 
+}
+
+//-----------------------------------

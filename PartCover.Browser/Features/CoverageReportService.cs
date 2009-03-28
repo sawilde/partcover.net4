@@ -2,7 +2,6 @@ using System;
 using System.Text;
 using System.Xml;
 using PartCover.Browser.Api;
-using System.IO;
 using PartCover.Framework;
 using PartCover.Framework.Data;
 
@@ -16,7 +15,7 @@ namespace PartCover.Browser.Features
         public event EventHandler ReportOpened;
 
         public Report Report { get; internal set; }
-
+        public string LastRunLog { get; internal set; }
         public string ReportFileName { get; private set; }
 
         public void LoadFromFile(string fileName)

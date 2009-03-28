@@ -173,7 +173,7 @@ namespace PartCover.Browser.Features.Controls
         public TypedefEntry Typedef { get; private set; }
 
         public ClassTreeNode(TypedefEntry typedef)
-            : base(typedef.Name)
+            : base(Types.RemoveNamespacePath(typedef.Name))
         {
             Typedef = typedef;
             ImageIndex = ImageSelector.ForType(Typedef);
@@ -206,7 +206,7 @@ namespace PartCover.Browser.Features.Controls
                 coveredCodeSize += iInfo.GetCoveredCodeSize();
             }
             var percent = codeSize == 0 ? 0 : coveredCodeSize / (float)codeSize * 100;
-            Text = string.Format("{0} ({1:#0}%)", Typedef, percent);
+            Text = string.Format("{0} ({1:#0}%)", Types.RemoveNamespacePath(Typedef.Name), percent);
             ForeColor = Helpers.ColorProvider.GetForeColorForPercent(percent);
         }
 

@@ -4,7 +4,7 @@
 
 
  /* File created by MIDL compiler version 7.00.0500 */
-/* at Wed Mar 25 23:40:55 2009
+/* at Sun Mar 29 00:52:24 2009
  */
 /* Compiler settings for PartCover.CorDriver.idl:
     Oicf, W1, Zp8, env=Win32 (32b run)
@@ -59,18 +59,6 @@ typedef interface IPartCoverConnector2 IPartCoverConnector2;
 #endif 	/* __IPartCoverConnector2_FWD_DEFINED__ */
 
 
-#ifndef __PartCoverConnector2_FWD_DEFINED__
-#define __PartCoverConnector2_FWD_DEFINED__
-
-#ifdef __cplusplus
-typedef class PartCoverConnector2 PartCoverConnector2;
-#else
-typedef struct PartCoverConnector2 PartCoverConnector2;
-#endif /* __cplusplus */
-
-#endif 	/* __PartCoverConnector2_FWD_DEFINED__ */
-
-
 #ifndef __CorProfiler_FWD_DEFINED__
 #define __CorProfiler_FWD_DEFINED__
 
@@ -81,6 +69,18 @@ typedef struct CorProfiler CorProfiler;
 #endif /* __cplusplus */
 
 #endif 	/* __CorProfiler_FWD_DEFINED__ */
+
+
+#ifndef __PartCoverConnector2_FWD_DEFINED__
+#define __PartCoverConnector2_FWD_DEFINED__
+
+#ifdef __cplusplus
+typedef class PartCoverConnector2 PartCoverConnector2;
+#else
+typedef struct PartCoverConnector2 PartCoverConnector2;
+#endif /* __cplusplus */
+
+#endif 	/* __PartCoverConnector2_FWD_DEFINED__ */
 
 
 /* header files for imported files */
@@ -107,6 +107,19 @@ typedef /* [custom][helpstring][uuid] */  DECLSPEC_UUID("040790E6-D4A1-4579-A4B9
     INT endLine;
     INT endColumn;
     } 	BLOCK_DATA;
+
+typedef /* [custom][helpstring][uuid] */  DECLSPEC_UUID("37DE0E5B-CA8B-4a89-9071-10417AA4BCF4") struct MEMORY_COUNTERS
+    {
+    DWORD PageFaultCount;
+    SIZE_T PeakWorkingSetSize;
+    SIZE_T WorkingSetSize;
+    SIZE_T QuotaPeakPagedPoolUsage;
+    SIZE_T QuotaPagedPoolUsage;
+    SIZE_T QuotaPeakNonPagedPoolUsage;
+    SIZE_T QuotaNonPagedPoolUsage;
+    SIZE_T PagefileUsage;
+    SIZE_T PeakPagefileUsage;
+    } 	MEMORY_COUNTERS;
 
 
 
@@ -147,6 +160,10 @@ EXTERN_C const IID IID_IReportReceiver;
         virtual HRESULT STDMETHODCALLTYPE RegisterFile( 
             /* [in] */ INT fileId,
             /* [in] */ BSTR fileUrl) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE RegisterSkippedItem( 
+            /* [in] */ BSTR assemblyName,
+            /* [in] */ BSTR typedefName) = 0;
         
         virtual HRESULT STDMETHODCALLTYPE EnterAssembly( 
             /* [in] */ BSTR assemblyName,
@@ -195,6 +212,11 @@ EXTERN_C const IID IID_IReportReceiver;
             IReportReceiver * This,
             /* [in] */ INT fileId,
             /* [in] */ BSTR fileUrl);
+        
+        HRESULT ( STDMETHODCALLTYPE *RegisterSkippedItem )( 
+            IReportReceiver * This,
+            /* [in] */ BSTR assemblyName,
+            /* [in] */ BSTR typedefName);
         
         HRESULT ( STDMETHODCALLTYPE *EnterAssembly )( 
             IReportReceiver * This,
@@ -252,6 +274,9 @@ EXTERN_C const IID IID_IReportReceiver;
 #define IReportReceiver_RegisterFile(This,fileId,fileUrl)	\
     ( (This)->lpVtbl -> RegisterFile(This,fileId,fileUrl) ) 
 
+#define IReportReceiver_RegisterSkippedItem(This,assemblyName,typedefName)	\
+    ( (This)->lpVtbl -> RegisterSkippedItem(This,assemblyName,typedefName) ) 
+
 #define IReportReceiver_EnterAssembly(This,assemblyName,moduleName)	\
     ( (This)->lpVtbl -> EnterAssembly(This,assemblyName,moduleName) ) 
 
@@ -302,6 +327,9 @@ EXTERN_C const IID IID_IConnectorActionCallback;
         virtual HRESULT STDMETHODCALLTYPE SetConnected( 
             /* [in] */ VARIANT_BOOL connected) = 0;
         
+        virtual HRESULT STDMETHODCALLTYPE ShowTargetMemory( 
+            /* [in] */ MEMORY_COUNTERS counters) = 0;
+        
         virtual HRESULT STDMETHODCALLTYPE MethodsReceiveBegin( void) = 0;
         
         virtual HRESULT STDMETHODCALLTYPE MethodsReceiveStatus( void) = 0;
@@ -323,6 +351,16 @@ EXTERN_C const IID IID_IConnectorActionCallback;
             /* [in] */ SIZE_T index) = 0;
         
         virtual HRESULT STDMETHODCALLTYPE InstrumentDataReceiveFilesEnd( void) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE InstrumentDataReceiveSkippedBegin( void) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE InstrumentDataReceiveSkippedCount( 
+            /* [in] */ SIZE_T itemCount) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE InstrumentDataReceiveSkippedStat( 
+            /* [in] */ SIZE_T index) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE InstrumentDataReceiveSkippedEnd( void) = 0;
         
         virtual HRESULT STDMETHODCALLTYPE InstrumentDataReceiveCountersBegin( void) = 0;
         
@@ -391,6 +429,10 @@ EXTERN_C const IID IID_IConnectorActionCallback;
             IConnectorActionCallback * This,
             /* [in] */ VARIANT_BOOL connected);
         
+        HRESULT ( STDMETHODCALLTYPE *ShowTargetMemory )( 
+            IConnectorActionCallback * This,
+            /* [in] */ MEMORY_COUNTERS counters);
+        
         HRESULT ( STDMETHODCALLTYPE *MethodsReceiveBegin )( 
             IConnectorActionCallback * This);
         
@@ -421,6 +463,20 @@ EXTERN_C const IID IID_IConnectorActionCallback;
             /* [in] */ SIZE_T index);
         
         HRESULT ( STDMETHODCALLTYPE *InstrumentDataReceiveFilesEnd )( 
+            IConnectorActionCallback * This);
+        
+        HRESULT ( STDMETHODCALLTYPE *InstrumentDataReceiveSkippedBegin )( 
+            IConnectorActionCallback * This);
+        
+        HRESULT ( STDMETHODCALLTYPE *InstrumentDataReceiveSkippedCount )( 
+            IConnectorActionCallback * This,
+            /* [in] */ SIZE_T itemCount);
+        
+        HRESULT ( STDMETHODCALLTYPE *InstrumentDataReceiveSkippedStat )( 
+            IConnectorActionCallback * This,
+            /* [in] */ SIZE_T index);
+        
+        HRESULT ( STDMETHODCALLTYPE *InstrumentDataReceiveSkippedEnd )( 
             IConnectorActionCallback * This);
         
         HRESULT ( STDMETHODCALLTYPE *InstrumentDataReceiveCountersBegin )( 
@@ -509,6 +565,9 @@ EXTERN_C const IID IID_IConnectorActionCallback;
 #define IConnectorActionCallback_SetConnected(This,connected)	\
     ( (This)->lpVtbl -> SetConnected(This,connected) ) 
 
+#define IConnectorActionCallback_ShowTargetMemory(This,counters)	\
+    ( (This)->lpVtbl -> ShowTargetMemory(This,counters) ) 
+
 #define IConnectorActionCallback_MethodsReceiveBegin(This)	\
     ( (This)->lpVtbl -> MethodsReceiveBegin(This) ) 
 
@@ -538,6 +597,18 @@ EXTERN_C const IID IID_IConnectorActionCallback;
 
 #define IConnectorActionCallback_InstrumentDataReceiveFilesEnd(This)	\
     ( (This)->lpVtbl -> InstrumentDataReceiveFilesEnd(This) ) 
+
+#define IConnectorActionCallback_InstrumentDataReceiveSkippedBegin(This)	\
+    ( (This)->lpVtbl -> InstrumentDataReceiveSkippedBegin(This) ) 
+
+#define IConnectorActionCallback_InstrumentDataReceiveSkippedCount(This,itemCount)	\
+    ( (This)->lpVtbl -> InstrumentDataReceiveSkippedCount(This,itemCount) ) 
+
+#define IConnectorActionCallback_InstrumentDataReceiveSkippedStat(This,index)	\
+    ( (This)->lpVtbl -> InstrumentDataReceiveSkippedStat(This,index) ) 
+
+#define IConnectorActionCallback_InstrumentDataReceiveSkippedEnd(This)	\
+    ( (This)->lpVtbl -> InstrumentDataReceiveSkippedEnd(This) ) 
 
 #define IConnectorActionCallback_InstrumentDataReceiveCountersBegin(This)	\
     ( (This)->lpVtbl -> InstrumentDataReceiveCountersBegin(This) ) 
@@ -818,20 +889,20 @@ EXTERN_C const IID IID_IPartCoverConnector2;
 #endif 	/* __IPartCoverConnector2_INTERFACE_DEFINED__ */
 
 
-EXTERN_C const CLSID CLSID_PartCoverConnector2;
-
-#ifdef __cplusplus
-
-class DECLSPEC_UUID("FB20430E-CDC9-45D7-8453-272268002E08")
-PartCoverConnector2;
-#endif
-
 EXTERN_C const CLSID CLSID_CorProfiler;
 
 #ifdef __cplusplus
 
 class DECLSPEC_UUID("717FF691-2ADF-4AC0-985F-1DD3C42FDF90")
 CorProfiler;
+#endif
+
+EXTERN_C const CLSID CLSID_PartCoverConnector2;
+
+#ifdef __cplusplus
+
+class DECLSPEC_UUID("FB20430E-CDC9-45D7-8453-272268002E08")
+PartCoverConnector2;
 #endif
 #endif /* __PartCover_LIBRARY_DEFINED__ */
 

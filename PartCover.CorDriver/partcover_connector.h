@@ -31,15 +31,18 @@ protected:
     InstrumentResults m_instrumentResults;
 	LogMessage m_logMessage;
 
+private:
+	void TraceTargetMemoryUsage(IConnectorActionCallback* callback);
+
 public:
     PartCoverConnector2(void);
     ~PartCoverConnector2(void);
 
     STDMETHOD(StartTarget)(BSTR targetPath, BSTR targetWorkingDir, BSTR targetArguments, VARIANT_BOOL redirectOutput, IConnectorActionCallback* callback);
 
-	STDMETHOD(put_LoggingLevel)(INT logLevel) { m_driverLogging = logLevel; return S_OK; }
-	STDMETHOD(put_FileLoggingEnable)(VARIANT_BOOL enable) { m_useFileLogging = enable == VARIANT_TRUE; return S_OK; }
-	STDMETHOD(put_PipeLoggingEnable)(VARIANT_BOOL enable) { m_usePipeLogging = enable == VARIANT_TRUE; return S_OK; }
+	STDMETHOD(put_LoggingLevel)(INT logLevel);
+	STDMETHOD(put_FileLoggingEnable)(VARIANT_BOOL enable);
+	STDMETHOD(put_PipeLoggingEnable)(VARIANT_BOOL enable);
 
     STDMETHOD(EnableOption)(ProfilerMode mode);
     STDMETHOD(WaitForResults)(VARIANT_BOOL delayClose, IConnectorActionCallback* callback);
@@ -51,33 +54,10 @@ public:
     STDMETHOD(IncludeItem)(BSTR item);
     STDMETHOD(ExcludeItem)(BSTR item);
 
-	STDMETHOD(get_HasTargetExitCode)(VARIANT_BOOL* exitRes) 
-	{ 
-		if (exitRes  == 0) return E_INVALIDARG; 
-		*exitRes = m_targetExitCodeSet ? VARIANT_TRUE : VARIANT_FALSE; 
-		return S_OK; 
-	}
-
-	STDMETHOD(get_TargetExitCode)(INT* exitCode) 
-	{
-		if (exitCode == 0) return E_INVALIDARG; 
-		*exitCode = m_targetExitCode; 
-		return S_OK; 
-	}
-
-	STDMETHOD(get_ProcessId)(INT* pid) 
-	{ 
-		if (pid == 0) return E_INVALIDARG; 
-		*pid = pi.dwProcessId; 
-		return S_OK; 
-	}
-
-	STDMETHOD(get_LogFilePath)(BSTR* logFilePath) 
-	{
-		if (logFilePath == 0) return E_INVALIDARG;
-		*logFilePath = _bstr_t(m_logFile.c_str());
-		return S_OK;
-	}
+	STDMETHOD(get_HasTargetExitCode)(VARIANT_BOOL* exitRes);
+	STDMETHOD(get_TargetExitCode)(INT* exitCode);
+	STDMETHOD(get_ProcessId)(INT* pid);
+	STDMETHOD(get_LogFilePath)(BSTR* logFilePath);
 
 	ITransferrable* create(MessageType type);
 	void destroy(ITransferrable* item);

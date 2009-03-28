@@ -1,3 +1,4 @@
+using System;
 using PartCover.Framework.Data;
 
 namespace PartCover.Framework
@@ -41,9 +42,17 @@ namespace PartCover.Framework
 
         void IConnectorActionCallback.InstrumentDataReceiveFilesCount(uint fileCount) { connector.OnStatusReceive(string.Format("{0} files to load", fileCount)); }
 
+        void IConnectorActionCallback.InstrumentDataReceiveFilesStat(uint index) { }
+
         void IConnectorActionCallback.InstrumentDataReceiveFilesEnd() { connector.OnStatusReceive("file list load is complete"); }
 
-        void IConnectorActionCallback.InstrumentDataReceiveFilesStat(uint index) { }
+        void IConnectorActionCallback.InstrumentDataReceiveSkippedBegin() { connector.OnStatusReceive("skip list is being received"); }
+
+        void IConnectorActionCallback.InstrumentDataReceiveSkippedCount(uint itemCount) { connector.OnStatusReceive(string.Format("{0} skip items to load", itemCount)); }
+
+        void IConnectorActionCallback.InstrumentDataReceiveSkippedStat(uint index) { }
+
+        void IConnectorActionCallback.InstrumentDataReceiveSkippedEnd() { connector.OnStatusReceive("skip list load is complete"); }
 
         void IConnectorActionCallback.InstrumentDataReceiveStatus() { connector.OnStatusReceive("driver connected"); }
 
@@ -69,11 +78,24 @@ namespace PartCover.Framework
         {
             var message = new LogEntry
             {
-                Message = text, 
-                MsOffset = tick, 
+                Message = text,
+                MsOffset = tick,
                 ThreadId = threadId
             };
             connector.OnLogMessage(message);
+        }
+
+        void IConnectorActionCallback.ShowTargetMemory(MEMORY_COUNTERS counters)
+        {
+            connector.OnStatusReceive(string.Format("Target PageFaultCount: {0}", counters.PageFaultCount));
+            connector.OnStatusReceive(string.Format("Target PagefileUsage: {0}", counters.PagefileUsage));
+            connector.OnStatusReceive(string.Format("Target PeakPagefileUsage: {0}", counters.PeakPagefileUsage));
+            connector.OnStatusReceive(string.Format("Target PeakWorkingSetSize: {0}", counters.PeakWorkingSetSize));
+            connector.OnStatusReceive(string.Format("Target QuotaNonPagedPoolUsage: {0}", counters.QuotaNonPagedPoolUsage));
+            connector.OnStatusReceive(string.Format("Target QuotaPagedPoolUsage: {0}", counters.QuotaPagedPoolUsage));
+            connector.OnStatusReceive(string.Format("Target QuotaPeakNonPagedPoolUsage: {0}", counters.QuotaPeakNonPagedPoolUsage));
+            connector.OnStatusReceive(string.Format("Target QuotaPeakPagedPoolUsage: {0}", counters.QuotaPeakPagedPoolUsage));
+            connector.OnStatusReceive(string.Format("Target WorkingSetSize: {0}", counters.WorkingSetSize));
         }
     }
 }

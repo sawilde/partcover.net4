@@ -50,6 +50,27 @@ typedef struct BLOCK_DATA {
 
 #ifndef REMOVE_ATTRIBUTES
 [
+    export
+    ,uuid(MEMORYCOUNTERS_GUID)
+    ,helpstring("CorDriver.MemoryCountersData")
+    ,library_block
+]
+#endif
+typedef struct MEMORY_COUNTERS
+{
+	DWORD  PageFaultCount;
+	SIZE_T PeakWorkingSetSize;
+	SIZE_T WorkingSetSize;
+	SIZE_T QuotaPeakPagedPoolUsage;
+	SIZE_T QuotaPagedPoolUsage;
+	SIZE_T QuotaPeakNonPagedPoolUsage;
+	SIZE_T QuotaNonPagedPoolUsage;
+	SIZE_T PagefileUsage;
+	SIZE_T PeakPagefileUsage;
+} MEMORY_COUNTERS;
+
+#ifndef REMOVE_ATTRIBUTES
+[
     object
     ,uuid(IINSTRUMENTEDBLOCKWALKER_GUID)
     ,helpstring("CorDriver.IInstrumentedBlockWalker interface")
@@ -58,6 +79,7 @@ typedef struct BLOCK_DATA {
 #endif
 __interface IReportReceiver : IUnknown {
     HRESULT RegisterFile([in] INT fileId, [in] BSTR fileUrl);
+    HRESULT RegisterSkippedItem([in] BSTR assemblyName, [in] BSTR typedefName);
 
 	HRESULT EnterAssembly([in] BSTR assemblyName, [in] BSTR moduleName);
     HRESULT EnterTypedef([in] BSTR typedefName, [in] DWORD flags);
@@ -79,6 +101,7 @@ __interface IReportReceiver : IUnknown {
 __interface IConnectorActionCallback : IUnknown 
 {
     HRESULT SetConnected(VARIANT_BOOL connected);
+	HRESULT ShowTargetMemory(MEMORY_COUNTERS counters);
 
 	HRESULT MethodsReceiveBegin();
 	HRESULT MethodsReceiveStatus();
@@ -92,6 +115,11 @@ __interface IConnectorActionCallback : IUnknown
 	HRESULT InstrumentDataReceiveFilesCount([in] size_t fileCount);
 	HRESULT InstrumentDataReceiveFilesStat([in] size_t index);
 	HRESULT InstrumentDataReceiveFilesEnd();
+
+	HRESULT InstrumentDataReceiveSkippedBegin();
+	HRESULT InstrumentDataReceiveSkippedCount([in] size_t itemCount);
+	HRESULT InstrumentDataReceiveSkippedStat([in] size_t index);
+	HRESULT InstrumentDataReceiveSkippedEnd();
 
 	HRESULT InstrumentDataReceiveCountersBegin();
 	HRESULT InstrumentDataReceiveCountersAsmCount([in] size_t asmCount);

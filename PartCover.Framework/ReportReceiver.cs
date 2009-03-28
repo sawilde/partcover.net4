@@ -17,6 +17,15 @@ namespace PartCover.Framework
             });
         }
 
+        public void RegisterSkippedItem(string assemblyName, string typedefName)
+        {
+            Report.SkippedItems.Add(new SkippedEntry 
+            {
+                AssemblyName = assemblyName,
+                TypedefName = typedefName
+            });
+        }
+
         private AssemblyEntry currentAssembly;
         public void EnterAssembly(string assemblyName, string moduleName)
         {

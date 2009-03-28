@@ -11,10 +11,10 @@
 #pragma warning(disable : 4312)
 #pragma warning(disable : 4311)
 
-#define DUMP_ORIGINAL_CODE
+//#define DUMP_ORIGINAL_CODE
 //#define DUMP_CONTINUOUS_BLOCKS
 //#define DUMP_CHANGED_BLOCK
-#define DUMP_NEW_CODE
+//#define DUMP_NEW_CODE
 
 //#undef METHOD_INNER
 //#define METHOD_INNER eNull

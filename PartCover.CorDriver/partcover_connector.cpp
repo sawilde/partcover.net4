@@ -20,6 +20,57 @@ PartCoverConnector2::~PartCoverConnector2(void)
 {
 }
 
+/** from header */
+//----------------------------------------------------------
+
+STDMETHODIMP PartCoverConnector2::put_LoggingLevel(INT logLevel) 
+{ 
+	m_driverLogging = logLevel; 
+	return S_OK; 
+}
+
+STDMETHODIMP PartCoverConnector2::put_FileLoggingEnable(VARIANT_BOOL enable) 
+{ 
+	m_useFileLogging = enable == VARIANT_TRUE; 
+	return S_OK; 
+}
+
+STDMETHODIMP PartCoverConnector2::put_PipeLoggingEnable(VARIANT_BOOL enable) 
+{ 
+	m_usePipeLogging = enable == VARIANT_TRUE; 
+	return S_OK; 
+}
+
+STDMETHODIMP PartCoverConnector2::get_HasTargetExitCode(VARIANT_BOOL* exitRes) 
+{ 
+	if (exitRes  == 0) return E_INVALIDARG; 
+	*exitRes = m_targetExitCodeSet ? VARIANT_TRUE : VARIANT_FALSE; 
+	return S_OK; 
+}
+
+STDMETHODIMP PartCoverConnector2::get_TargetExitCode(INT* exitCode) 
+{
+	if (exitCode == 0) return E_INVALIDARG; 
+	*exitCode = m_targetExitCode; 
+	return S_OK; 
+}
+
+STDMETHODIMP PartCoverConnector2::get_ProcessId(INT* pid) 
+{ 
+	if (pid == 0) return E_INVALIDARG; 
+	*pid = pi.dwProcessId; 
+	return S_OK; 
+}
+
+STDMETHODIMP PartCoverConnector2::get_LogFilePath(BSTR* logFilePath) 
+{
+	if (logFilePath == 0) return E_INVALIDARG;
+	*logFilePath = _bstr_t(m_logFile.c_str());
+	return S_OK;
+}
+
+//----------------------------------------------------------
+
 STDMETHODIMP PartCoverConnector2::StartTarget(
     BSTR p_targetPath, 
     BSTR p_targetWorkingDir, 
@@ -54,8 +105,8 @@ STDMETHODIMP PartCoverConnector2::StartTarget(
     if (m_driverLogging > 0)
 	{
 		DynamicArray<TCHAR> curBuffer(5);
-        _stprintf_s(curBuffer, curBuffer.size(), _T("%d"), m_driverLogging);
-        env[OPTION_VERBOSE] = curBuffer;
+        int written = _stprintf_s(curBuffer, curBuffer.size(), _T("%d"), m_driverLogging);
+        env[OPTION_VERBOSE] = String(curBuffer, written);
 	}
 
 	if (m_useFileLogging) {
@@ -63,8 +114,8 @@ STDMETHODIMP PartCoverConnector2::StartTarget(
         DynamicArray<TCHAR> curBuffer(curLength + 25);
         if (curLength = ::GetCurrentDirectory(curLength + 1, curBuffer)) 
 		{
-            _stprintf_s(curBuffer + curLength, 25, DRIVER_LOG_FILENAME);
-            env[OPTION_LOGFILE] = curBuffer;
+            int written = _stprintf_s(curBuffer + curLength, 25, DRIVER_LOG_FILENAME);
+            env[OPTION_LOGFILE] = String(curBuffer, written);
 
 			m_logFile = curBuffer;
         }
@@ -150,8 +201,11 @@ STDMETHODIMP PartCoverConnector2::StartTarget(
 		ATLTRACE("PartCoverConnector2::StartTarget - C_RequestStart wait error");
 		return E_ABORT;
 	}
+	
 
 	if(callback != 0 ) callback->DriverSendRules();
+
+	TraceTargetMemoryUsage(callback);
 
 	m_center.Send(m_rules);
 	m_center.Send(Messages::Message<Messages::C_EndOfInputs>());
@@ -213,6 +267,8 @@ STDMETHODIMP PartCoverConnector2::WaitForResults(VARIANT_BOOL delayClose, IConne
 
 	if (delayClose == VARIANT_FALSE) 
 	{
+		TraceTargetMemoryUsage(callback);
+
 		if (callback != 0) callback->TargetRequestShutdown();
 		m_center.Send(Messages::Message<Messages::C_RequestShutdown>());
 
@@ -288,4 +344,33 @@ void PartCoverConnector2::destroy(ITransferrable* item)
 	if(item == 0 || lend != std:: find(lbeg, lend, item)) return;
 	
 	delete item;
+}
+
+void PartCoverConnector2::TraceTargetMemoryUsage(IConnectorActionCallback* callback)
+{
+	if (callback == 0) return;
+
+	PROCESS_MEMORY_COUNTERS pmcs;
+	ZeroMemory(&pmcs, sizeof(pmcs));
+
+	// Set size of structure
+	pmcs.cb = sizeof(pmcs);
+
+	// Get memory usage
+	if(::GetProcessMemoryInfo(pi.hProcess, &pmcs, sizeof(pmcs)) != TRUE)
+	{
+		return;
+	}
+
+	MEMORY_COUNTERS mc;
+	mc.PageFaultCount = pmcs.PageFaultCount;
+	mc.PeakWorkingSetSize = pmcs.PeakWorkingSetSize;
+	mc.WorkingSetSize = pmcs.WorkingSetSize;
+	mc.QuotaPeakPagedPoolUsage = pmcs.QuotaPeakPagedPoolUsage;
+	mc.QuotaPagedPoolUsage = pmcs.QuotaPagedPoolUsage;
+	mc.QuotaPeakNonPagedPoolUsage = pmcs.QuotaPeakNonPagedPoolUsage;
+	mc.QuotaNonPagedPoolUsage = pmcs.QuotaNonPagedPoolUsage;
+	mc.PagefileUsage = pmcs.PagefileUsage;
+	mc.PeakPagefileUsage = pmcs.PeakPagefileUsage;
+	callback->ShowTargetMemory(mc);
 }

@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Xml;
 using PartCover.Framework;
+using PartCover.Framework.Data;
 
 namespace PartCover
 {
@@ -23,7 +24,7 @@ namespace PartCover
                 connector.LogEntryReceived += connector_LogEntryReceived;
 
                 connector.UseFileLogging(true);
-                connector.UsePipeLogging(false);
+                connector.UsePipeLogging(true);
                 connector.SetLogging((Logging)settings.LogLevel);
 
                 foreach (var item in settings.IncludeItems)
@@ -59,11 +60,14 @@ namespace PartCover
 
                 try
                 {
-                    XmlWriter writer = settings.OutputToFile
+                    var writer = settings.OutputToFile
                         ? new XmlTextWriter(File.CreateText(settings.FileNameForReport))
                         : new XmlTextWriter(Console.Out);
                     using (writer)
                     {
+                        writer.Formatting = Formatting.Indented;
+                        writer.Indentation = 1;
+                        writer.IndentChar = ' ';
                         ReportSerializer.Save(writer, connector.Report);
                     }
                 }
@@ -71,6 +75,10 @@ namespace PartCover
                 {
                     Console.Error.WriteLine("Can't save report (" + ex.Message + ")");
                 }
+
+#if DEBUG
+                WriteListOfSkippedItems(connector.Report);
+#endif
 
                 if (connector.TargetExitCode.HasValue)
                     return connector.TargetExitCode.Value;
@@ -88,6 +96,12 @@ namespace PartCover
             }
 
             return 0;
+        }
+
+        private static void WriteListOfSkippedItems(Report report)
+        {
+            report.SkippedItems.ForEach(x => 
+                Console.Error.WriteLine("Skipped item [{0}]{1}", x.AssemblyName, x.TypedefName));
         }
 
         static void connector_LogEntryReceived(object sender, LogEntryEventArgs e)
