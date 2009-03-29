@@ -163,7 +163,10 @@ namespace PartCover.Browser.Features.Controls
                 var nextNode = FindNamespaceNode(parentNode.Nodes, names[i]);
                 if (nextNode == null)
                 {
-                    nextNode = new NamespaceTreeNode(asmNode.Assembly, names[i]);
+                    nextNode = new NamespaceTreeNode(asmNode.Assembly, names[i])
+                    {
+                        NamespacePath = string.Join(".", names, 0, i + 1)
+                    };
                     parentNode.Nodes.Add(nextNode);
                 }
                 parentNode = nextNode;
@@ -183,7 +186,7 @@ namespace PartCover.Browser.Features.Controls
             else if (e.Node is NamespaceTreeNode)
             {
                 var node = (NamespaceTreeNode)e.Node;
-                TreeItemSelectionHandler.Select(node.Assembly, node.Namespace);
+                TreeItemSelectionHandler.Select(node.Assembly, node.NamespacePath);
             }
             else if (e.Node is ClassTreeNode)
             {

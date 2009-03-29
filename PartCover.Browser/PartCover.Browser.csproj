@@ -111,6 +111,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApplicationHost.cs" />
+    <Compile Include="Features\Controls\ItemDetails.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Features\Controls\ItemDetails.Designer.cs">
+      <DependentUpon>ItemDetails.cs</DependentUpon>
+    </Compile>
     <Compile Include="Features\Controls\ReportTree.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -456,6 +462,10 @@
     <EmbeddedResource Include="Dialogs\SettingsForm.resx">
       <SubType>Designer</SubType>
       <DependentUpon>SettingsForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Features\Controls\ItemDetails.resx">
+      <DependentUpon>ItemDetails.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Features\Views\CoverageView.resx">
       <SubType>Designer</SubType>

@@ -138,7 +138,7 @@ void Instrumentator::UnloadModule(ModuleID module) {
 
 ModuleDescriptor* Instrumentator::GetModuleDescriptor(ModuleID module) {
     for(ModuleDescriptors::iterator it = m_descriptors.begin(); it != m_descriptors.end(); ++it) {
-        if (module == it->module && it->loaded)
+        if (module == it->module/* && it->loaded */)
             return &*it;
     }
     return 0;

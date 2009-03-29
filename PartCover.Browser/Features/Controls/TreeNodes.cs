@@ -124,6 +124,7 @@ namespace PartCover.Browser.Features.Controls
     internal class NamespaceTreeNode : TreeNodeBase, ICoverageInfo
     {
         public string Namespace { get; private set; }
+        public string NamespacePath { get; set; }
         public AssemblyEntry Assembly { get; private set; }
 
         public NamespaceTreeNode(AssemblyEntry assembly, string namespacePath)

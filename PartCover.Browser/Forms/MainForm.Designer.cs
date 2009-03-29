@@ -57,10 +57,10 @@ namespace PartCover.Browser.Forms
             this.dlgOpen = new System.Windows.Forms.OpenFileDialog();
             this.dlgSave = new System.Windows.Forms.SaveFileDialog();
             this.splitter1 = new System.Windows.Forms.Splitter();
-            this.rtbNodeProps = new System.Windows.Forms.RichTextBox();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.gbProps = new System.Windows.Forms.GroupBox();
             this.tvItems = new PartCover.Browser.Features.Controls.ReportTree();
+            this.gbProps = new System.Windows.Forms.GroupBox();
+            this.ctlNodeView = new PartCover.Browser.Features.Controls.ItemDetails();
             this.panel1.SuspendLayout();
             this.gbProps.SuspendLayout();
             this.SuspendLayout();
@@ -191,21 +191,9 @@ namespace PartCover.Browser.Forms
             // 
             this.splitter1.Location = new System.Drawing.Point(200, 0);
             this.splitter1.Name = "splitter1";
-            this.splitter1.Size = new System.Drawing.Size(3, 380);
+            this.splitter1.Size = new System.Drawing.Size(3, 338);
             this.splitter1.TabIndex = 2;
             this.splitter1.TabStop = false;
-            // 
-            // rtbNodeProps
-            // 
-            this.rtbNodeProps.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.rtbNodeProps.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.rtbNodeProps.Location = new System.Drawing.Point(3, 16);
-            this.rtbNodeProps.Name = "rtbNodeProps";
-            this.rtbNodeProps.ReadOnly = true;
-            this.rtbNodeProps.Size = new System.Drawing.Size(184, 81);
-            this.rtbNodeProps.TabIndex = 4;
-            this.rtbNodeProps.Text = "";
-            this.rtbNodeProps.WordWrap = false;
             // 
             // panel1
             // 
@@ -214,37 +202,45 @@ namespace PartCover.Browser.Forms
             this.panel1.Dock = System.Windows.Forms.DockStyle.Left;
             this.panel1.Location = new System.Drawing.Point(0, 0);
             this.panel1.Name = "panel1";
-            this.panel1.Padding = new System.Windows.Forms.Padding(5);
-            this.panel1.Size = new System.Drawing.Size(200, 380);
+            this.panel1.Padding = new System.Windows.Forms.Padding(3);
+            this.panel1.Size = new System.Drawing.Size(200, 338);
             this.panel1.TabIndex = 5;
-            // 
-            // gbProps
-            // 
-            this.gbProps.Controls.Add(this.rtbNodeProps);
-            this.gbProps.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.gbProps.Location = new System.Drawing.Point(5, 275);
-            this.gbProps.Name = "gbProps";
-            this.gbProps.Size = new System.Drawing.Size(190, 100);
-            this.gbProps.TabIndex = 5;
-            this.gbProps.TabStop = false;
-            this.gbProps.Text = "Node properties";
             // 
             // tvItems
             // 
             this.tvItems.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tvItems.ImageIndex = 0;
-            this.tvItems.Location = new System.Drawing.Point(5, 5);
+            this.tvItems.Location = new System.Drawing.Point(3, 3);
             this.tvItems.Name = "tvItems";
             this.tvItems.SelectedImageIndex = 0;
             this.tvItems.ServiceContainer = null;
-            this.tvItems.Size = new System.Drawing.Size(190, 270);
+            this.tvItems.Size = new System.Drawing.Size(194, 232);
             this.tvItems.Sorted = true;
             this.tvItems.TabIndex = 0;
+            // 
+            // gbProps
+            // 
+            this.gbProps.Controls.Add(this.ctlNodeView);
+            this.gbProps.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.gbProps.Location = new System.Drawing.Point(3, 235);
+            this.gbProps.Name = "gbProps";
+            this.gbProps.Size = new System.Drawing.Size(194, 100);
+            this.gbProps.TabIndex = 5;
+            this.gbProps.TabStop = false;
+            this.gbProps.Text = "Node properties";
+            // 
+            // ctlNodeView
+            // 
+            this.ctlNodeView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.ctlNodeView.Location = new System.Drawing.Point(3, 16);
+            this.ctlNodeView.Name = "ctlNodeView";
+            this.ctlNodeView.Size = new System.Drawing.Size(188, 81);
+            this.ctlNodeView.TabIndex = 0;
             // 
             // MainForm
             // 
             this.AutoScaleBaseSize = new System.Drawing.Size(5, 13);
-            this.ClientSize = new System.Drawing.Size(680, 380);
+            this.ClientSize = new System.Drawing.Size(680, 338);
             this.Controls.Add(this.splitter1);
             this.Controls.Add(this.panel1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -269,8 +265,8 @@ namespace PartCover.Browser.Forms
         private System.Windows.Forms.MenuItem miHelp;
         private System.Windows.Forms.MenuItem mmFileShowSkipped;
         private System.Windows.Forms.MenuItem mmFileShowLog;
-        private System.Windows.Forms.RichTextBox rtbNodeProps;
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.GroupBox gbProps;
+        private ItemDetails ctlNodeView;
     }
 }

@@ -6,7 +6,7 @@
 
 
  /* File created by MIDL compiler version 7.00.0500 */
-/* at Sun Mar 29 00:52:24 2009
+/* at Sun Mar 29 11:18:08 2009
  */
 /* Compiler settings for PartCover.CorDriver.idl:
     Oicf, W1, Zp8, env=Win32 (32b run)
