@@ -42,6 +42,8 @@ namespace PartCover.Browser.Forms
             BuildTransformMenu();
 
             tvItems.TreeItemSelectionHandler = this;
+
+            SelectionHandlers.Add(ctlNodeView);
         }
 
 
