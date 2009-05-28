@@ -51,12 +51,18 @@ namespace PartCover
                     }
                 }
 
-                connector.StartTarget(
-                    settings.TargetPath,
-                    settings.TargetWorkingDir,
-                    settings.TargetArgs,
-                    true,
-                    false);
+                var options = new SessionRunOptions
+                {
+                    TargetPath = settings.TargetPath,
+                    TargetDirectory = settings.TargetWorkingDir,
+                    TargetArguments = settings.TargetArgs,
+                    RedirectOutput = true,
+                    DelayClose = false,
+                    FlattenDomains = !settings.DisableFlattenDomains
+                };
+
+                connector.Options = options;
+                connector.StartTarget();
 
                 try
                 {
@@ -100,7 +106,7 @@ namespace PartCover
 
         private static void WriteListOfSkippedItems(Report report)
         {
-            report.SkippedItems.ForEach(x => 
+            report.SkippedItems.ForEach(x =>
                 Console.Error.WriteLine("Skipped item [{0}]{1}", x.AssemblyName, x.TypedefName));
         }
 

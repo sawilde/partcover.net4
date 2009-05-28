@@ -7,7 +7,7 @@
 //    ,library_block
 //]
 __interface IFunctionMapWalker : IUnknown {
-    HRESULT Function(/*[in]*/ FunctionID funcId, /*[in]*/ BSTR className, /*[in]*/ BSTR functionName);
+    HRESULT Function(FunctionID funcId, BSTR className, BSTR functionName);
 };
 
 interface IConnectorActionCallback;
@@ -15,7 +15,7 @@ interface IConnectorActionCallback;
 #pragma pack(push)
 #pragma pack(1)
 
-class FunctionMap : public ITransferrable
+class FunctionMap
 {
     struct FunctionInfo {
         FunctionID  functionId;
@@ -33,17 +33,13 @@ class FunctionMap : public ITransferrable
 public:
 
     void Register(FunctionID func, ICorProfilerInfo* info);
-
 	void SetCallback(IConnectorActionCallback* callback) { m_callback = callback; }
+	void Walk(IFunctionMapWalker* );
 
-    void Walk(IFunctionMapWalker*);
-
-	MessageType getType() const { return Messages::C_FunctionMap; }
-	void visit(ITransferrableVisitor& visitor) { visitor.on(*this); }
-	
-    bool SendData(MessagePipe&);
-    bool ReceiveData(MessagePipe&);
-    bool ReceiveData(MessagePipe&, IConnectorActionCallback*);
+	void Swap(FunctionMap& other) 
+	{
+		m_data.swap(other.m_data);
+	}
 };
 
 #pragma pack(pop)

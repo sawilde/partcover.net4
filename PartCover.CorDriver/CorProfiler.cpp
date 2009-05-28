@@ -4,8 +4,7 @@
 #include "environment.h"
 #include "logging.h"
 #include "interface.h"
-#include "message.h"
-#include "message_pipe.h"
+#include "protocol.h"
 #include "corprofiler_options.h"
 #include "function_map.h"
 #include "il_instrumentedbody.h"
@@ -28,9 +27,6 @@ void CorProfiler::FinalizeInstance() {
 
 CorProfiler::CorProfiler() : m_instrumentator(m_rules) {
     ATLTRACE("CorProfiler::CorProfiler");
-
-	ITransferrableFactory* list[] = { this };
-	m_center.SetMessageMap(list, ARRAYSIZE(list));
 }
 
 STDMETHODIMP CorProfiler::Initialize( /* [in] */ IUnknown *pICorProfilerInfoUnk )
@@ -44,55 +40,34 @@ STDMETHODIMP CorProfiler::Initialize( /* [in] */ IUnknown *pICorProfilerInfoUnk 
 
 	DWORD dwSize;
     LPCTSTR messageCenterOption = Environment::GetEnvironmentStringOption(OPTION_MESSOPT, &dwSize);
-    if(FAILED(hr = m_center.Connect(messageCenterOption))) {
+	if(!m_communication.Connect(messageCenterOption)) {
         Environment::FreeStringResource(messageCenterOption);
-        return hr;
-    }
+		return E_FAIL;
+	}
     Environment::FreeStringResource(messageCenterOption);
 
-    DriverLog& log = DriverLog::get();
 	if (m_options.UsePipeLogging()) {
-		log.SetPipe(&m_center);
+		DriverLog::get().SetPipe(&m_communication);
 	}
 
-	ATLTRACE("CorProfiler::Initialize - send C_RequestStart");
-	m_center.Send(Messages::Message<Messages::C_RequestStart>());
+	ATLTRACE("CorProfiler::Initialize - set DriverState::Starting");
+	m_communication.SetDriverState(DriverState::Starting);
 
     ATLTRACE("CorProfiler::Initialize - wait for C_EndOfInputs");
-	ITransferrable* message;
-
-	struct Initializer : public ITransferrableVisitor
-	{
-	public:
-		bool readyToGo;
-		Initializer() : readyToGo(false) {}
-
-		void on(MessageType type) { if (type == Messages::C_EndOfInputs) readyToGo = true; }
-		void on(FunctionMap&) {}
-		void on(Rules&) {}
-		void on(InstrumentResults &) {}
-		void on(LogMessage &) {}
-	} messageVisitor;
-
-    while(SUCCEEDED(m_center.Wait(message))) 
-	{
-		message->visit(messageVisitor);
-		destroy(message);
-
-		if (messageVisitor.readyToGo) break;
-    }
-
-	if (!messageVisitor.readyToGo)
-		return E_ABORT;
-
-	ATLTRACE("CorProfiler::Initialize - send C_RequestStart");
-	m_center.Send(Messages::Message<Messages::C_RequestStart>());
+	m_communication.GetRules(&m_rules);
 
     m_profilerInfo = pICorProfilerInfoUnk;
 
     DWORD dwMask = 0;
     if (m_rules.IsEnabledMode(COUNT_COVERAGE)) {
-        dwMask |= COR_PRF_MONITOR_CLASS_LOADS|COR_PRF_MONITOR_MODULE_LOADS|COR_PRF_MONITOR_ASSEMBLY_LOADS|COR_PRF_DISABLE_INLINING|COR_PRF_DISABLE_OPTIMIZATIONS;
+        dwMask |= 
+			COR_PRF_MONITOR_CLASS_LOADS|
+			COR_PRF_MONITOR_MODULE_LOADS|
+			COR_PRF_MONITOR_ASSEMBLY_LOADS|
+			COR_PRF_MONITOR_APPDOMAIN_LOADS|
+			COR_PRF_DISABLE_INLINING|
+			COR_PRF_DISABLE_OPTIMIZATIONS;
+
         if (FAILED(hr = CoCreateInstanceWithoutModel(CLSID_CorSymBinder_SxS, IID_ISymUnmanagedBinder2, (void**) &m_binder))) {
             LOGINFO(PROFILER_CALL_METHOD, "Cannot create symbol binder. Work as usual");
         }
@@ -103,83 +78,38 @@ STDMETHODIMP CorProfiler::Initialize( /* [in] */ IUnknown *pICorProfilerInfoUnk 
 
     LOGINFO(PROFILER_CALL_METHOD, "CorProfiler was successfully turning on with:");
     m_options.DumpOptions();
+	m_rules.PrepareItemRules();
     m_rules.Dump();
 
-    ATLTRACE("CorProfiler::Initialize - CorProfiler was successfully turning on");
+	ATLTRACE("CorProfiler::Initialize - set DriverState::Running");
+	m_communication.SetDriverState(DriverState::Running);
     return S_OK;   
 }
 
 STDMETHODIMP CorProfiler::Shutdown( void )
 {
-    ATLTRACE("CorProfiler::Shutdown");
+	ATLTRACE("CorProfiler::Shutdown - set DriverState::Stopping");
+	m_communication.SetDriverState(DriverState::Stopping);
 
+	ATLTRACE("CorProfiler::Shutdown - get the results");
 	m_instrumentator.StoreResults(m_instrumentResults, m_profilerInfo);
 
-	ITransferrable* results[] = {
-		&m_functions, 
-		&m_instrumentResults
-	};
+	ATLTRACE("CorProfiler::Shutdown - send function map");
+	m_communication.StoreResultFunctionMap(m_functions);
 
-    for(int res_count = ARRAYSIZE(results) - 1; res_count >= 0; --res_count) {
-        m_center.Send(*results[res_count]);
-    }
+	ATLTRACE("CorProfiler::Shutdown - send instrumentations");
+	m_communication.StoreResultInstrumentation(m_instrumentResults);
 
-    ATLTRACE("CorProfiler::Shutdown - send eEndOfResult");
-	m_center.Send(Messages::Message<Messages::C_EndOfResults>());
+	ATLTRACE("CorProfiler is turned off");
+    DriverLog::get().WriteLine(_T("CorProfiler is turned off"));
 
-    ATLTRACE("CorProfiler::Shutdown - wait for eClose");
-	struct Shutdowner : ITransferrableVisitor {
-	public:
-		bool readyToDown;
-		Shutdowner() : readyToDown(false) {}
-		void on(MessageType type) { if (Messages::C_RequestShutdown == type) readyToDown = true; }
-		void on(FunctionMap& value) {}
-		void on(Rules& value) {}
-		void on(InstrumentResults& value) {}
-		void on(LogMessage& value) {}
-	} shutdowner;
+	ATLTRACE("CorProfiler::Shutdown - set DriverState::Stopped");
+	m_communication.SetDriverState(DriverState::Stopped);
 
-	ITransferrable* message;
-	while(SUCCEEDED(m_center.Wait(message))) 
-	{
-		message->visit(shutdowner);
-		if (shutdowner.readyToDown) break;
-    }
+	m_communication.Disconnect();
 
     m_currentInstance = 0;
-
-	if (shutdowner.readyToDown) 
-	{
-		ATLTRACE("CorProfiler is turned off");
-	    DriverLog::get().WriteLine(_T("CorProfiler is turned off"));
-	}
-	else 
-	{
-	    ATLTRACE("CorProfiler is turned off (without eClose message)");
-		DriverLog::get().WriteLine(_T("CorProfiler is turning off (without eClose message)"));
-	}
     return S_OK; 
-}
-
-ITransferrable* CorProfiler::create(MessageType type)
-{
-	switch(type) {
-		case Messages::C_FunctionMap: return &this->m_functions; 
-		case Messages::C_Rules: return &this->m_rules;
-		case Messages::C_InstrumentResults: return &this->m_instrumentResults;
-		default: return new Messages::GenericMessage(type);
-	}
-}
-
-void CorProfiler::destroy(ITransferrable* item)
-{
-	const ITransferrable* ignore_list[] = { &m_functions, &m_rules, &m_instrumentResults };
-	const ITransferrable** lbeg = ignore_list;
-	const ITransferrable** lend = ignore_list + ARRAYSIZE(ignore_list);
-	
-	if(item == 0 || lend != std:: find(lbeg, lend, item)) return;
-	
-	delete item;
 }
 
 #define NumItems( s ) (sizeof( s ) / sizeof( s[0] ))
@@ -324,4 +254,20 @@ STDMETHODIMP CorProfiler::ModuleAttachedToAssembly(ModuleID module, AssemblyID a
 
     m_instrumentator.InstrumentModule(module, moduleName.c_str(), m_profilerInfo, m_binder);
     return S_OK;   
+}
+
+STDMETHODIMP CorProfiler::AppDomainCreationFinished(AppDomainID appDomainId, HRESULT hrStatus)
+{
+	if (FAILED(hrStatus)) return S_OK;
+
+	m_instrumentator.ActivateAppDomain(appDomainId);
+	return S_OK; 
+}
+
+STDMETHODIMP CorProfiler::AppDomainShutdownFinished(AppDomainID appDomainId, HRESULT hrStatus)
+{
+	if (FAILED(hrStatus)) return S_OK;
+
+	m_instrumentator.DeactivateAppDomain(appDomainId);
+	return S_OK; 
 }

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "protocol.h"
+
 class MessagePipe;
 
 class DriverLog
@@ -7,7 +9,8 @@ class DriverLog
     DWORD startTick;
     CCriticalSection m_cs;
     int m_infoLevel;
-	MessagePipe* m_pipe;
+
+	IIntercommunication* m_pipe;
 
     DriverLog(void);
     ~DriverLog(void);
@@ -15,7 +18,7 @@ public:
     static DriverLog& get();
 
     void Initialize(const String& fileName);
-	void SetPipe(MessagePipe* pipe);
+	void SetPipe(IIntercommunication* pipe);
     bool Active() const { return log_fp != INVALID_HANDLE_VALUE || m_pipe != 0; }
     void Deinitialize();
 

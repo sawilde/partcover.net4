@@ -2,7 +2,7 @@
 
 interface IConnectorActionCallback;
 
-class InstrumentResults : public ITransferrable
+class InstrumentResults
 {
 public:
     struct MethodBlock {
@@ -56,7 +56,9 @@ public:
 
     struct AssemblyResult {
         String name;
-        String moduleName;
+        String module;
+        String domain;
+		int domainIndex;
         TypedefResults types;
     };
     typedef std::vector<AssemblyResult> AssemblyResults;
@@ -84,18 +86,20 @@ public:
     void Assign(FileItems& results);
 	void Assign(SkippedItems& results) { m_skippedItems.swap(results); }
 
-	MessageType getType() const { return Messages::C_InstrumentResults; }
-	void visit(ITransferrableVisitor& visitor) { visitor.on(*this); }
-    bool SendData(MessagePipe&);
-
-    bool ReceiveData(MessagePipe&);
-	bool ReceiveData(MessagePipe&, IConnectorActionCallback* callback);
-
 	void SetCallback(IConnectorActionCallback* callback) { m_callback = callback; }
+
+	void Swap(InstrumentResults& other) 
+	{
+		m_results.swap(other.m_results);
+		m_fileTable.swap(other.m_fileTable);
+		m_skippedItems.swap(other.m_skippedItems);
+	}
+
 private:
 
 	IConnectorActionCallback* m_callback;
 
+public:
     AssemblyResults m_results;
     FileItems m_fileTable;
 	SkippedItems m_skippedItems;

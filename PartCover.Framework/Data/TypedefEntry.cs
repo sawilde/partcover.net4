@@ -17,5 +17,18 @@ namespace PartCover.Framework.Data
         public TypeAttributes Attributes { get; set; }
 
         public List<MethodEntry> Methods { get; set; }
+
+        public TypedefEntry Copy(AssemblyEntry assembly)
+        {
+            var copy = new TypedefEntry
+            {
+                Assembly = assembly,
+                Name = Name,
+                Attributes = Attributes
+            };
+
+            copy.Methods = new List<MethodEntry>(Methods.ConvertAll(x => x.Copy(copy)));
+            return copy;
+        }
     }
 }

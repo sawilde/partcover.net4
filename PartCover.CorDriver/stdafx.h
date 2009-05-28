@@ -36,17 +36,20 @@
 
 
 #include "resource.h"
+
 #include <atlbase.h>
 #include <atlcom.h>
 #include <atltrace.h>
 #include <atlsync.h>
 #include <comutil.h>
 #include <atlrx.h>
+#include <atltime.h>
 #include <psapi.h>
 
 using namespace ATL;
 
 #include <string>
+#include <sstream>
 #include <map>
 #include <vector>
 #include <hash_map>
@@ -63,3 +66,33 @@ typedef std::wstring String;
 #else
 typedef std::string String;
 #endif
+
+#ifdef _UNICODE
+typedef std::wstringstream StringStream;
+#else
+typedef std::stringstream StringStream;
+#endif
+
+#ifndef ASSERT
+# ifdef _DEBUG
+#  define ASSERT(x) assert(x)
+# else
+#  define ASSERT(x)
+# endif
+#endif
+
+#ifndef VERIFY
+# ifdef _DEBUG
+#  define VERIFY(x) ASSERT(x)
+# else
+#  define VERIFY(x) (x)
+# endif
+#endif
+
+template<bool static_assert>
+struct StaticAssert;
+
+template<> struct StaticAssert<true> {};
+
+#define STATIC_ASSERT(expr) do { StaticAssert<expr>(); break; } while(true)
+#define ASSERT_SIZEOF(type1, type2) do { StaticAssert<sizeof(type1)==sizeof(type2)>(); break; } while(true)

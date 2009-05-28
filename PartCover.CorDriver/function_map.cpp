@@ -3,55 +3,8 @@
 #include "corsym.h"
 #include "corprof.h"
 #include "interface.h"
-#include "message.h"
-#include "message_pipe.h"
 #include "function_map.h"
 #include "helpers.h"
-
-bool FunctionMap::SendData(MessagePipe& pipe)
-{
-	if(!pipe.write(m_data.size()))
-		return false;
-
-	bool result = true;
-    for(FunctionInfoIterator it = m_data.begin(); result && it != m_data.end(); ++it) 
-	{
-		result = pipe.write(it->first)
-			&& pipe.write(it->second.className) 
-			&& pipe.write(it->second.functionName);
-    }
-
-	return result;
-}
-
-bool FunctionMap::ReceiveData(MessagePipe& pipe) 
-{
-	if (m_callback) m_callback->FunctionsReceiveBegin();
-
-	FunctionInfoArray::size_type func_count;
-	if(!pipe.read(&func_count))
-		return false;
-
-	if (m_callback) m_callback->FunctionsCount(func_count);
-
-	size_t step = max(1, func_count / 100);
-
-	bool result = true;
-    for(FunctionInfoArray::size_type i = 0; result && i < func_count; ++i) 
-	{
-        FunctionInfo func_info;
-		result = pipe.read(&func_info.functionId)
-			&& pipe.read(&func_info.className) 
-			&& pipe.read(&func_info.functionName);
-		m_data[func_info.functionId] = func_info;
-
-		if (i % step == 0 && m_callback) m_callback->FunctionsReceiveStat(i);
-    }
-
-	if (m_callback) m_callback->FunctionsReceiveEnd();
-
-    return true;
-}
 
 void FunctionMap::Register(FunctionID func, ICorProfilerInfo* info) {
     CComPtr<IMetaDataImport> pMDImport;

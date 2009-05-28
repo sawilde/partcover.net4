@@ -14,5 +14,18 @@ namespace PartCover.Framework.Data
         public int VisitCount { get; set; }
         public Position Start { get; set; }
         public Position End { get; set; }
+
+        public MethodBlock Copy()
+        {
+            return new MethodBlock
+            {
+                Offset = Offset,
+                File = File,
+                Length = Length,
+                VisitCount = VisitCount,
+                Start = Start,
+                End = End
+            };
+        }
     }
 }

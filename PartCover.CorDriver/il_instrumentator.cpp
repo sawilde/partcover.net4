@@ -1,7 +1,5 @@
 #include "StdAfx.h"
 #include "interface.h"
-#include "message.h"
-#include "message_pipe.h"
 #include "il_instrumentedbody.h"
 #include "il_instrumentator.h"
 #include "instrumented_results.h"
@@ -20,7 +18,7 @@ void DumpTypeDef(DriverLog& log, DWORD typeDefFlags, LPCTSTR typedefName);
 void DumpMethodDef(DriverLog& log, DWORD flags, LPCTSTR methoddefName, DWORD implFlag);
 void DumpSymSequencePoints(ULONG32 cPoints, ULONG32 offsets[], ISymUnmanagedDocument *documents[], ULONG32 lines[], ULONG32 columns[], ULONG32 endLines[], ULONG32 endColumns[]);
 
-Instrumentator::Instrumentator(Rules& rules) : m_rules(rules) {}
+Instrumentator::Instrumentator(Rules& rules) : m_rules(rules), m_nextDomainIndex(1) {}
 Instrumentator::~Instrumentator(void) {}
 
 struct CompareNoCase {
@@ -64,7 +62,8 @@ void Instrumentator::AddSkippedTypedef(const String& assemblyName, const String&
 }
 
 void Instrumentator::InstrumentModule(ModuleID module, const String& moduleName, ICorProfilerInfo* profilerInfo, ISymUnmanagedBinder2* binder) {
-    Lock();
+    LockGuard g = Lock();
+
     ULONG bufferSize;
     HRESULT hr;
 
@@ -74,23 +73,27 @@ void Instrumentator::InstrumentModule(ModuleID module, const String& moduleName,
 
     if(FAILED(hr = profilerInfo->GetModuleInfo(module, NULL, 0, NULL, NULL, &desc.assembly))) {
 		LOGINFO3(METHOD_INSTRUMENT, "Cannot instrument module %X '%s' (error %X on get module info)", module, moduleName.c_str(), hr);
-        Unlock();
         return;
     }
 
-    String assemblyName = CorHelper::GetAssemblyName(profilerInfo, desc.assembly);
-    if (assemblyName.length() == 0) {
+	desc.moduleName = CorHelper::GetModuleName(profilerInfo, desc.module);
+	desc.assemblyName = CorHelper::GetAssemblyName(profilerInfo, desc.assembly);
+    if (desc.assemblyName.length() == 0) {
 		LOGINFO3(METHOD_INSTRUMENT, "Cannot instrument module %X '%s' (no assembly name)", module, moduleName.c_str(), hr);
-        Unlock();
         return;
     }
+
+	AppDomainID appDomain;
+	if(SUCCEEDED(hr = profilerInfo->GetAssemblyInfo(desc.assembly, 0, NULL, NULL, &appDomain, NULL))) {
+		desc.domain = GetAppDomainIndex(appDomain);
+		desc.domainName = CorHelper::GetAppDomainName(profilerInfo, appDomain);
+	}
 
     CComPtr<IMetaDataImport> mdImport;
 	hr = profilerInfo->GetModuleMetaData(module, ofRead, IID_IMetaDataImport, (IUnknown**) &mdImport);
     if(S_OK != hr) 
 	{
 		LOGINFO3(METHOD_INSTRUMENT, "Cannot instrument module %X '%s' (error %X on get meta data import)", module, moduleName.c_str(), hr);
-        Unlock();
         return;
     }
 	
@@ -117,23 +120,21 @@ void Instrumentator::InstrumentModule(ModuleID module, const String& moduleName,
     mdImport->CloseEnum(hEnum);
     if (desc.typeDefs.size() == 0) {
 		LOGINFO3(METHOD_INSTRUMENT, "In module %X '%s' instrumented %d items. Skip it", module, moduleName.c_str(), desc.typeDefs.size());
-        Unlock();
         return;
     }
 
     m_descriptors.push_back(desc);
-    Unlock();
 
 	LOGINFO3(METHOD_INSTRUMENT, "Module %X '%s' instrumented with %d items.", module, moduleName.c_str(), desc.typeDefs.size());
 }
 
 void Instrumentator::UnloadModule(ModuleID module) {
-    Lock();
+	LockGuard l = Lock();
+
     for(ModuleDescriptors::iterator it = m_descriptors.begin(); it != m_descriptors.end(); ++it) {
         if (module == it->module)
-            it->loaded = false;
+			it->loaded = false;
     }
-    Unlock();
 }
 
 ModuleDescriptor* Instrumentator::GetModuleDescriptor(ModuleID module) {
@@ -181,6 +182,7 @@ void Instrumentator::InstrumentTypedef(mdTypeDef typeDef, InstrumentHelper& help
 
     TypeDef typeDefDescriptor;
     typeDefDescriptor.typeDef = typeDef;
+	typeDefDescriptor.fullName = CorHelper::GetTypedefFullName(helper.mdImport, typeDef, NULL);
 
     HCORENUM enumHandle = 0;
     ULONG count;
@@ -222,6 +224,9 @@ void Instrumentator::InstrumentMethod(TypeDef& typeDef, mdMethodDef methodDef, I
     MethodDef method;
     method.methodDef = methodDef;
 	method.bodyUpdated = false;
+	method.methodName = CorHelper::GetMethodName(helper.mdImport, method.methodDef, NULL, NULL);
+	CorHelper::ParseMethodSig(helper.profilerInfo, helper.mdImport, method.methodDef, &method.methodSig);
+
     methods.insert(MethodDefMapPair(method.methodDef, method));
 
     LOGINFO4(METHOD_INSTRUMENT, "      Asm %X: Method %s.%s (0x%X) was introduced", helper.module->assembly, typedefName.c_str(), methodName.c_str(), method.methodDef);
@@ -243,12 +248,11 @@ void Instrumentator::UpdateClassCode(ClassID classId, ICorProfilerInfo* profiler
         return;
     }
 
-    Lock();
+    LockGuard l = Lock();
 
     ModuleDescriptor* module = GetModuleDescriptor(moduleId);
     if (module == 0) {
         LOGINFO(METHOD_INSTRUMENT, "Cannot update code for class (no module)");
-        Unlock();
         return;
     }
 
@@ -256,19 +260,18 @@ void Instrumentator::UpdateClassCode(ClassID classId, ICorProfilerInfo* profiler
 	if (S_OK != profilerInfo->GetModuleMetaData(module->module, ofRead, IID_IMetaDataImport, (IUnknown**) &mdImport))
 	{
         LOGINFO(METHOD_INSTRUMENT, "Cannot update code for class (no module metadata)");
-        Unlock();
 		return;
 	}
 
     TypedefDescriptorMap::iterator typeDefinitionIt = module->typeDefs.find(typeDef);
     if (typeDefinitionIt == module->typeDefs.end()) {
         LOGINFO(METHOD_INSTRUMENT, "Cannot update code for class (no data)");
-        Unlock();
         return;
     }
 
     TypeDef& defDescriptor = typeDefinitionIt->second;
-	const String& typedefName = CorHelper::GetTypedefFullName(mdImport, defDescriptor.typeDef, NULL);
+
+	String& typedefName = defDescriptor.fullName;
 
     MethodDefMap::iterator methodIt = defDescriptor.methodDefs.begin();
     while(methodIt != defDescriptor.methodDefs.end()) {
@@ -278,7 +281,7 @@ void Instrumentator::UpdateClassCode(ClassID classId, ICorProfilerInfo* profiler
             continue;
         }
 
-		const String& methodName = CorHelper::GetMethodName(mdImport, method.methodDef, NULL, NULL);
+		String& methodName = method.methodName;
 
 	    LPCBYTE methodHeader = 0;
 		ULONG methodSize = 0;
@@ -404,8 +407,28 @@ void Instrumentator::UpdateClassCode(ClassID classId, ICorProfilerInfo* profiler
             LOGERROR3("Instrumentator", "InstrumentMethod", "SetILFunctionBody failed for method '%s' in module %X with error %X", methodName.c_str(), moduleId, hr);
         }
     }
+}
 
-    Unlock();
+void Instrumentator::ActivateAppDomain(AppDomainID domain)
+{
+	LockGuard l = Lock();
+	m_domains[domain] = m_nextDomainIndex++;
+}
+
+void Instrumentator::DeactivateAppDomain(AppDomainID domain)
+{
+	LockGuard l = Lock();
+	m_domains.erase(domain);
+}
+
+int Instrumentator::GetAppDomainIndex(AppDomainID domain)
+{
+	LockGuard l = Lock();
+
+	AppDomainIndexMap::iterator it = m_domains.find(domain);
+	if (it == m_domains.end()) 
+		return -1;
+	return it->second;
 }
 
 struct MethodBlockResultGatherer 
@@ -448,12 +471,11 @@ struct MethodBlockResultGatherer
 struct MethodResultsGatherer 
 {
     InstrumentResults::MethodResults& results;
-	InstrumentHelper& helper;
+	StoreHelper& helper;
 
-    MethodResultsGatherer(InstrumentResults::MethodResults& _results, InstrumentHelper& _helper) 
+    MethodResultsGatherer(InstrumentResults::MethodResults& _results, StoreHelper& _helper) 
 		: results(_results), helper(_helper)
 	{
-
 	}
 
     void operator() (const MethodDefMapPair& itPair) 
@@ -462,8 +484,11 @@ struct MethodResultsGatherer
 
         InstrumentResults::MethodResult methodResult;
 
-		methodResult.name = CorHelper::GetMethodName(helper.mdImport, method.methodDef, &methodResult.flags, &methodResult.implFlags);
-		CorHelper::GetMethodSig(helper.profilerInfo, helper.mdImport, method.methodDef, &methodResult.sig);
+		//methodResult.name = CorHelper::GetMethodName(helper.mdImport, method.methodDef, &methodResult.flags, &methodResult.implFlags);
+		//CorHelper::GetMethodSig(helper.profilerInfo, helper.mdImport, method.methodDef, &methodResult.sig);
+
+		methodResult.name = method.methodName;
+		methodResult.sig = method.methodSig;
 
 		if (method.bodyBlocks.size() == 0) {
 #ifdef DUMP_INSTRUMENT_RESULT
@@ -484,9 +509,9 @@ struct MethodResultsGatherer
 
 struct TypedefResultsGatherer {
     InstrumentResults::TypedefResults& results;
-	InstrumentHelper& helper;
+	StoreHelper& helper;
 
-    TypedefResultsGatherer(InstrumentResults::TypedefResults& _results, InstrumentHelper& _helper) 
+    TypedefResultsGatherer(InstrumentResults::TypedefResults& _results, StoreHelper& _helper) 
 		: results(_results), helper(_helper) {}
 
     void operator() (const TypedefDescriptorMapPair& it) {
@@ -496,7 +521,7 @@ struct TypedefResultsGatherer {
 #endif
 
         InstrumentResults::TypedefResult typedefResult;
-        typedefResult.fullName = CorHelper::GetTypedefFullName(helper.mdImport, type.typeDef, &typedefResult.flags);
+		typedefResult.fullName = type.fullName;
 
         std::for_each(type.methodDefs.begin(), type.methodDefs.end(), 
 			MethodResultsGatherer(typedefResult.methods, helper));
@@ -513,25 +538,20 @@ struct AssemblyResultsGatherer {
 		: results(_results), info(_info) {}
 
     void operator() (ModuleDescriptor& module) {
-		const String& assemblyName = CorHelper::GetAssemblyName(info, module.assembly);
-		const String& moduleName = CorHelper::GetModuleName(info, module.module);
+		//const String& assemblyName = CorHelper::GetAssemblyName(info, module.assembly);
+		//const String& moduleName = CorHelper::GetModuleName(info, module.module);
 
 #ifdef DUMP_INSTRUMENT_RESULT
 		LOGINFO1(DUMP_RESULTS,"  Assembly %S (module %S)", assemblyName.c_str(), moduleName.c_str());
 #endif
 
         InstrumentResults::AssemblyResult assemblyResult;
-        assemblyResult.name = assemblyName;
-        assemblyResult.moduleName = moduleName;
+        assemblyResult.name = module.assemblyName;
+        assemblyResult.module = module.moduleName;
+		assemblyResult.domain = module.domainName;
+		assemblyResult.domainIndex = module.domain;
 
-		CComPtr<IMetaDataImport> mdImport;
-		if (S_OK != info->GetModuleMetaData(module.module, ofRead, IID_IMetaDataImport, (IUnknown**) &mdImport))
-		{
-			return;
-		}
-
-		InstrumentHelper helper;
-		helper.mdImport = mdImport;
+		StoreHelper helper;
 		helper.module = &module;
 		helper.profilerInfo = info;
 

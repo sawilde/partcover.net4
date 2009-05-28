@@ -1,7 +1,5 @@
 #include "StdAfx.h"
 #include "interface.h"
-#include "message.h"
-#include "message_pipe.h"
 #include "logging.h"
 #include "helpers.h"
 #include <string>
@@ -38,7 +36,7 @@ void DriverLog::Initialize(const String& file)
 	
 }
 
-void DriverLog::SetPipe(MessagePipe* pipe)
+void DriverLog::SetPipe(IIntercommunication* pipe)
 {
 	m_pipe = pipe;
 }
@@ -67,7 +65,8 @@ void DriverLog::WritePipeLog(LPCTSTR message, DWORD length)
 {
 	if (m_pipe == 0 || message == 0 || length == 0)
 		return;
-	m_pipe->Send(LogMessage(String(message, length), ::GetTickCount() - startTick));
+
+	m_pipe->LogMessage(::GetCurrentThreadId(), ::GetTickCount() - startTick, String(message, length));
 }
 
 void DriverLog::WriteLine(LPCTSTR message, ...)

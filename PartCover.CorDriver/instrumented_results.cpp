@@ -1,10 +1,9 @@
 #include "StdAfx.h"
 #include "interface.h"
-#include "message.h"
-#include "message_pipe.h"
 #include "logging.h"
 #include "instrumented_results.h"
 
+/*
 bool PushResults(InstrumentResults::FileItems& files, MessagePipe& pipe) {
 	if(!pipe.write(files.size()))
 		return false;
@@ -266,6 +265,7 @@ bool InstrumentResults::ReceiveData(MessagePipe& pipe) {
 
 	return true;
 }
+*/
 
 void InstrumentResults::Assign(FileItems& results) 
 {
@@ -294,8 +294,9 @@ void InstrumentResults::GetReport(IReportReceiver& walker) {
         const AssemblyResult& asmResult = *asmIt;
 
         CComBSTR asmName(asmResult.name.c_str());
-        CComBSTR moduleName(asmResult.moduleName.c_str());
-		if(FAILED(walker.EnterAssembly(asmName, moduleName)))
+        CComBSTR moduleName(asmResult.module.c_str());
+		CComBSTR domainName(asmResult.domain.c_str());
+		if(FAILED(walker.EnterAssembly(asmResult.domainIndex, domainName, asmName, moduleName)))
             return;
 
         for(TypedefResults::const_iterator typeIt = asmResult.types.begin(); typeIt != asmResult.types.end(); typeIt++) {

@@ -1,30 +1,44 @@
 #pragma once
 
-template<bool static_assert>
-struct StaticAssert;
-
-template<> struct StaticAssert<true> {};
-
-#define STATIC_ASSERT(expr) do { StaticAssert<expr>(); break; } while(true)
-#define ASSERT_SIZEOF(type1, type2) do { StaticAssert<sizeof(type1)==sizeof(type2)>(); break; } while(true)
-
 template<typename ValueType>
 struct DynamicArray {
     typedef ValueType value_type;
+	enum { ValueSize = sizeof(ValueType) };
+
 private:
     value_type* _data;
-	const size_t _size;
+	size_t _size;
 
 public:
-    DynamicArray(size_t count) : _size(count), _data(new value_type[count]) 
+    DynamicArray(size_t count)
 	{
-		ZeroMemory(_data, sizeof(ValueType) * _size);
+		allocate(count);
 	}
 
-    ~DynamicArray() { delete[] _data; }
+    ~DynamicArray() { deallocate(); }
 
 	size_t size() const { return _size; }
 	value_type* ptr() const { return _data; }
+
+	void allocate(size_t new_size) 
+	{
+		_size = new_size;
+		_data = new value_type[new_size];
+		ZeroMemory(_data, sizeof(ValueType) * _size);
+	}
+
+	void deallocate() 
+	{
+		_size = 0;
+		delete[] _data;
+		_data = 0;
+	}
+
+	void resize(size_t new_size) 
+	{
+		deallocate();
+		allocate(new_size);
+	}
 
     operator value_type* () { return _data; }
     operator const value_type* () const { return _data; }

@@ -2,6 +2,9 @@
 
 class DriverLog;
 
+typedef unsigned char       BYTE;
+typedef unsigned char       *LPBYTE;
+typedef const unsigned char *LPCBYTE;
 typedef signed char         SBYTE;
 typedef signed short        SWORD;
 typedef signed int          SDWORD;

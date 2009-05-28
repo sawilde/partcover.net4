@@ -29,50 +29,68 @@ namespace PartCover.Framework
             actionCallback = new ConnectorActionCallback(this);
         }
 
-        public Report Report { get { return receiver.Report; } }
+        public Report Report { get; private set; }
+        public SessionRunOptions Options { get; set; }
 
-        public void StartTarget(string path, string directory, string args, bool redirectOutput, bool delayClose)
+        public void StartTarget()
         {
+            var options = Options;
+            if (options == null)
+                throw new InvalidOperationException("Options are not set");
+
+            connector.StatusCallback = actionCallback;
+
             // set mode
             connector.EnableOption(ProfilerMode.COUNT_COVERAGE);
 
             ExcludeItem("[mscorlib]*");
             ExcludeItem("[System*]*");
 
-            if (directory != null)
+            if (options.TargetDirectory != null)
             {
-                directory = directory.Trim();
+                options.TargetDirectory = options.TargetDirectory.Trim();
             }
-            if (path != null)
+            if (options.TargetPath != null)
             {
-                path = path.Trim();
+                options.TargetPath = options.TargetPath.Trim();
             }
-            if (args != null)
+            if (options.TargetArguments != null)
             {
-                args = args.Trim();
+                options.TargetArguments = options.TargetArguments.Trim();
             }
-            if (string.IsNullOrEmpty(directory))
+            if (string.IsNullOrEmpty(options.TargetDirectory))
             {
-                directory = Directory.GetCurrentDirectory();
+                options.TargetDirectory = Directory.GetCurrentDirectory();
             }
 
             // start target
             //  ProcessCallback.writeStatus("Start target");
-            connector.StartTarget(path, directory, args, redirectOutput, actionCallback);
+            connector.StartTarget(
+                options.TargetPath,
+                options.TargetDirectory,
+                options.TargetArguments,
+                options.RedirectOutput);
 
             // wait results
             //ProcessCallback.writeStatus("Wait results");
-            connector.WaitForResults(delayClose, actionCallback);
+            connector.WaitForResults(options.DelayClose);
 
             // walk results
             //ProcessCallback.writeStatus("Walk results");
             receiver.Report = new Report();
             connector.GetReport(receiver);
+
+            Report = receiver.Report;
+
+            if (options.FlattenDomains)
+            {
+                Report = new ReportDomainFlattener(Report).Flatten();
+            }
         }
 
         public void CloseTarget()
         {
-            connector.CloseTarget();
+            //connector.CloseTarget();
         }
 
         public int? TargetExitCode

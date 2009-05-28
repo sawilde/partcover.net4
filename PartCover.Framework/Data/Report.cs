@@ -22,5 +22,15 @@ namespace PartCover.Framework.Data
         {
             return Files.Find(x => x.Id == file).PathUri;
         }
+
+        public Report Copy()
+        {
+            var copy = new Report { Date = Date };
+
+            copy.Files.AddRange(Files.ConvertAll(x => x.Copy()));
+            copy.Assemblies.AddRange(Assemblies.ConvertAll(x => x.Copy()));
+
+            return copy;
+        }
     }
 }
