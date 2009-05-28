@@ -5,6 +5,8 @@
 #include "il_helpers.h"
 #include "logging.h"
 
+#undef THROW
+
 //#define DUMP_FIXUP_BRACHES
 
 //#undef METHOD_INNER

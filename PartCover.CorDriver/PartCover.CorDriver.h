@@ -4,7 +4,7 @@
 
 
  /* File created by MIDL compiler version 7.00.0500 */
-/* at Sun Mar 29 11:18:08 2009
+/* at Thu May 28 09:21:41 2009
  */
 /* Compiler settings for PartCover.CorDriver.idl:
     Oicf, W1, Zp8, env=Win32 (32b run)
@@ -166,6 +166,8 @@ EXTERN_C const IID IID_IReportReceiver;
             /* [in] */ BSTR typedefName) = 0;
         
         virtual HRESULT STDMETHODCALLTYPE EnterAssembly( 
+            /* [in] */ INT domain,
+            /* [in] */ BSTR domainName,
             /* [in] */ BSTR assemblyName,
             /* [in] */ BSTR moduleName) = 0;
         
@@ -220,6 +222,8 @@ EXTERN_C const IID IID_IReportReceiver;
         
         HRESULT ( STDMETHODCALLTYPE *EnterAssembly )( 
             IReportReceiver * This,
+            /* [in] */ INT domain,
+            /* [in] */ BSTR domainName,
             /* [in] */ BSTR assemblyName,
             /* [in] */ BSTR moduleName);
         
@@ -277,8 +281,8 @@ EXTERN_C const IID IID_IReportReceiver;
 #define IReportReceiver_RegisterSkippedItem(This,assemblyName,typedefName)	\
     ( (This)->lpVtbl -> RegisterSkippedItem(This,assemblyName,typedefName) ) 
 
-#define IReportReceiver_EnterAssembly(This,assemblyName,moduleName)	\
-    ( (This)->lpVtbl -> EnterAssembly(This,assemblyName,moduleName) ) 
+#define IReportReceiver_EnterAssembly(This,domain,domainName,assemblyName,moduleName)	\
+    ( (This)->lpVtbl -> EnterAssembly(This,domain,domainName,assemblyName,moduleName) ) 
 
 #define IReportReceiver_EnterTypedef(This,typedefName,flags)	\
     ( (This)->lpVtbl -> EnterTypedef(This,typedefName,flags) ) 
@@ -691,8 +695,7 @@ EXTERN_C const IID IID_IPartCoverConnector2;
             /* [in] */ BSTR targetPath,
             /* [in] */ BSTR targetWorkingDir,
             /* [in] */ BSTR targetArguments,
-            /* [in] */ VARIANT_BOOL redirectOutput,
-            /* [optional][in] */ IConnectorActionCallback *callback) = 0;
+            /* [in] */ VARIANT_BOOL redirectOutput) = 0;
         
         virtual /* [propput] */ HRESULT STDMETHODCALLTYPE put_LoggingLevel( 
             /* [in] */ INT logLevel) = 0;
@@ -703,14 +706,14 @@ EXTERN_C const IID IID_IPartCoverConnector2;
         virtual /* [propput] */ HRESULT STDMETHODCALLTYPE put_PipeLoggingEnable( 
             /* [in] */ VARIANT_BOOL exitCode) = 0;
         
+        virtual /* [propput] */ HRESULT STDMETHODCALLTYPE put_StatusCallback( 
+            /* [in] */ IConnectorActionCallback *callback) = 0;
+        
         virtual HRESULT STDMETHODCALLTYPE EnableOption( 
             /* [in] */ enum ProfilerMode mode) = 0;
         
         virtual HRESULT STDMETHODCALLTYPE WaitForResults( 
-            /* [in] */ VARIANT_BOOL delayClose,
-            /* [optional][in] */ IConnectorActionCallback *callback) = 0;
-        
-        virtual HRESULT STDMETHODCALLTYPE CloseTarget( void) = 0;
+            /* [in] */ VARIANT_BOOL delayClose) = 0;
         
         virtual HRESULT STDMETHODCALLTYPE GetReport( 
             /* [in] */ IReportReceiver *receiver) = 0;
@@ -732,6 +735,9 @@ EXTERN_C const IID IID_IPartCoverConnector2;
         
         virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_ProcessId( 
             /* [retval][out] */ INT *pid) = 0;
+        
+        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_StatusCallback( 
+            /* [retval][out] */ IConnectorActionCallback **callback) = 0;
         
     };
     
@@ -758,8 +764,7 @@ EXTERN_C const IID IID_IPartCoverConnector2;
             /* [in] */ BSTR targetPath,
             /* [in] */ BSTR targetWorkingDir,
             /* [in] */ BSTR targetArguments,
-            /* [in] */ VARIANT_BOOL redirectOutput,
-            /* [optional][in] */ IConnectorActionCallback *callback);
+            /* [in] */ VARIANT_BOOL redirectOutput);
         
         /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_LoggingLevel )( 
             IPartCoverConnector2 * This,
@@ -773,17 +778,17 @@ EXTERN_C const IID IID_IPartCoverConnector2;
             IPartCoverConnector2 * This,
             /* [in] */ VARIANT_BOOL exitCode);
         
+        /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_StatusCallback )( 
+            IPartCoverConnector2 * This,
+            /* [in] */ IConnectorActionCallback *callback);
+        
         HRESULT ( STDMETHODCALLTYPE *EnableOption )( 
             IPartCoverConnector2 * This,
             /* [in] */ enum ProfilerMode mode);
         
         HRESULT ( STDMETHODCALLTYPE *WaitForResults )( 
             IPartCoverConnector2 * This,
-            /* [in] */ VARIANT_BOOL delayClose,
-            /* [optional][in] */ IConnectorActionCallback *callback);
-        
-        HRESULT ( STDMETHODCALLTYPE *CloseTarget )( 
-            IPartCoverConnector2 * This);
+            /* [in] */ VARIANT_BOOL delayClose);
         
         HRESULT ( STDMETHODCALLTYPE *GetReport )( 
             IPartCoverConnector2 * This,
@@ -813,6 +818,10 @@ EXTERN_C const IID IID_IPartCoverConnector2;
             IPartCoverConnector2 * This,
             /* [retval][out] */ INT *pid);
         
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_StatusCallback )( 
+            IPartCoverConnector2 * This,
+            /* [retval][out] */ IConnectorActionCallback **callback);
+        
         END_INTERFACE
     } IPartCoverConnector2Vtbl;
 
@@ -836,8 +845,8 @@ EXTERN_C const IID IID_IPartCoverConnector2;
     ( (This)->lpVtbl -> Release(This) ) 
 
 
-#define IPartCoverConnector2_StartTarget(This,targetPath,targetWorkingDir,targetArguments,redirectOutput,callback)	\
-    ( (This)->lpVtbl -> StartTarget(This,targetPath,targetWorkingDir,targetArguments,redirectOutput,callback) ) 
+#define IPartCoverConnector2_StartTarget(This,targetPath,targetWorkingDir,targetArguments,redirectOutput)	\
+    ( (This)->lpVtbl -> StartTarget(This,targetPath,targetWorkingDir,targetArguments,redirectOutput) ) 
 
 #define IPartCoverConnector2_put_LoggingLevel(This,logLevel)	\
     ( (This)->lpVtbl -> put_LoggingLevel(This,logLevel) ) 
@@ -848,14 +857,14 @@ EXTERN_C const IID IID_IPartCoverConnector2;
 #define IPartCoverConnector2_put_PipeLoggingEnable(This,exitCode)	\
     ( (This)->lpVtbl -> put_PipeLoggingEnable(This,exitCode) ) 
 
+#define IPartCoverConnector2_put_StatusCallback(This,callback)	\
+    ( (This)->lpVtbl -> put_StatusCallback(This,callback) ) 
+
 #define IPartCoverConnector2_EnableOption(This,mode)	\
     ( (This)->lpVtbl -> EnableOption(This,mode) ) 
 
-#define IPartCoverConnector2_WaitForResults(This,delayClose,callback)	\
-    ( (This)->lpVtbl -> WaitForResults(This,delayClose,callback) ) 
-
-#define IPartCoverConnector2_CloseTarget(This)	\
-    ( (This)->lpVtbl -> CloseTarget(This) ) 
+#define IPartCoverConnector2_WaitForResults(This,delayClose)	\
+    ( (This)->lpVtbl -> WaitForResults(This,delayClose) ) 
 
 #define IPartCoverConnector2_GetReport(This,receiver)	\
     ( (This)->lpVtbl -> GetReport(This,receiver) ) 
@@ -877,6 +886,9 @@ EXTERN_C const IID IID_IPartCoverConnector2;
 
 #define IPartCoverConnector2_get_ProcessId(This,pid)	\
     ( (This)->lpVtbl -> get_ProcessId(This,pid) ) 
+
+#define IPartCoverConnector2_get_StatusCallback(This,callback)	\
+    ( (This)->lpVtbl -> get_StatusCallback(This,callback) ) 
 
 #endif /* COBJMACROS */
 

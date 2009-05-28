@@ -58,7 +58,8 @@ namespace PartCover.Framework
             new ArgumentOption("--include", readInclude),
             new ArgumentOption("--exclude", readExclude),
             new ArgumentOption("--output", readOutput),
-            new ArgumentOption("--settings", readSettingsFile)
+            new ArgumentOption("--settings", readSettingsFile),
+            new ArgumentOption("--disabledomainflatten", readDisableDomainFlatten)
         };
 
         private ArgumentOption currentOption;
@@ -68,7 +69,7 @@ namespace PartCover.Framework
         {
             if (!File.Exists(value))
                 throw new SettingsException("Cannot find target (" + value + ")");
-            settings.targetPath = Path.GetFullPath(value);
+            settings.TargetPath = Path.GetFullPath(value);
         }
 
         private static void readGenerateSettingsFile(WorkSettings settings, string value)
@@ -90,7 +91,7 @@ namespace PartCover.Framework
         {
             if (!Directory.Exists(value))
                 throw new SettingsException("Cannot find target working dir (" + value + ")");
-            settings.targetWorkingDir = Path.GetFullPath(value);
+            settings.TargetWorkingDir = Path.GetFullPath(value);
         }
 
         private static void readSettingsFile(WorkSettings settings, string value)
@@ -102,7 +103,7 @@ namespace PartCover.Framework
 
         private static void readOutput(WorkSettings settings, string value)
         {
-            if (value.Length > 0) settings.outputFile = value;
+            if (value.Length > 0) settings.FileNameForReport = value;
         }
 
         private static void readExclude(WorkSettings settings, string value)
@@ -117,7 +118,12 @@ namespace PartCover.Framework
 
         private static void readTargetArgs(WorkSettings settings, string value)
         {
-            settings.targetArgs = value;
+            settings.TargetArgs = value;
+        }
+
+        private static void readDisableDomainFlatten(WorkSettings settings)
+        {
+            settings.DisableFlattenDomains = true;
         }
 
         private static void readLogLevel(WorkSettings settings, string value)
@@ -167,7 +173,7 @@ namespace PartCover.Framework
                 }
                 else
                 {
-                    throw new SettingsException("Unexpected argument for option '" + currentOption .key + "'");
+                    throw new SettingsException("Unexpected argument for option '" + currentOption.key + "'");
                 }
             }
 
@@ -331,33 +337,12 @@ namespace PartCover.Framework
             get { return excludeItems.ToArray(); }
         }
 
-        private string targetPath;
-        public string TargetPath
-        {
-            get { return targetPath; }
-            set { targetPath = value; }
-        }
+        public string TargetPath { get; set; }
+        public string TargetWorkingDir { get; set; }
+        public string TargetArgs { get; set; }
+        public string FileNameForReport { get; set; }
 
-        private string targetWorkingDir;
-        public string TargetWorkingDir
-        {
-            get { return targetWorkingDir; }
-            set { targetWorkingDir = value; }
-        }
-
-        private string targetArgs;
-        public string TargetArgs
-        {
-            get { return targetArgs; }
-            set { targetArgs = value; }
-        }
-
-        private string outputFile;
-        public string FileNameForReport
-        {
-            get { return outputFile; }
-            set { outputFile = value; }
-        }
+        public bool DisableFlattenDomains { get; set; }
 
         public bool OutputToFile
         {
@@ -371,24 +356,24 @@ namespace PartCover.Framework
         private static void AppendValue(XmlNode parent, string name, string value)
         {
             Debug.Assert(parent != null && parent.OwnerDocument != null);
-            XmlNode node = parent.AppendChild(parent.OwnerDocument.CreateElement(name));
-            node.InnerText = value;
+            parent.AppendChild(parent.OwnerDocument.CreateElement(name)).InnerText = value;
         }
 
         public void GenerateSettingsFile()
         {
             var xmlDoc = new XmlDocument();
             xmlDoc.AppendChild(xmlDoc.CreateElement("PartCoverSettings"));
-            if (targetPath != null) AppendValue(xmlDoc.DocumentElement, "Target", targetPath);
-            if (targetWorkingDir != null) AppendValue(xmlDoc.DocumentElement, "TargetWorkDir", targetWorkingDir);
-            if (targetArgs != null) AppendValue(xmlDoc.DocumentElement, "TargetArgs", targetArgs);
+            if (TargetPath != null) AppendValue(xmlDoc.DocumentElement, "Target", TargetPath);
+            if (TargetWorkingDir != null) AppendValue(xmlDoc.DocumentElement, "TargetWorkDir", TargetWorkingDir);
+            if (TargetArgs != null) AppendValue(xmlDoc.DocumentElement, "TargetArgs", TargetArgs);
             if (logLevel > 0) AppendValue(xmlDoc.DocumentElement, "LogLevel", logLevel.ToString(CultureInfo.InvariantCulture));
-            if (outputFile != null) AppendValue(xmlDoc.DocumentElement, "Output", outputFile);
+            if (FileNameForReport != null) AppendValue(xmlDoc.DocumentElement, "Output", FileNameForReport);
+            if (DisableFlattenDomains) AppendValue(xmlDoc.DocumentElement, "DisableFlattenDomains", DisableFlattenDomains.ToString(CultureInfo.InvariantCulture));
             if (printLongHelp) AppendValue(xmlDoc.DocumentElement, "ShowHelp", printLongHelp.ToString(CultureInfo.InvariantCulture));
             if (printVersion) AppendValue(xmlDoc.DocumentElement, "ShowVersion", printVersion.ToString(CultureInfo.InvariantCulture));
 
-            foreach (string item in IncludeItems) AppendValue(xmlDoc.DocumentElement, "Rule", "+" + item);
-            foreach (string item in ExcludeItems) AppendValue(xmlDoc.DocumentElement, "Rule", "-" + item);
+            foreach (var item in IncludeItems) AppendValue(xmlDoc.DocumentElement, "Rule", "+" + item);
+            foreach (var item in ExcludeItems) AppendValue(xmlDoc.DocumentElement, "Rule", "-" + item);
 
             try
             {
@@ -412,17 +397,19 @@ namespace PartCover.Framework
                 logLevel = 0;
 
                 var node = xmlDoc.SelectSingleNode("/PartCoverSettings/Target/text()");
-                if (node != null && node.Value != null) targetPath = node.Value;
+                if (node != null && node.Value != null) TargetPath = node.Value;
                 node = xmlDoc.SelectSingleNode("/PartCoverSettings/TargetWorkDir/text()");
-                if (node != null && node.Value != null) targetWorkingDir = node.Value;
+                if (node != null && node.Value != null) TargetWorkingDir = node.Value;
                 node = xmlDoc.SelectSingleNode("/PartCoverSettings/TargetArgs/text()");
-                if (node != null && node.Value != null) targetArgs = node.Value;
+                if (node != null && node.Value != null) TargetArgs = node.Value;
                 node = xmlDoc.SelectSingleNode("/PartCoverSettings/LogLevel/text()");
                 if (node != null && node.Value != null) logLevel = int.Parse(node.Value);
                 node = xmlDoc.SelectSingleNode("/PartCoverSettings/Output/text()");
-                if (node != null && node.Value != null) outputFile = node.Value;
+                if (node != null && node.Value != null) FileNameForReport = node.Value;
                 node = xmlDoc.SelectSingleNode("/PartCoverSettings/ShowHelp/text()");
                 if (node != null && node.Value != null) printLongHelp = bool.Parse(node.Value);
+                node = xmlDoc.SelectSingleNode("/PartCoverSettings/DisableFlattenDomains/text()");
+                if (node != null && node.Value != null) DisableFlattenDomains = bool.Parse(node.Value);
                 node = xmlDoc.SelectSingleNode("/PartCoverSettings/ShowVersion/text()");
                 if (node != null && node.Value != null) printVersion = bool.Parse(node.Value);
 

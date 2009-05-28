@@ -81,7 +81,7 @@ __interface IReportReceiver : IUnknown {
     HRESULT RegisterFile([in] INT fileId, [in] BSTR fileUrl);
     HRESULT RegisterSkippedItem([in] BSTR assemblyName, [in] BSTR typedefName);
 
-	HRESULT EnterAssembly([in] BSTR assemblyName, [in] BSTR moduleName);
+	HRESULT EnterAssembly([in] INT domain, [in] BSTR domainName, [in] BSTR assemblyName, [in] BSTR moduleName);
     HRESULT EnterTypedef([in] BSTR typedefName, [in] DWORD flags);
     HRESULT EnterMethod([in] BSTR methodName, [in] BSTR methodSig, [in] DWORD flags, [in] DWORD implFlags);
     HRESULT AddCoverageBlock([in] BLOCK_DATA blockData);
@@ -155,15 +155,15 @@ __interface IConnectorActionCallback : IUnknown
 #endif
 __interface IPartCoverConnector2 
 {
-    HRESULT StartTarget([in] BSTR targetPath, [in] BSTR targetWorkingDir, [in] BSTR targetArguments, [in] VARIANT_BOOL redirectOutput, [in, optional] IConnectorActionCallback* callback);
+    HRESULT StartTarget([in] BSTR targetPath, [in] BSTR targetWorkingDir, [in] BSTR targetArguments, [in] VARIANT_BOOL redirectOutput);
 
     [propput] HRESULT LoggingLevel([in] INT logLevel);
 	[propput] HRESULT FileLoggingEnable([in] VARIANT_BOOL exitCode);
 	[propput] HRESULT PipeLoggingEnable([in] VARIANT_BOOL exitCode);
+	[propput] HRESULT StatusCallback([in] IConnectorActionCallback* callback);
 
     HRESULT EnableOption([in] ProfilerMode mode);
-    HRESULT WaitForResults([in] VARIANT_BOOL delayClose, [in, optional] IConnectorActionCallback* callback);
-    HRESULT CloseTarget();
+    HRESULT WaitForResults([in] VARIANT_BOOL delayClose);
 
     HRESULT GetReport([in] IReportReceiver* receiver);
 
@@ -175,5 +175,6 @@ __interface IPartCoverConnector2
 
 	[propget] HRESULT LogFilePath([out, retval] BSTR* logFilePath);
 	[propget] HRESULT ProcessId([out, retval] INT* pid);
+	[propget] HRESULT StatusCallback([out, retval] IConnectorActionCallback** callback);
 	
 };

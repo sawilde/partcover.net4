@@ -11,7 +11,6 @@
 ]
 class CorProfiler 
 	: public ICorProfilerCallback2
-	, public ITransferrableFactory
 {
     static CorProfiler* m_currentInstance;
 
@@ -31,14 +30,12 @@ private:
     Instrumentator m_instrumentator;
     InstrumentResults m_instrumentResults;
 
-    MessagePipe m_center;
+    PartCoverMessageClient m_communication;
     CorProfilerOptions m_options;
     CComQIPtr<ICorProfilerInfo> m_profilerInfo;
     CComQIPtr<ISymUnmanagedBinder2> m_binder;
 
 public:
-	ITransferrable* create(MessageType type);
-	void destroy(ITransferrable* item);
 
     /************************************************************************/
     /* ICorProfilerCallback methods                                         */
@@ -54,8 +51,7 @@ public:
 
     STDMETHOD( AppDomainCreationFinished( 
         /* [in] */ AppDomainID appDomainId,
-        /* [in] */ HRESULT hrStatus) )
-    { return S_OK; }
+        /* [in] */ HRESULT hrStatus) );
 
     STDMETHOD( AppDomainShutdownStarted( 
         /* [in] */ AppDomainID appDomainId) )
@@ -63,8 +59,7 @@ public:
 
     STDMETHOD( AppDomainShutdownFinished( 
         /* [in] */ AppDomainID appDomainId,
-        /* [in] */ HRESULT hrStatus) )
-    { return S_OK; }
+        /* [in] */ HRESULT hrStatus) );
 
     STDMETHOD( AssemblyLoadStarted( 
         /* [in] */ AssemblyID assemblyId) )

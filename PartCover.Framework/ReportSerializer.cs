@@ -47,8 +47,11 @@ namespace PartCover.Framework
             new List<AssemblyEntry>(report.Assemblies).ForEach(x =>
             {
                 var asmNode = AddElement(node, "Assembly");
+                AddAttribute(asmNode, "id").Value = x.AssemblyRef.ToString(CultureInfo.InvariantCulture);
                 AddAttribute(asmNode, "name").Value = x.Name;
                 AddAttribute(asmNode, "module").Value = x.Module;
+                AddAttribute(asmNode, "domain").Value = x.Domain;
+                AddAttribute(asmNode, "domainIdx").Value = x.DomainIndex.ToString(CultureInfo.InvariantCulture);
 
                 typeList.AddRange(x.Types);
             });
@@ -56,7 +59,7 @@ namespace PartCover.Framework
             typeList.ForEach(x =>
             {
                 var typeNode = AddElement(node, "Type");
-                AddAttribute(typeNode, "asm").Value = x.Assembly.Name;
+                AddAttribute(typeNode, "asmref").Value = x.Assembly.AssemblyRef.ToString(CultureInfo.InvariantCulture);
                 AddAttribute(typeNode, "name").Value = x.Name;
                 AddAttribute(typeNode, "flags").Value = ((long)x.Attributes).ToString();
 
@@ -96,15 +99,18 @@ namespace PartCover.Framework
             {
                 report.Assemblies.Add(new AssemblyEntry
                 {
+                    AssemblyRef = ReadAttributeInt(asmNode, "id"),
                     Name = ReadAttribute(asmNode, "name"),
-                    Module = ReadAttribute(asmNode, "module")
+                    Module = ReadAttribute(asmNode, "module"),
+                    Domain = ReadAttribute(asmNode, "domain"),
+                    DomainIndex = ReadAttributeInt(asmNode, "domainIdx")
                 });
             }
 
             foreach (var typeNode in SelectChildNodes(node, "type"))
             {
-                var assmName = ReadAttribute(typeNode, "asm");
-                var assemblyEntry = report.Assemblies.Find(x => x.Name == assmName);
+                var assmRef = ReadAttributeInt(typeNode, "asmref");
+                var assemblyEntry = report.Assemblies.Find(x => x.AssemblyRef == assmRef);
                 if (assemblyEntry == null)
                 {
                     continue;

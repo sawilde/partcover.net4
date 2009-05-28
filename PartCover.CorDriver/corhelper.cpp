@@ -5,6 +5,17 @@
 #include "il_sigparser.h"
 
 namespace CorHelper {
+	String GetAppDomainName(ICorProfilerInfo* info, AppDomainID domain)
+	{
+		ULONG buffSize = 0;
+		if (FAILED(info->GetAppDomainInfo(domain, 0, &buffSize, NULL, NULL))) 
+			return String();
+		DynamicArray<TCHAR> buffer(buffSize);
+		if (FAILED(info->GetAppDomainInfo(domain, buffSize, &buffSize, buffer, NULL)))
+			return String();
+		return String(buffer);
+	}
+
 	String GetModuleName(ICorProfilerInfo* info, ModuleID module) {
 		ULONG buffSize = 0;
 		if (S_OK != info->GetModuleInfo(module, NULL, 0, &buffSize, NULL, NULL)) 
@@ -311,7 +322,18 @@ namespace CorHelper {
 		void AddString(const String& str) { val->append(str); }
 	};
 
-	void GetMethodSig(ICorProfilerInfo* info, IMetaDataImport* mdImport, mdMethodDef methodDef, String* sigVal) {
+	bool LoadMethodSig(ICorProfilerInfo* info, IMetaDataImport* mdImport, mdMethodDef methodDef, DynamicArray<sig_byte>& sig) {
+		ULONG sigSize = 0;
+		PCCOR_SIGNATURE pSigBlob;
+		if(FAILED(mdImport->GetMethodProps(methodDef, NULL, NULL, 0, NULL, NULL, &pSigBlob, &sigSize, NULL, NULL)))
+			return false;
+
+		sig.resize(sigSize);
+		memcpy_s(sig, sig.size() * DynamicArray<sig_byte>::ValueSize, pSigBlob, sigSize);
+		return true;
+	}
+
+	void ParseMethodSig(ICorProfilerInfo* info, IMetaDataImport* mdImport, mdMethodDef methodDef, String* sigVal) {
 		ULONG sigSize = 0;
 		PCCOR_SIGNATURE pSigBlob;
 		if(FAILED(mdImport->GetMethodProps(methodDef, NULL, NULL, 0, NULL, NULL, &pSigBlob, &sigSize, NULL, NULL)))

@@ -1,35 +1,34 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
-using System.Drawing;
-using System.Collections;
 using System.ComponentModel;
 using System.Windows.Forms;
 
 using PartCover.Framework;
 
-namespace PartCover.Browser
+namespace PartCover.Browser.Forms
 {
-    public class RunTargetForm : System.Windows.Forms.Form
+    public class RunTargetForm : Form
     {
-        private readonly System.ComponentModel.Container components = null;
+        private readonly Container components = null;
 
-        private System.Windows.Forms.GroupBox gbTarget;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.TextBox tbArgs;
-        private System.Windows.Forms.Button btnBrowseDir;
-        private System.Windows.Forms.Button btnBrowseTarget;
-        private System.Windows.Forms.Label lbDir;
-        private System.Windows.Forms.Label lbTarget;
-        private System.Windows.Forms.TextBox tbWorkingDir;
-        private System.Windows.Forms.TextBox tbPath;
-        private System.Windows.Forms.GroupBox gbRules;
-        private System.Windows.Forms.TextBox tbRules;
-        private System.Windows.Forms.Button btnOk;
-        private System.Windows.Forms.Button btnCancel;
-        private System.Windows.Forms.FolderBrowserDialog dlgBrowse;
-        private System.Windows.Forms.Button btnLoad;
-        private System.Windows.Forms.Button btnSave;
-        private System.Windows.Forms.SaveFileDialog dlgSave;
+        private GroupBox gbTarget;
+        private Label label1;
+        private TextBox tbArgs;
+        private Button btnBrowseDir;
+        private Button btnBrowseTarget;
+        private Label lbDir;
+        private Label lbTarget;
+        private TextBox tbWorkingDir;
+        private TextBox tbPath;
+        private GroupBox gbRules;
+        private TextBox tbRules;
+        private Button btnOk;
+        private Button btnCancel;
+        private FolderBrowserDialog dlgBrowse;
+        private Button btnLoad;
+        private Button btnSave;
+        private SaveFileDialog dlgSave;
         private GroupBox gbLogging;
         private CheckBox chkLoggingDumpMethod;
         private CheckBox chkLoggingDumpInstrumentation;
@@ -37,22 +36,8 @@ namespace PartCover.Browser
         private CheckBox chkLoggingMethodInner;
         private CheckBox chkLoggingSkipByState;
         private CheckBox chkLoggingSkipByRule;
-        private System.Windows.Forms.OpenFileDialog dlgOpen;
-
-        class LogLevelEntry
-        {
-            private int id;
-            private string value;
-
-            public LogLevelEntry(int id, string value)
-            {
-                this.id = id;
-                this.value = value;
-            }
-
-            public int Id { get { return id; } }
-            public string Text { get { return value; } }
-        }
+        private CheckBox ckbFlattenDomains;
+        private OpenFileDialog dlgOpen;
 
         public RunTargetForm()
         {
@@ -104,6 +89,7 @@ namespace PartCover.Browser
             this.chkLoggingInstrumentMessages = new System.Windows.Forms.CheckBox();
             this.chkLoggingDumpMethod = new System.Windows.Forms.CheckBox();
             this.chkLoggingDumpInstrumentation = new System.Windows.Forms.CheckBox();
+            this.ckbFlattenDomains = new System.Windows.Forms.CheckBox();
             this.gbTarget.SuspendLayout();
             this.gbRules.SuspendLayout();
             this.gbLogging.SuspendLayout();
@@ -193,6 +179,7 @@ namespace PartCover.Browser
             // 
             // gbRules
             // 
+            this.gbRules.Controls.Add(this.ckbFlattenDomains);
             this.gbRules.Controls.Add(this.tbRules);
             this.gbRules.Location = new System.Drawing.Point(8, 112);
             this.gbRules.Name = "gbRules";
@@ -211,7 +198,7 @@ namespace PartCover.Browser
             this.tbRules.Multiline = true;
             this.tbRules.Name = "tbRules";
             this.tbRules.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.tbRules.Size = new System.Drawing.Size(343, 156);
+            this.tbRules.Size = new System.Drawing.Size(343, 135);
             this.tbRules.TabIndex = 9;
             this.tbRules.WordWrap = false;
             // 
@@ -332,6 +319,17 @@ namespace PartCover.Browser
             this.chkLoggingDumpInstrumentation.Text = "Dump instrumentation";
             this.chkLoggingDumpInstrumentation.UseVisualStyleBackColor = true;
             // 
+            // ckbFlattenDomains
+            // 
+            this.ckbFlattenDomains.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.ckbFlattenDomains.AutoSize = true;
+            this.ckbFlattenDomains.Location = new System.Drawing.Point(8, 155);
+            this.ckbFlattenDomains.Name = "ckbFlattenDomains";
+            this.ckbFlattenDomains.Size = new System.Drawing.Size(205, 17);
+            this.ckbFlattenDomains.TabIndex = 10;
+            this.ckbFlattenDomains.Text = "Report application domains separately";
+            this.ckbFlattenDomains.UseVisualStyleBackColor = true;
+            // 
             // RunTargetForm
             // 
             this.AutoScaleBaseSize = new System.Drawing.Size(5, 13);
@@ -369,14 +367,14 @@ namespace PartCover.Browser
         {
             get
             {
-                ArrayList inc = new ArrayList();
-                foreach (string s in tbRules.Lines)
+                var inc = new List<string>();
+                foreach (var s in tbRules.Lines)
                 {
-                    string rule = s.Trim();
+                    var rule = s.Trim();
                     if (rule.Length > 0 && rule[0] == '+')
                         inc.Add(rule.Substring(1));
                 }
-                return (string[])inc.ToArray(typeof(string));
+                return inc.ToArray();
             }
         }
 
@@ -384,14 +382,14 @@ namespace PartCover.Browser
         {
             get
             {
-                ArrayList inc = new ArrayList();
-                foreach (string s in tbRules.Lines)
+                var inc = new List<string>();
+                foreach (var s in tbRules.Lines)
                 {
-                    string rule = s.Trim();
+                    var rule = s.Trim();
                     if (rule.Length > 0 && rule[0] == '-')
                         inc.Add(rule.Substring(1));
                 }
-                return (string[])inc.ToArray(typeof(string));
+                return inc.ToArray();
             }
         }
 
@@ -410,7 +408,12 @@ namespace PartCover.Browser
             get { return tbArgs.Text; }
         }
 
-        private readonly string outputFile = null;
+        public bool FlattenDomains
+        {
+            get { return !ckbFlattenDomains.Checked; }
+        }
+
+        private const string outputFile = null;
 
         public string FileNameForReport
         {
@@ -436,12 +439,12 @@ namespace PartCover.Browser
             }
         }
 
-        private Logging GetLoggingEnabled(CheckBox chkLoggingControl, Logging logging)
+        private static Logging GetLoggingEnabled(CheckBox chkLoggingControl, Logging logging)
         {
             return chkLoggingControl.Checked ? logging : Logging.Nothing;
         }
 
-        private void SetLoggingEnabled(CheckBox chkLoggingControl, int value, Logging logging)
+        private static void SetLoggingEnabled(CheckBox chkLoggingControl, int value, Logging logging)
         {
             chkLoggingControl.Checked = (value & (int)logging) != 0;
         }
@@ -495,29 +498,34 @@ namespace PartCover.Browser
 
         private void btnSave_Click(object sender, EventArgs e)
         {
-            WorkSettings settings = new WorkSettings();
-            settings.TargetPath = TargetPath;
-            settings.TargetArgs = TargetArgs;
-            settings.TargetWorkingDir = TargetWorkingDir;
-            settings.FileNameForReport = FileNameForReport;
-            settings.LogLevel = (int)LogLevel;
+            var settings = new WorkSettings
+            {
+                TargetPath = TargetPath,
+                TargetArgs = TargetArgs,
+                TargetWorkingDir = TargetWorkingDir,
+                FileNameForReport = FileNameForReport,
+                LogLevel = ((int)LogLevel),
+                DisableFlattenDomains = ckbFlattenDomains.Checked
+            };
 
             settings.IncludeRules(IncludeItems);
             settings.ExcludeRules(ExcludeItems);
 
             dlgSave.Filter = "Settings files (*.xml)|*.xml";
-            if (dlgSave.ShowDialog(this) == DialogResult.OK)
+            if (dlgSave.ShowDialog(this) != DialogResult.OK)
             {
-                try
-                {
-                    settings.GenerateSettingsFileName = dlgSave.FileName;
-                    settings.GenerateSettingsFile();
-                    ShowInformation("Settings were saved!");
-                }
-                catch (Exception ex)
-                {
-                    ShowInformation("Cannot save settings (" + ex.Message + ")");
-                }
+                return;
+            }
+
+            try
+            {
+                settings.GenerateSettingsFileName = dlgSave.FileName;
+                settings.GenerateSettingsFile();
+                ShowInformation("Settings were saved!");
+            }
+            catch (Exception ex)
+            {
+                ShowInformation("Cannot save settings (" + ex.Message + ")");
             }
         }
 
@@ -529,9 +537,11 @@ namespace PartCover.Browser
                 return;
             }
 
-            WorkSettings settings = new WorkSettings();
+            var settings = new WorkSettings
+            {
+                SettingsFile = dlgOpen.FileName
+            };
 
-            settings.SettingsFile = dlgOpen.FileName;
             try
             {
                 settings.ReadSettingsFile();
@@ -553,14 +563,15 @@ namespace PartCover.Browser
             SetLoggingEnabled(chkLoggingSkipByRule, settings.LogLevel, Logging.SkipByRules);
             SetLoggingEnabled(chkLoggingSkipByState, settings.LogLevel, Logging.SkipByState);
 
+            ckbFlattenDomains.Checked = settings.DisableFlattenDomains;
             tbRules.Text = string.Empty;
 
-            foreach (string s in settings.IncludeItems)
+            foreach (var s in settings.IncludeItems)
             {
                 if (tbRules.Text.Length > 0) tbRules.Text = tbRules.Text + "\r\n";
                 tbRules.Text = tbRules.Text + "+" + s;
             }
-            foreach (string s in settings.ExcludeItems)
+            foreach (var s in settings.ExcludeItems)
             {
                 if (tbRules.Text.Length > 0) tbRules.Text = tbRules.Text + "\r\n";
                 tbRules.Text = tbRules.Text + "-" + s;

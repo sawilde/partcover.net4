@@ -55,17 +55,24 @@ namespace PartCover.Browser.Stuff
         delegate void InitializeConnectorDelegate(Connector connector);
         private void InitializeConnector(Connector connector)
         {
+            var options = new SessionRunOptions
+            {
+                TargetPath = runTargetForm.TargetPath,
+                TargetDirectory = runTargetForm.TargetWorkingDir,
+                TargetArguments = runTargetForm.TargetArgs,
+                DelayClose = false,
+                RedirectOutput = false,
+                FlattenDomains = runTargetForm.FlattenDomains
+            };
+
             foreach (var s in runTargetForm.IncludeItems) connector.IncludeItem(s);
             foreach (var s in runTargetForm.ExcludeItems) connector.ExcludeItem(s);
 
             connector.SetLogging(runTargetForm.LogLevel);
             connector.UseFileLogging(false);
             connector.UsePipeLogging(true);
-            connector.StartTarget(
-                runTargetForm.TargetPath,
-                runTargetForm.TargetWorkingDir,
-                runTargetForm.TargetArgs,
-                false, false);
+            connector.Options = options;
+            connector.StartTarget();
         }
 
         void connector_StatusMessageReceived(object sender, StatusEventArgs e)

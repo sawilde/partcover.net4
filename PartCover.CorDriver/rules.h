@@ -8,12 +8,13 @@ namespace RulesHelpers {
     String ExtractNamespace(const String& className);
 }
 
-class Rules : public ITransferrable
+class Rules
 {
+public:
     bool enable_coverage_profile;
     bool enable_call_tree_profile;
 
-    ProfilerMode profiler_level;
+    char profiler_level;
 
     StringArray m_excludeItems;
     StringArray m_includeItems;
@@ -21,6 +22,7 @@ class Rules : public ITransferrable
     StringArray m_includeRules;
     StringArray m_excludeRules;
 
+private:
 	static RegexMap m_regexMap;
 
 	static RegexPtr GetRegex(const String& regex);
@@ -32,11 +34,6 @@ class Rules : public ITransferrable
 public:
     Rules(void);
     ~Rules(void);
-
-	MessageType getType() const { return Messages::C_Rules; }
-	void visit(ITransferrableVisitor& visitor) { visitor.on(*this); }
-    bool SendData(MessagePipe&);
-    bool ReceiveData(MessagePipe&);
 
     void EnableMode(const ProfilerMode& mode);
     bool IsEnabledMode(const ProfilerMode& mode) const;

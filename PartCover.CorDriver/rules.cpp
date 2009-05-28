@@ -1,7 +1,5 @@
 #include "StdAfx.h"
 #include "interface.h"
-#include "message.h"
-#include "message_pipe.h"
 #include "rules.h"
 #include "logging.h"
 #include "corhelper.h"
@@ -34,7 +32,7 @@ Rules::Rules(void)
 Rules::~Rules(void)
 {
 }
-
+/*
 bool ReadArray(MessagePipe& pipe, StringArray& array) {
     size_t arrSize;
 	if (!pipe.read(&arrSize))
@@ -95,7 +93,7 @@ bool Rules::ReceiveData(MessagePipe& pipe) {
     PrepareItemRules();
     return true;
 }
-
+*/
 
 void Rules::Dump() const {
     DriverLog& log = DriverLog::get();

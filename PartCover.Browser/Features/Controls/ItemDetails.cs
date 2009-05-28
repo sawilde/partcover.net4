@@ -13,7 +13,7 @@ namespace PartCover.Browser.Features.Controls
             InitializeComponent();
         }
 
-        const string ASSEMBLY_INFO = @"{{\rtf1\ansi\b {0}\b0\line\b Types:\b0 {1}}}";
+        const string ASSEMBLY_INFO = @"{{\rtf1\ansi\b {0}\b0\line\b Domain:\b0 [{1}] {2}\line\b Types:\b0 {3}}}";
 
         const string NAMESPACE_INFO = @"{{\rtf1\ansi\b {0}\b0}}";
 
@@ -23,7 +23,7 @@ namespace PartCover.Browser.Features.Controls
 
         public void Select(AssemblyEntry assembly)
         {
-            rtbNodeProps.Rtf = string.Format(ASSEMBLY_INFO, assembly.Name, assembly.Types.Count);
+            rtbNodeProps.Rtf = string.Format(ASSEMBLY_INFO, assembly.Name, assembly.DomainIndex, assembly.Domain, assembly.Types.Count);
         }
 
         public void Select(AssemblyEntry assembly, string namespacePath)

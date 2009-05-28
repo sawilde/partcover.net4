@@ -1,19 +1,19 @@
 #include "StdAfx.h"
 #include "defines.h"
 #include "interface.h"
-#include "message.h"
-#include "message_pipe.h"
 #include "function_map.h"
 #include "instrumented_results.h"
 #include "rules.h"
 #include "partcover_connector.h"
 #include "helpers.h"
 
-PartCoverConnector2::PartCoverConnector2(void) : 
-    m_driverLogging(0), m_targetExitCodeSet(false)
+PartCoverConnector2::PartCoverConnector2(void) 
+	: m_driverLogging(0)
+	, m_targetExitCodeSet(false)
+	, m_aggregate(*this)
+	, m_driverStopped(false)
+	, m_callback(0)
 {
-	ITransferrableFactory* list[] = { this };
-	m_center.SetMessageMap(list, ARRAYSIZE(list));
 }
 
 PartCoverConnector2::~PartCoverConnector2(void)
@@ -41,6 +41,13 @@ STDMETHODIMP PartCoverConnector2::put_PipeLoggingEnable(VARIANT_BOOL enable)
 	return S_OK; 
 }
 
+STDMETHODIMP PartCoverConnector2::put_StatusCallback(IConnectorActionCallback* callback) 
+{
+	if (callback == 0) return E_INVALIDARG; 
+	m_callback = callback; 
+	return S_OK; 
+}
+
 STDMETHODIMP PartCoverConnector2::get_HasTargetExitCode(VARIANT_BOOL* exitRes) 
 { 
 	if (exitRes  == 0) return E_INVALIDARG; 
@@ -52,6 +59,13 @@ STDMETHODIMP PartCoverConnector2::get_TargetExitCode(INT* exitCode)
 {
 	if (exitCode == 0) return E_INVALIDARG; 
 	*exitCode = m_targetExitCode; 
+	return S_OK; 
+}
+
+STDMETHODIMP PartCoverConnector2::get_StatusCallback(IConnectorActionCallback** callback) 
+{
+	if (callback == 0) return E_INVALIDARG; 
+	*callback = m_callback; 
 	return S_OK; 
 }
 
@@ -75,10 +89,13 @@ STDMETHODIMP PartCoverConnector2::StartTarget(
     BSTR p_targetPath, 
     BSTR p_targetWorkingDir, 
     BSTR p_targetArguments,
-    VARIANT_BOOL redirectOutput,
-	IConnectorActionCallback* callback)
+    VARIANT_BOOL redirectOutput)
 {
-    HRESULT hr;
+	if (m_intercommunication.IsStarted()) {
+		m_intercommunication.Stop();
+		m_intercommunication.Close();
+	}
+
     _bstr_t targetPath(p_targetPath);
     _bstr_t targetWorkingDir(p_targetWorkingDir);
     _bstr_t targetArguments(p_targetArguments);
@@ -86,13 +103,20 @@ STDMETHODIMP PartCoverConnector2::StartTarget(
     if (targetWorkingDir.length() == 0 || targetPath.length() == 0 )
         return E_INVALIDARG;
 
-	if(callback != 0 ) callback->OpenMessagePipe();
+	if (m_callback) m_callback->OpenMessagePipe();
 
-    // init message center 
-    if(FAILED(hr = m_center.Open()))
-        return hr;
+    // init message center
+	StringStream buffer;
+	buffer << L"\\\\.\\pipe\\partcover.";
+	buffer << ::GetCurrentProcessId();
 
-	if(callback != 0 ) callback->TargetSetEnvironmentVars();
+	IntercommunicationProxy::instance.aggregate = &m_aggregate;
+
+	if(!m_intercommunication.Create(buffer.str().c_str())) {
+        return HRESULT_FROM_WIN32( ::GetLastError() );
+	}
+
+	if (m_callback) m_callback->TargetSetEnvironmentVars();
 
     targetArguments = _bstr_t("\"") + targetPath + _bstr_t("\" ") + targetArguments;
 
@@ -100,7 +124,7 @@ STDMETHODIMP PartCoverConnector2::StartTarget(
     StringMap env = ParseEnvironment();
     env[_T("Cor_Enable_Profiling")] = _T("1");
     env[_T("Cor_Profiler")] = _T("{") _T(DRIVER_CORPROFILER_GUID) _T("}");
-    env[OPTION_MESSOPT] = m_center.getId();
+    env[OPTION_MESSOPT] = buffer.str();
 
     if (m_driverLogging > 0)
 	{
@@ -128,7 +152,7 @@ STDMETHODIMP PartCoverConnector2::StartTarget(
     // copy old and new env settings
     LPTSTR new_env = CreateEnvironment(env);
 
-	if(callback != 0 ) callback->TargetCreateProcess();
+	if (m_callback) m_callback->TargetCreateProcess();
 
     // extract 
     STARTUPINFO si;
@@ -168,124 +192,54 @@ STDMETHODIMP PartCoverConnector2::StartTarget(
     if (!created)
         return HRESULT_FROM_WIN32( ::GetLastError() );
 
-	if(callback != 0 ) callback->TargetWaitDriver();
+	if (m_callback) m_callback->TargetWaitDriver();
 
-    if (FAILED(hr = m_center.WaitForClient()))
-        return hr;
-
-	if(callback != 0 ) callback->DriverConnected();
-
-	struct Starter : ITransferrableVisitor {
-		IConnectorActionCallback* m_callback;
-	public:
-		bool readyToGo;
-		Starter(IConnectorActionCallback* callback) : m_callback(callback), readyToGo(false) {}
-
-		void on(MessageType type) { if (Messages::C_RequestStart == type) readyToGo = true; }
-		void on(FunctionMap& value) {}
-		void on(Rules& value) {}
-		void on(InstrumentResults& value) {}
-		void on(LogMessage& value) { if (m_callback != 0) m_callback->LogMessage(value.getThreadId(), value.getTicks(), _bstr_t(value.getMessage().c_str())); }
-	} messageVisitor(callback);
-
-	ITransferrable* message;
-	while(SUCCEEDED(m_center.Wait(message)))
-	{
-		message->visit(messageVisitor);
-		destroy(message);
-		if (messageVisitor.readyToGo) break;
-	}
-
-	if (!messageVisitor.readyToGo)
-	{
-		ATLTRACE("PartCoverConnector2::StartTarget - C_RequestStart wait error");
-		return E_ABORT;
-	}
-	
-
-	if(callback != 0 ) callback->DriverSendRules();
-
-	TraceTargetMemoryUsage(callback);
-
-	m_center.Send(m_rules);
-	m_center.Send(Messages::Message<Messages::C_EndOfInputs>());
-
-	if(callback != 0 ) callback->DriverWaitEoIConfirm();
-
-	messageVisitor.readyToGo = false;
-	while(SUCCEEDED(m_center.Wait(message)))
-	{
-		message->visit(messageVisitor);
-		destroy(message);
-
-		if (messageVisitor.readyToGo) break;
-	}
-
-	return true;
-}
-
-STDMETHODIMP PartCoverConnector2::EnableOption(ProfilerMode mode)
-{
-    if (m_center.isOpen()) return E_ACCESSDENIED;
-    m_rules.EnableMode(mode);
-    return S_OK;
-}
-
-STDMETHODIMP PartCoverConnector2::WaitForResults(VARIANT_BOOL delayClose, IConnectorActionCallback* callback)
-{
-	m_targetExitCodeSet = false;
-
-    if (!m_center.isOpen()) return E_ACCESSDENIED;
-
-	HRESULT hr = S_OK;
-
-	struct Waiter : ITransferrableVisitor {
-		IConnectorActionCallback* m_callback;
-	public:
-		bool readyToDown;
-		Waiter(IConnectorActionCallback* callback) : m_callback(callback), readyToDown(false) {}
-
-		void on(MessageType type) { if(Messages::C_EndOfResults) readyToDown = true; }
-		void on(FunctionMap& value) {}
-		void on(Rules& value) {}
-		void on(InstrumentResults& value) {}
-		void on(LogMessage& value) { if (m_callback != 0) m_callback->LogMessage(value.getThreadId(), value.getTicks(), _bstr_t(value.getMessage().c_str())); }
-	} waiter(callback);
-
-	m_functions.SetCallback(callback);
-	m_instrumentResults.SetCallback(callback);
-
-	ITransferrable* message;
-	while(SUCCEEDED(m_center.Wait(message)))
-	{
-		message->visit(waiter);
-		destroy(message);
-		if (waiter.readyToDown) break;
-	}
-
-	m_targetExitCodeSet = false;
-
-	if (delayClose == VARIANT_FALSE) 
-	{
-		TraceTargetMemoryUsage(callback);
-
-		if (callback != 0) callback->TargetRequestShutdown();
-		m_center.Send(Messages::Message<Messages::C_RequestShutdown>());
-
-		if (WAIT_OBJECT_0 == WaitForSingleObject(pi.hProcess, INFINITE)) 
-		{
-			DWORD exitCode; 
-			m_targetExitCodeSet = 0 != GetExitCodeProcess(pi.hProcess, &exitCode);
-			m_targetExitCode = exitCode;
-		}
+	if (!m_intercommunication.Start()) {
+        return HRESULT_FROM_WIN32( ::GetLastError() );
 	}
 
 	return S_OK;
 }
 
-STDMETHODIMP PartCoverConnector2::CloseTarget() {
-    if (!m_center.isOpen()) return E_ACCESSDENIED;
-	return m_center.Send(Messages::Message<Messages::C_RequestClose>());
+STDMETHODIMP PartCoverConnector2::EnableOption(ProfilerMode mode)
+{
+    m_rules.EnableMode(mode);
+    return S_OK;
+}
+
+STDMETHODIMP PartCoverConnector2::WaitForResults(VARIANT_BOOL delayClose)
+{
+	m_targetExitCodeSet = false;
+
+	HRESULT hr = S_OK;
+
+	m_functions.SetCallback(m_callback);
+	m_instrumentResults.SetCallback(m_callback);
+
+	DWORD dword;
+
+	while(!m_driverStopped) {
+		dword = WaitForSingleObject(pi.hProcess, 1000);
+		m_targetExitCodeSet = WAIT_OBJECT_0 == dword;
+		if (dword == WAIT_FAILED || dword == WAIT_OBJECT_0)
+			break;
+	}
+
+	if (!m_targetExitCodeSet && delayClose == VARIANT_FALSE) 
+	{
+		dword = WaitForSingleObject(pi.hProcess, INFINITE);
+		m_targetExitCodeSet = WAIT_OBJECT_0 == dword;
+	}
+
+	if (m_targetExitCodeSet) {
+		m_targetExitCodeSet = 0 != GetExitCodeProcess(pi.hProcess, &dword);
+		m_targetExitCode = dword;
+	}
+
+	m_intercommunication.Stop();
+	m_intercommunication.Close();
+
+	return S_OK;
 }
 
 STDMETHODIMP PartCoverConnector2::WalkFunctions(IFunctionMapWalker* walker) {
@@ -303,9 +257,6 @@ STDMETHODIMP PartCoverConnector2::GetReport(IReportReceiver* walker) {
 }
 
 STDMETHODIMP PartCoverConnector2::IncludeItem(BSTR item) {
-    if (m_center.isOpen()) 
-        return E_ACCESSDENIED;
-
     if (item == 0 || !Rules::CreateRuleFromItem(item, 0)) 
         return E_INVALIDARG;
 
@@ -314,9 +265,6 @@ STDMETHODIMP PartCoverConnector2::IncludeItem(BSTR item) {
 }
 
 STDMETHODIMP PartCoverConnector2::ExcludeItem(BSTR item) {
-    if (m_center.isOpen()) 
-        return E_ACCESSDENIED;
-
     if (item == 0 || !Rules::CreateRuleFromItem(item, 0)) 
         return E_INVALIDARG;
 
@@ -324,31 +272,9 @@ STDMETHODIMP PartCoverConnector2::ExcludeItem(BSTR item) {
     return S_OK;
 }
 
-ITransferrable* PartCoverConnector2::create(MessageType type)
+void PartCoverConnector2::TraceTargetMemoryUsage()
 {
-	switch(type) {
-		case Messages::C_FunctionMap: return &this->m_functions; 
-		case Messages::C_Rules: return &this->m_rules;
-		case Messages::C_InstrumentResults: return &this->m_instrumentResults;
-		case Messages::C_LogMessage: return &this->m_logMessage;
-		default: return new Messages::GenericMessage(type);
-	}
-}
-
-void PartCoverConnector2::destroy(ITransferrable* item)
-{
-	const ITransferrable* ignore_list[] = { &m_functions, &m_rules, &m_instrumentResults, &m_logMessage };
-	const ITransferrable** lbeg = ignore_list;
-	const ITransferrable** lend = ignore_list + ARRAYSIZE(ignore_list);
-	
-	if(item == 0 || lend != std:: find(lbeg, lend, item)) return;
-	
-	delete item;
-}
-
-void PartCoverConnector2::TraceTargetMemoryUsage(IConnectorActionCallback* callback)
-{
-	if (callback == 0) return;
+	if (m_callback == 0) return;
 
 	PROCESS_MEMORY_COUNTERS pmcs;
 	ZeroMemory(&pmcs, sizeof(pmcs));
@@ -372,5 +298,89 @@ void PartCoverConnector2::TraceTargetMemoryUsage(IConnectorActionCallback* callb
 	mc.QuotaNonPagedPoolUsage = pmcs.QuotaNonPagedPoolUsage;
 	mc.PagefileUsage = pmcs.PagefileUsage;
 	mc.PeakPagefileUsage = pmcs.PeakPagefileUsage;
-	callback->ShowTargetMemory(mc);
+
+	m_callback->ShowTargetMemory(mc);
 }
+
+void PartCoverConnector2::OnDriverRunning()
+{
+}
+
+void PartCoverConnector2::OnDriverStarting()
+{
+}
+
+void PartCoverConnector2::OnDriverStopping()
+{
+}
+
+void PartCoverConnector2::OnDriverStopped()
+{
+	m_driverStopped = true;
+	TraceTargetMemoryUsage();
+}
+
+rpclib::RPCRESULT 
+PartCoverConnector2::IntercommunicationFacade::LogMessage(DWORD thread, DWORD tick, String message)
+{ 
+	if (m_connector.m_callback) 
+		m_connector.m_callback->LogMessage(thread, tick, _bstr_t(message.c_str()));
+	return RPC_S_OK; 
+}
+
+rpclib::RPCRESULT 
+PartCoverConnector2::IntercommunicationFacade::GetSettings(int type)
+{ 
+	return RPC_S_OK; 
+}
+
+rpclib::RPCRESULT 
+PartCoverConnector2::IntercommunicationFacade::SetDriverState(int type)
+{ 
+	switch(type) 
+	{
+	case DriverState::Running:
+		m_connector.OnDriverRunning();
+		break;
+	case DriverState::Starting:
+		m_connector.OnDriverStarting();
+		break;
+	case DriverState::Stopping:
+		m_connector.OnDriverStopping();
+		break;
+	case DriverState::Stopped:
+		m_connector.OnDriverStopped();
+		break;
+	default:
+		break;
+	}
+	return RPC_S_OK; 
+}
+
+rpclib::RPCRESULT 
+PartCoverConnector2::IntercommunicationFacade::AddFunction(int id, String param1, String param2)
+{ 
+	return RPC_S_OK; 
+}
+
+rpclib::RPCRESULT 
+PartCoverConnector2::IntercommunicationFacade::GetRules(Rules *rules)
+{ 
+	*rules = m_connector.m_rules;
+	return RPC_S_OK; 
+}
+
+rpclib::RPCRESULT 
+PartCoverConnector2::IntercommunicationFacade::StoreResultFunctionMap(FunctionMap &map)
+{
+	m_connector.m_functions.Swap(map);
+	return RPC_S_OK; 
+}
+
+rpclib::RPCRESULT 
+PartCoverConnector2::IntercommunicationFacade::StoreResultInstrumentation(InstrumentResults &map)
+{
+	m_connector.m_instrumentResults.Swap(map);
+	return RPC_S_OK; 
+}
+

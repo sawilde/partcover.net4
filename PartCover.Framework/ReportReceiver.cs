@@ -27,12 +27,15 @@ namespace PartCover.Framework
         }
 
         private AssemblyEntry currentAssembly;
-        public void EnterAssembly(string assemblyName, string moduleName)
+        public void EnterAssembly(int domainIndex, string domainName, string assemblyName, string moduleName)
         {
             Report.Assemblies.Add(currentAssembly = new AssemblyEntry
             {
+                AssemblyRef = Report.Assemblies.Count + 1,
                 Module = moduleName,
-                Name = assemblyName
+                Name = assemblyName,
+                Domain = domainName,
+                DomainIndex = domainIndex
             });
         }
 
