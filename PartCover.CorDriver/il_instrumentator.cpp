@@ -132,8 +132,9 @@ void Instrumentator::UnloadModule(ModuleID module) {
 	LockGuard l = Lock();
 
     for(ModuleDescriptors::iterator it = m_descriptors.begin(); it != m_descriptors.end(); ++it) {
-        if (module == it->module)
+		if (module == it->module) {
 			it->loaded = false;
+		}
     }
 }
 
@@ -296,7 +297,7 @@ void Instrumentator::UpdateClassCode(ClassID classId, ICorProfilerInfo* profiler
 
 
 		LOGINFO2(METHOD_INNER, "Starting instrumentation for methodDef %s.%s", typedefName.c_str(), methodName.c_str());
-        InstrumentedILBody ilbody(methodHeader, methodSize);
+        InstrumentedILBody ilbody(methodHeader, methodSize, m_allocator);
 
         if(!ilbody.IsBodyParsed()) {
             LOGERROR2("Instrumentator", "InstrumentMethod", "Cannot parse body for methodDef %s.%s. Skip methodDef", typedefName.c_str(), methodName.c_str());

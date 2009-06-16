@@ -61,3 +61,4 @@ private:
 #define DUMP_INSTRUMENTATION        4
 #define DUMP_METHOD                 2
 #define DUMP_RESULTS                1
+

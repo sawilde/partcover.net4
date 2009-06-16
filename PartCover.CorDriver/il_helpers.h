@@ -11,6 +11,9 @@ typedef signed int          SDWORD;
 typedef unsigned long long  QWORD;
 
 namespace ILHelpers {
+	struct Allocator {
+		virtual DWORD* NewDword() = 0;
+	};
 
     //////////////////////////////////////////////////////////////////////////
     // Read & write stuff

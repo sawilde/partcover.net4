@@ -1,5 +1,17 @@
 #pragma once
 
+struct ModuleAllocator : public ILHelpers::Allocator 
+{
+	DWORD* NewDword() { 
+		DWORD* res = m_allocator.Alloc(1);
+		*res = 0;
+		return res;
+	}
+
+private:
+	FieldAllocator<DWORD, ForwardAllocatorChunk> m_allocator;
+};
+
 struct SkippedTypedef {
     String assemblyName;
 	String typedefName;
@@ -53,7 +65,7 @@ struct ModuleDescriptor {
 	int			 domain;
 	String       domainName;
 
-    bool         loaded;
+    bool            loaded;
 
     CComPtr<ISymUnmanagedReader> symReader;
 
@@ -92,6 +104,7 @@ struct LockGuard
 class Instrumentator
 {
     CCriticalSection m_cs;
+	ModuleAllocator m_allocator;
 
     LockGuard Lock() { return LockGuard(m_cs); }
 

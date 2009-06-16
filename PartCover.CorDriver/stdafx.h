@@ -96,3 +96,6 @@ template<> struct StaticAssert<true> {};
 
 #define STATIC_ASSERT(expr) do { StaticAssert<expr>(); break; } while(true)
 #define ASSERT_SIZEOF(type1, type2) do { StaticAssert<sizeof(type1)==sizeof(type2)>(); break; } while(true)
+
+
+#include "allocator.h"
