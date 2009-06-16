@@ -47,9 +47,11 @@ class InstrumentedILBody
     LPBYTE m_newBody;
     ULONG  m_newBodySize;
 
+	ILHelpers::Allocator& m_allocator;
+
 public:
 
-    InstrumentedILBody(LPCBYTE body, ULONG bodySize);
+    InstrumentedILBody(LPCBYTE body, ULONG bodySize, ILHelpers::Allocator& allocator);
     ~InstrumentedILBody(void);
 
     void ConstructNewBody();

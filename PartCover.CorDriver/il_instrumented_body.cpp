@@ -25,7 +25,8 @@ const DWORD MaxCounterValue = 0x1869F;
 LPCTSTR SLogPrefix = _T("      ");
 LPCTSTR LogPrefix = _T("        ");
 
-InstrumentedILBody::InstrumentedILBody(LPCBYTE body, ULONG bodySize) : m_decoder((COR_ILMETHOD*) body), m_parsed(false)
+InstrumentedILBody::InstrumentedILBody(LPCBYTE body, ULONG bodySize, ILHelpers::Allocator& allocator) 
+	: m_decoder((COR_ILMETHOD*) body), m_parsed(false), m_allocator(allocator)
 {
     m_newBody = 0;
     m_newBodySize = 0;
@@ -64,8 +65,11 @@ void InstrumentedILBody::ParseBody(LPCBYTE ilStart, LPCBYTE ilEnd) {
 struct InstrumentedCodeInserter {
     ChangeBlocks& changes;
     InstrumentedBlocks& counters;
+	ILHelpers::Allocator& m_allocator;
 
-    InstrumentedCodeInserter(ChangeBlocks& _changes, InstrumentedBlocks& _counters) : changes(_changes), counters(_counters) {}
+    InstrumentedCodeInserter(ChangeBlocks& _changes, InstrumentedBlocks& _counters, ILHelpers::Allocator& allocator) 
+		: changes(_changes), counters(_counters), m_allocator(allocator) {}
+
     void operator() (const ContinuousBlock& block) {
         LOGINFO2(DUMP_INSTRUMENTATION, "%screate instrumented block at %8X", SLogPrefix, block.byteOffset);
         CreateBlockFromPoint(block.byteOffset);
@@ -84,7 +88,7 @@ struct InstrumentedCodeInserter {
 
         LOGINFO1(DUMP_INSTRUMENTATION, "%sallocate counter", LogPrefix);
         InstrumentedBlock iBlock;
-        iBlock.counter = new DWORD(0);
+		iBlock.counter = m_allocator.NewDword();
         iBlock.maxCounter = 999999;
         iBlock.position = change.original;
 
@@ -128,14 +132,17 @@ void InstrumentedILBody::CreateSequenceCountersFromCode() {
 #endif 
 
     //make insert for modified
-    std::for_each(blocks.begin(), blocks.end(), InstrumentedCodeInserter(m_counterBlocks, m_instrumentedBlocks));
+    std::for_each(blocks.begin(), blocks.end(), 
+		InstrumentedCodeInserter(m_counterBlocks, m_instrumentedBlocks, m_allocator));
 
     SetPositionToInstrumentedBlocks();
 }
 
-void InstrumentedILBody::CreateSequenceCounters(ULONG32 pointsCount, ULONG32* points) {
+void InstrumentedILBody::CreateSequenceCounters(ULONG32 pointsCount, ULONG32* points)
+{
     //make insert for modified
-    std::for_each(points, points + pointsCount, InstrumentedCodeInserter(m_counterBlocks, m_instrumentedBlocks));
+    std::for_each(points, points + pointsCount, 
+		InstrumentedCodeInserter(m_counterBlocks, m_instrumentedBlocks, m_allocator));
 
     SetPositionToInstrumentedBlocks();
 }

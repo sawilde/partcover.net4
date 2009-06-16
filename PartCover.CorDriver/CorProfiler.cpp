@@ -198,9 +198,9 @@ HRESULT CoCreateInstanceWithoutModel( REFCLSID rclsid, REFIID riid, void **ppv )
 }
 
 STDMETHODIMP CorProfiler::AssemblyLoadFinished(AssemblyID assemblyId, HRESULT hrStatus) {
-    String asmName = CorHelper::GetAssemblyName(m_profilerInfo, assemblyId);
-    LOGINFO2(PROFILER_CALL_METHOD, "Assembly %X loaded (%s)", assemblyId, asmName.length() == 0 ? _T("noname") : asmName.c_str());
-    return S_OK;
+	String asmName = CorHelper::GetAssemblyName(m_profilerInfo, assemblyId);
+	LOGINFO2(PROFILER_CALL_METHOD, "Assembly %X loaded (%s)", assemblyId, asmName.length() == 0 ? _T("noname") : asmName.c_str());
+	return S_OK;
 }
 
 STDMETHODIMP CorProfiler::AssemblyUnloadStarted(AssemblyID assemblyId) {
