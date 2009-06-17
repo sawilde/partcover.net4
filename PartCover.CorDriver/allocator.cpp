@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include <iostream>
 
 byteptr_t PointedAllocatorChunk::Reserve(size_t count)
 {
@@ -42,4 +43,47 @@ PointedAllocatorChunk::ChunkPoint* PointedAllocatorChunk::CreatePointAfter(Chunk
 	previous->next = point;
 
 	return point;
+}
+
+
+track_type * get_map() {
+    // don't use normal new to avoid infinite recursion.
+    static track_type * track = new (std::malloc(sizeof *track)) track_type;
+    static track_printer printer(track);
+    return track;
+}
+
+#ifdef TRACK_MEMORY_ALLOCATION
+
+void * operator new(std::size_t size) throw(std::bad_alloc) {
+    // we are required to return non-null
+    void * mem = std::malloc(size == 0 ? 1 : size);
+    if(mem == 0) {
+        throw std::bad_alloc();
+    }
+    (*get_map())[mem] = size;
+    return mem;
+}
+
+void operator delete(void * mem) throw() {
+    if(get_map()->erase(mem) == 0) {
+        // this indicates a serious bug
+        //std::cerr << "bug: memory at " 
+        //          << mem << " wasn't allocated by us\n";
+    }
+    std::free(mem);
+}
+
+#endif
+
+void print_memory_usage() {
+	long total = 0;
+	track_type::const_iterator mem_it = get_map()->begin();
+	while(mem_it != get_map()->end())
+	{
+		total += mem_it->second;
+		std::cout << mem_it->second << " bytes" << std::endl;
+		mem_it++;
+	}
+	std::cout << "Total " << total << " bytes";
 }

@@ -51,13 +51,14 @@ namespace PartCover.Framework
         }
 
         private MethodEntry currentMethod;
-        public void EnterMethod(string methodName, string methodSig, uint flags, uint implFlags)
+        public void EnterMethod(string methodName, string methodSig, int bodySize, uint flags, uint implFlags)
         {
             currentTypedef.Methods.Add(currentMethod = new MethodEntry
             {
                 Type = currentTypedef,
                 Name = methodName,
                 Signature = methodSig,
+                BodySize = bodySize,
                 Flags = (MethodAttributes)flags,
                 ImplFlags = (MethodImplAttributes)implFlags
             });

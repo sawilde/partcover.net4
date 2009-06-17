@@ -10,9 +10,21 @@ private:
 	size_t _size;
 
 public:
-    DynamicArray(size_t count)
+    DynamicArray(size_t count) : _data(0), _size(0)
 	{
 		allocate(count);
+	}
+
+	DynamicArray(const DynamicArray& other) : _data(0), _size(0)
+	{
+		*this = other;
+	}
+
+	DynamicArray& operator = (const DynamicArray& other)
+	{
+		resize(other.size());
+		memcpy_s(_data, ValueSize * _size, other, ValueSize * other.size());
+		return *this;
 	}
 
     ~DynamicArray() { deallocate(); }

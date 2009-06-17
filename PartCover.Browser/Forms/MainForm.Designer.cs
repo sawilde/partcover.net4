@@ -58,8 +58,8 @@ namespace PartCover.Browser.Forms
             this.dlgSave = new System.Windows.Forms.SaveFileDialog();
             this.splitter1 = new System.Windows.Forms.Splitter();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.tvItems = new PartCover.Browser.Features.Controls.ReportTree();
             this.gbProps = new System.Windows.Forms.GroupBox();
+            this.tvItems = new PartCover.Browser.Features.Controls.ReportTree();
             this.ctlNodeView = new PartCover.Browser.Features.Controls.ItemDetails();
             this.panel1.SuspendLayout();
             this.gbProps.SuspendLayout();
@@ -189,9 +189,9 @@ namespace PartCover.Browser.Forms
             // 
             // splitter1
             // 
-            this.splitter1.Location = new System.Drawing.Point(200, 0);
+            this.splitter1.Location = new System.Drawing.Point(277, 0);
             this.splitter1.Name = "splitter1";
-            this.splitter1.Size = new System.Drawing.Size(3, 338);
+            this.splitter1.Size = new System.Drawing.Size(3, 482);
             this.splitter1.TabIndex = 2;
             this.splitter1.TabStop = false;
             // 
@@ -203,8 +203,19 @@ namespace PartCover.Browser.Forms
             this.panel1.Location = new System.Drawing.Point(0, 0);
             this.panel1.Name = "panel1";
             this.panel1.Padding = new System.Windows.Forms.Padding(3);
-            this.panel1.Size = new System.Drawing.Size(200, 338);
+            this.panel1.Size = new System.Drawing.Size(277, 482);
             this.panel1.TabIndex = 5;
+            // 
+            // gbProps
+            // 
+            this.gbProps.Controls.Add(this.ctlNodeView);
+            this.gbProps.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.gbProps.Location = new System.Drawing.Point(3, 364);
+            this.gbProps.Name = "gbProps";
+            this.gbProps.Size = new System.Drawing.Size(271, 115);
+            this.gbProps.TabIndex = 5;
+            this.gbProps.TabStop = false;
+            this.gbProps.Text = "Node properties";
             // 
             // tvItems
             // 
@@ -214,33 +225,22 @@ namespace PartCover.Browser.Forms
             this.tvItems.Name = "tvItems";
             this.tvItems.SelectedImageIndex = 0;
             this.tvItems.ServiceContainer = null;
-            this.tvItems.Size = new System.Drawing.Size(194, 232);
+            this.tvItems.Size = new System.Drawing.Size(271, 361);
             this.tvItems.Sorted = true;
             this.tvItems.TabIndex = 0;
-            // 
-            // gbProps
-            // 
-            this.gbProps.Controls.Add(this.ctlNodeView);
-            this.gbProps.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.gbProps.Location = new System.Drawing.Point(3, 235);
-            this.gbProps.Name = "gbProps";
-            this.gbProps.Size = new System.Drawing.Size(194, 100);
-            this.gbProps.TabIndex = 5;
-            this.gbProps.TabStop = false;
-            this.gbProps.Text = "Node properties";
             // 
             // ctlNodeView
             // 
             this.ctlNodeView.Dock = System.Windows.Forms.DockStyle.Fill;
             this.ctlNodeView.Location = new System.Drawing.Point(3, 16);
             this.ctlNodeView.Name = "ctlNodeView";
-            this.ctlNodeView.Size = new System.Drawing.Size(188, 81);
+            this.ctlNodeView.Size = new System.Drawing.Size(265, 96);
             this.ctlNodeView.TabIndex = 0;
             // 
             // MainForm
             // 
             this.AutoScaleBaseSize = new System.Drawing.Size(5, 13);
-            this.ClientSize = new System.Drawing.Size(680, 338);
+            this.ClientSize = new System.Drawing.Size(794, 482);
             this.Controls.Add(this.splitter1);
             this.Controls.Add(this.panel1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));

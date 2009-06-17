@@ -49,4 +49,5 @@ public:
     void PrepareItemRules();
 
     static bool CreateRuleFromItem(const String& item, String* rule);
+	static void ReleaseResources();
 };

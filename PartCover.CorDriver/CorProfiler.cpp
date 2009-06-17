@@ -31,6 +31,8 @@ CorProfiler::CorProfiler() : m_instrumentator(m_rules) {
 
 STDMETHODIMP CorProfiler::Initialize( /* [in] */ IUnknown *pICorProfilerInfoUnk )
 {
+	//__asm int 3;
+
     HRESULT hr;
 
     ATLTRACE("CorProfiler::Initialize");
@@ -65,6 +67,7 @@ STDMETHODIMP CorProfiler::Initialize( /* [in] */ IUnknown *pICorProfilerInfoUnk 
 			COR_PRF_MONITOR_MODULE_LOADS|
 			COR_PRF_MONITOR_ASSEMBLY_LOADS|
 			COR_PRF_MONITOR_APPDOMAIN_LOADS|
+			COR_PRF_MONITOR_JIT_COMPILATION|
 			COR_PRF_DISABLE_INLINING|
 			COR_PRF_DISABLE_OPTIMIZATIONS;
 
@@ -109,6 +112,9 @@ STDMETHODIMP CorProfiler::Shutdown( void )
 	m_communication.Disconnect();
 
     m_currentInstance = 0;
+
+	print_memory_usage();
+
     return S_OK; 
 }
 
@@ -212,8 +218,14 @@ STDMETHODIMP CorProfiler::AssemblyUnloadStarted(AssemblyID assemblyId) {
 STDMETHODIMP CorProfiler::ClassLoadFinished(ClassID classId, HRESULT hrStatus) {
     String className = CorHelper::GetClassName(m_profilerInfo, classId);
     LOGINFO2(PROFILER_CALL_METHOD, "Class %X loaded (%s)", classId, className.length() == 0 ? _T("noname") : className.c_str());
-    m_instrumentator.UpdateClassCode(classId, m_profilerInfo, m_binder);
     return S_OK;
+}
+
+STDMETHODIMP CorProfiler::JITCompilationStarted(FunctionID functionId, BOOL fIsSafeToBlock) {
+	String methodName = CorHelper::GetMethodPath(m_profilerInfo, functionId);
+	LOGINFO2(PROFILER_CALL_METHOD, "Method %X jit started (%s)", functionId, methodName.length() == 0 ? _T("noname") : methodName.c_str());
+	m_instrumentator.UpdateFunctionCode(functionId, m_profilerInfo, m_binder);
+	return S_OK;
 }
 
 STDMETHODIMP CorProfiler::ClassUnloadStarted(ClassID classId) {

@@ -12,6 +12,7 @@ namespace CorHelper {
 	String TypeRefName(IMetaDataImport* mdImport, mdTypeRef tr);
 
     String GetClassName(ICorProfilerInfo* info, ClassID classId);
+	String GetMethodPath(ICorProfilerInfo* info, FunctionID funcId) ;
 
 	String GetMethodName(IMetaDataImport* mdImport, mdMethodDef methodDef, DWORD* attrs, DWORD* implFlags) ;
 

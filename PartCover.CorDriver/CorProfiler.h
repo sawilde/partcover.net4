@@ -127,8 +127,7 @@ public:
 
     STDMETHOD( JITCompilationStarted( 
         /* [in] */ FunctionID functionId,
-        /* [in] */ BOOL fIsSafeToBlock) )
-    { return S_OK; }
+        /* [in] */ BOOL fIsSafeToBlock) );
 
     STDMETHOD( JITCompilationFinished( 
         /* [in] */ FunctionID functionId,

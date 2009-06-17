@@ -10,11 +10,12 @@ namespace bidi {
 
 		byte* buffer = static_cast<byte*>(pData);
 		DWORD written = 0;
-		while(nSize > 0) {
-			if (0 == ReadFile(m_pipe, buffer, nSize, &written, NULL))
+		DWORD size = nSize;
+		while(size > 0) {
+			if (0 == ReadFile(m_pipe, buffer, size, &written, NULL))
 				throw std::exception();
 
-			nSize -= written;
+			size -= written;
 			buffer += written;
 		}
 
@@ -29,11 +30,12 @@ namespace bidi {
 
 		byte const* buffer = static_cast<byte const*>(pData);
 		DWORD written = 0;
-		while(nSize > 0) {
-			if (0 == WriteFile(m_pipe, buffer, nSize, &written, NULL))
+		DWORD size = nSize;
+		while(size > 0) {
+			if (0 == WriteFile(m_pipe, buffer, size, &written, NULL))
 				throw std::exception();
 
-			nSize -= written;
+			size -= written;
 			buffer += written;
 		}
 
@@ -42,7 +44,8 @@ namespace bidi {
 
 	NamedPipe & operator << (NamedPipe &ar, String const& t)
 	{
-		ar << t.size();
+		String::size_type string_size = t.size();
+		ar << string_size;
 		ar.write(t.c_str(), t.size() * sizeof(String::value_type));
 		return ar;
 	}

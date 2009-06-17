@@ -68,6 +68,7 @@ namespace PartCover.Framework
                     var metNode = AddElement(typeNode, "Method");
                     AddAttribute(metNode, "name").Value = m.Name;
                     AddAttribute(metNode, "sig").Value = m.Signature;
+                    AddAttribute(metNode, "bodysize").Value = m.BodySize.ToString();
                     AddAttribute(metNode, "flags").Value = ((long)m.Flags).ToString();
                     AddAttribute(metNode, "iflags").Value = ((long)m.ImplFlags).ToString();
 
@@ -94,6 +95,15 @@ namespace PartCover.Framework
         public static void Load(XmlElement node, Report report)
         {
             report.Date = ReadAttributeDate(node, "date");
+
+            foreach (var dFile in SelectChildNodes(node, "file"))
+            {
+                report.Files.Add(new FileEntry
+                {
+                    Id = ReadAttributeInt(dFile, "id"),
+                    PathUri = ReadAttribute(dFile, "url")
+                });
+            }
 
             foreach (var asmNode in SelectChildNodes(node, "assembly"))
             {
@@ -130,6 +140,7 @@ namespace PartCover.Framework
                     {
                         Name = ReadAttribute(methodNode, "name"),
                         Signature = ReadAttribute(methodNode, "sig"),
+                        BodySize = ReadAttributeInt(methodNode, "bodysize"),
                         Flags = (MethodAttributes)ReadAttributeLong(methodNode, "flags"),
                         ImplFlags = (MethodImplAttributes)ReadAttributeLong(methodNode, "iflags")
                     };

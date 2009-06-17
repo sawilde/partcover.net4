@@ -28,11 +28,12 @@ public:
 
     struct MethodResult {
 		MethodResult() 
-			: flags(0), implFlags(0)
+			: flags(0), implFlags(0), bodySize(0)
 		{}
 
         String name;
         String sig;
+		DWORD bodySize;
 
         DWORD flags;
         DWORD implFlags;

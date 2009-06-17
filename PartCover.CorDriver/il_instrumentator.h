@@ -1,5 +1,7 @@
 #pragma once
 
+#include "helpers.h"
+
 struct ModuleAllocator : public ILHelpers::Allocator 
 {
 	DWORD* NewDword() { 
@@ -22,14 +24,18 @@ struct LoadedClassInfo;
 class Rules;
 
 struct MethodDef {
-    MethodDef() {
+	MethodDef() : bodyBytes(0)
+	{
         bodyUpdated = false;
         methodDef = 0;
     }   
 
     mdMethodDef         methodDef;
+
     bool                bodyUpdated;
+	int                 bodySize;
 	InstrumentedBlocks  bodyBlocks;
+	DynamicArray<BYTE>  bodyBytes;
 
 	String				methodName;
 	String				methodSig;
@@ -95,6 +101,11 @@ struct LockGuard
 		m_cs.Enter();
 	}
 
+	LockGuard(const LockGuard& cs) : m_cs(cs.m_cs) 
+	{
+		m_cs.Enter();
+	}
+
 	~LockGuard() 
 	{
 		m_cs.Leave();
@@ -103,10 +114,12 @@ struct LockGuard
 
 class Instrumentator
 {
-    CCriticalSection m_cs;
 	ModuleAllocator m_allocator;
 
-    LockGuard Lock() { return LockGuard(m_cs); }
+    LockGuard Lock() { 
+		static CCriticalSection m_cs;
+		return LockGuard(m_cs); 
+	}
 
     Rules& m_rules;
     ModuleDescriptors m_descriptors;
@@ -115,11 +128,14 @@ class Instrumentator
 	AppDomainIndexMap m_domains;
 	int m_nextDomainIndex;
 
-    void InstrumentTypedef(mdTypeDef typeDef, InstrumentHelper& helper);
-    void InstrumentMethod(TypeDef& typeDef, mdMethodDef methodDef, InstrumentHelper& helper, const String& typedefName);
+    void InstrumentTypedef(ModuleID module, mdTypeDef typeDef, InstrumentHelper& helper);
+    void InstrumentMethod(ModuleID module, TypeDef& typeDef, mdMethodDef methodDef, InstrumentHelper& helper, const String& typedefName);
 
     ULONG32 GetFileUrlId(const String&);
     ModuleDescriptor* GetModuleDescriptor(ModuleID assembly);
+
+	void ReplaceCode(ModuleDescriptor& module, TypeDef& defDescriptor, MethodDef& method, ICorProfilerInfo* profilerInfo);
+	void GenerateILCode(ModuleDescriptor& module, TypeDef& defDescriptor, MethodDef& method, ICorProfilerInfo* profilerInfo);
 
 public:
     Instrumentator(Rules& rules);
@@ -131,6 +147,7 @@ public:
     void UnloadModule(ModuleID module);
 
     void UpdateClassCode(ClassID classId, ICorProfilerInfo* profilerInfo, ISymUnmanagedBinder2* binder);
+	void UpdateFunctionCode(FunctionID classId, ICorProfilerInfo* profilerInfo, ISymUnmanagedBinder2* binder);
 
     void StoreResults(InstrumentResults&, ICorProfilerInfo* info);
 

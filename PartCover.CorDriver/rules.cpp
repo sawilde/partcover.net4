@@ -32,68 +32,11 @@ Rules::Rules(void)
 Rules::~Rules(void)
 {
 }
-/*
-bool ReadArray(MessagePipe& pipe, StringArray& array) {
-    size_t arrSize;
-	if (!pipe.read(&arrSize))
-		return false;
 
-	for(size_t i = 0; i < arrSize; ++i)
-	{
-		String str;
-		if (!pipe.read(&str))
-			return false;
-		array.push_back(str);
-	}
-
-	return true;
-}
-
-bool WriteArray(MessagePipe& pipe, StringArray& array) {
-	if (!pipe.write(array.size()))
-		return false;
-
-    for(StringArray::const_iterator it = array.begin(); it != array.end(); ++it) {
-		if (!pipe.write(*it))
-			return false;
-    }
-	return true;
-}
-
-bool Rules::SendData(MessagePipe& pipe)
+void Rules::ReleaseResources()
 {
-    ATLTRACE("PartCoverConnector::StartTarget - sending rules");
-
-	int profiler_level = this->profiler_level;
-
-	return 
-		pipe.write(enable_coverage_profile) &&
-		pipe.write(enable_call_tree_profile) &&
-		pipe.write(profiler_level) &&
-		WriteArray(pipe, m_includeItems) &&
-		WriteArray(pipe, m_excludeItems);
+	m_regexMap.clear();
 }
-
-bool Rules::ReceiveData(MessagePipe& pipe) {
-	int profiler_level;
-
-	bool result = 
-		pipe.read(&enable_coverage_profile) &&
-		pipe.read(&enable_call_tree_profile) &&
-		pipe.read(&profiler_level) &&
-		ReadArray(pipe, m_includeItems) &&
-		ReadArray(pipe, m_excludeItems);
-
-
-	if (!result) {
-		return false;
-	}
- 
-	this->profiler_level = static_cast<ProfilerMode>(profiler_level);
-    PrepareItemRules();
-    return true;
-}
-*/
 
 void Rules::Dump() const {
     DriverLog& log = DriverLog::get();

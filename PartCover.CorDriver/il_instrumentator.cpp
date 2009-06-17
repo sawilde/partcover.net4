@@ -114,7 +114,7 @@ void Instrumentator::InstrumentModule(ModuleID module, const String& moduleName,
     HCORENUM hEnum = 0;
     mdTypeDef typeDef;
     while(SUCCEEDED(hr = mdImport->EnumTypeDefs(&hEnum, &typeDef, 1, &bufferSize)) && bufferSize > 0) {
-        InstrumentTypedef(typeDef, helper);
+		InstrumentTypedef(desc.module, typeDef, helper);
     }
 
     mdImport->CloseEnum(hEnum);
@@ -146,7 +146,7 @@ ModuleDescriptor* Instrumentator::GetModuleDescriptor(ModuleID module) {
     return 0;
 }
 
-void Instrumentator::InstrumentTypedef(mdTypeDef typeDef, InstrumentHelper& helper) 
+void Instrumentator::InstrumentTypedef(ModuleID module, mdTypeDef typeDef, InstrumentHelper& helper) 
 {
     DriverLog& log = DriverLog::get();
     HRESULT hr;
@@ -189,7 +189,7 @@ void Instrumentator::InstrumentTypedef(mdTypeDef typeDef, InstrumentHelper& help
     ULONG count;
     mdMethodDef method;
     while(SUCCEEDED(hr = helper.mdImport->EnumMethods(&enumHandle, typeDef, &method, 1, &count)) && count > 0) {
-		InstrumentMethod(typeDefDescriptor, method, helper, typedefName);
+		InstrumentMethod(module, typeDefDescriptor, method, helper, typedefName);
     }
     helper.mdImport->CloseEnum(enumHandle);
 
@@ -201,7 +201,7 @@ void Instrumentator::InstrumentTypedef(mdTypeDef typeDef, InstrumentHelper& help
     typedefMap[typeDef].swap(typeDefDescriptor);
 }
 
-void Instrumentator::InstrumentMethod(TypeDef& typeDef, mdMethodDef methodDef, InstrumentHelper& helper, const String& typedefName) 
+void Instrumentator::InstrumentMethod(ModuleID module, TypeDef& typeDef, mdMethodDef methodDef, InstrumentHelper& helper, const String& typedefName) 
 {
     DriverLog& log = DriverLog::get();
 
@@ -221,11 +221,15 @@ void Instrumentator::InstrumentMethod(TypeDef& typeDef, mdMethodDef methodDef, I
         return;
     }
 
+	ULONG methodSize = 0;
+	helper.profilerInfo->GetILFunctionBody(module, methodDef, NULL, &methodSize);
+
     LOGINFO1(METHOD_INNER, "Store new body (have %d items already)", (int)methods.size());
     MethodDef method;
     method.methodDef = methodDef;
 	method.bodyUpdated = false;
 	method.methodName = CorHelper::GetMethodName(helper.mdImport, method.methodDef, NULL, NULL);
+	method.bodySize = methodSize;
 	CorHelper::ParseMethodSig(helper.profilerInfo, helper.mdImport, method.methodDef, &method.methodSig);
 
     methods.insert(MethodDefMapPair(method.methodDef, method));
@@ -233,9 +237,51 @@ void Instrumentator::InstrumentMethod(TypeDef& typeDef, mdMethodDef methodDef, I
     LOGINFO4(METHOD_INSTRUMENT, "      Asm %X: Method %s.%s (0x%X) was introduced", helper.module->assembly, typedefName.c_str(), methodName.c_str(), method.methodDef);
 }
 
-void Instrumentator::UpdateClassCode(ClassID classId, ICorProfilerInfo* profilerInfo, ISymUnmanagedBinder2* binder) {
-    HRESULT hr;
+void Instrumentator::UpdateFunctionCode(FunctionID func, ICorProfilerInfo* info, ISymUnmanagedBinder2* binder) 
+{
+	ClassID funcClass;
+	ModuleID funcModule;
+	mdToken funcToken;
+	if(FAILED(info->GetFunctionInfo(func, &funcClass, &funcModule, &funcToken))) {
+		return;
+	}
 
+	String funcPath = CorHelper::GetMethodPath(info, func);
+
+	ModuleDescriptor* module = GetModuleDescriptor(funcModule);
+	if (module == 0) 
+	{
+		// dont log an error - it's happens very often
+		//LOGERROR1("Instrumentator", "UpdateFunctionCode", "GetModuleDescriptor failed for %s", funcPath.c_str());
+		return;
+	}
+
+	mdTypeDef typeDef;
+	if(FAILED(info->GetClassIDInfo(funcClass, NULL, &typeDef))) {
+		LOGERROR1("Instrumentator", "UpdateFunctionCode", "GetClassIDInfo failed for %s", funcPath.c_str());
+		return;
+	}
+	
+    TypedefDescriptorMap::iterator typeDefinitionIt = module->typeDefs.find(typeDef);
+    if (typeDefinitionIt == module->typeDefs.end()) {
+		// dont log an error - it's happens very often
+		//LOGERROR1("Instrumentator", "UpdateFunctionCode", "No typedef found for %s", funcPath.c_str());
+        return;
+    }
+
+    TypeDef& defDescriptor = typeDefinitionIt->second;
+
+    MethodDefMap::iterator methodIt = defDescriptor.methodDefs.find(funcToken);
+	if (typeDefinitionIt == module->typeDefs.end()) 
+	{
+		LOGERROR1("Instrumentator", "UpdateFunctionCode", "No methoddef found for %s", funcPath.c_str());
+		return;
+	}
+
+	ReplaceCode(*module, defDescriptor, methodIt->second, info);
+}
+
+void Instrumentator::UpdateClassCode(ClassID classId, ICorProfilerInfo* profilerInfo, ISymUnmanagedBinder2* binder) {
     ModuleID moduleId;
     mdTypeDef typeDef;
     if (FAILED(profilerInfo->GetClassIDInfo(classId, &moduleId, &typeDef))) {
@@ -272,142 +318,161 @@ void Instrumentator::UpdateClassCode(ClassID classId, ICorProfilerInfo* profiler
 
     TypeDef& defDescriptor = typeDefinitionIt->second;
 
-	String& typedefName = defDescriptor.fullName;
-
     MethodDefMap::iterator methodIt = defDescriptor.methodDefs.begin();
     while(methodIt != defDescriptor.methodDefs.end()) {
         MethodDef& method = (methodIt++)->second;
-        if (method.bodyUpdated) {
-            LOGINFO(METHOD_INSTRUMENT, "Cannot update code for class (il body already updated)");
-            continue;
-        }
+		ReplaceCode(*module, defDescriptor, method, profilerInfo);
+    }
+}
 
-		String& methodName = method.methodName;
+void Instrumentator::ReplaceCode(ModuleDescriptor& module, TypeDef& defDescriptor, MethodDef& method, ICorProfilerInfo* profilerInfo)
+{
+	HRESULT hr;
+	String& methodName = defDescriptor.fullName + _T("::") + method.methodName;
 
-	    LPCBYTE methodHeader = 0;
-		ULONG methodSize = 0;
-		if(FAILED(hr = profilerInfo->GetILFunctionBody(module->module, method.methodDef, &methodHeader, &methodSize))) {
-			if(hr == CORPROF_E_FUNCTION_NOT_IL) {
-				LOGINFO1(METHOD_INNER, "GetILFunctionBody failed for method '%s' (not il-method)", methodName.c_str());
-			} else {
-				LOGINFO2(METHOD_INNER, "GetILFunctionBody failed for method '%s' with code 0x%X", methodName.c_str(), hr);
-			}
-			continue;
+    if (!method.bodyUpdated) {
+		GenerateILCode(module, defDescriptor, method, profilerInfo);
+    }
+
+	if (method.bodyBytes.size() == 0) 
+	{
+        LOGERROR2("Instrumentator", "ReplaceCode", "GenerateILCode failed for method '%s' in module %X", methodName.c_str(), module.module);
+		return;
+	}
+
+    CComPtr<IMethodMalloc> methodAllocator;
+    LOGINFO(METHOD_INNER, "Get IL Function Body Allocator");
+	if(FAILED(hr = profilerInfo->GetILFunctionBodyAllocator(module.module, &methodAllocator)))  
+	{
+        LOGERROR2("Instrumentator", "ReplaceCode", "GetILFunctionBodyAllocator failed for method '%s' in module %X", methodName.c_str(), module.module);
+        return;
+    }
+
+    LOGINFO(METHOD_INNER, "Allocate method body");
+	void* newBody = methodAllocator->Alloc(static_cast<ULONG>(method.bodyBytes.size()) );
+
+    LOGINFO(METHOD_INNER, "Copy method body");
+	memcpy(newBody, method.bodyBytes, method.bodyBytes.size() );
+
+    LOGINFO(METHOD_INNER, "Set new IL Function Body");
+    if (SUCCEEDED(hr = profilerInfo->SetILFunctionBody(module.module, method.methodDef, (LPCBYTE) newBody))) 
+	{
+        LOGINFO3(METHOD_INSTRUMENT, "Asm %X: Method %s (0x%X) il body updated", module.assembly, methodName.c_str(), method.methodDef);
+	} 
+	else 
+	{
+        LOGERROR3("Instrumentator", "ReplaceCode", "SetILFunctionBody failed for method '%s' in module %X with error %X", methodName.c_str(), module.module, hr);
+    }
+}
+
+void Instrumentator::GenerateILCode(ModuleDescriptor& module, TypeDef& defDescriptor, MethodDef& method, ICorProfilerInfo* profilerInfo)
+{
+	HRESULT hr;
+	String& methodName = method.methodName;
+
+    LPCBYTE methodHeader = 0;
+	ULONG methodSize = 0;
+	if(FAILED(hr = profilerInfo->GetILFunctionBody(module.module, method.methodDef, &methodHeader, &methodSize))) {
+		if(hr == CORPROF_E_FUNCTION_NOT_IL) {
+			LOGINFO1(METHOD_INNER, "GetILFunctionBody failed for method '%s' (not il-method)", methodName.c_str());
+		} else {
+			LOGINFO2(METHOD_INNER, "GetILFunctionBody failed for method '%s' with code 0x%X", methodName.c_str(), hr);
 		}
+        return;
+	}
 
 
-		LOGINFO2(METHOD_INNER, "Starting instrumentation for methodDef %s.%s", typedefName.c_str(), methodName.c_str());
-        InstrumentedILBody ilbody(methodHeader, methodSize, m_allocator);
+	LOGINFO1(METHOD_INNER, "Starting instrumentation for methodDef %s", methodName.c_str());
+    InstrumentedILBody ilbody(methodHeader, methodSize, m_allocator);
 
-        if(!ilbody.IsBodyParsed()) {
-            LOGERROR2("Instrumentator", "InstrumentMethod", "Cannot parse body for methodDef %s.%s. Skip methodDef", typedefName.c_str(), methodName.c_str());
-			continue;
-        }
+    if(!ilbody.IsBodyParsed()) {
+        LOGERROR1("Instrumentator", "GenerateILCode", "Cannot parse body for methodDef %s. Skip methodDef", methodName.c_str());
+        return;
+    }
 
-        if (module->symReader) 
+    if (module.symReader) 
+	{
+        CComPtr<ISymUnmanagedMethod> symMethod;
+		if(SUCCEEDED(hr = module.symReader->GetMethod( method.methodDef, &symMethod ))) 
 		{
-            CComPtr<ISymUnmanagedMethod> symMethod;
-			if(SUCCEEDED(hr = module->symReader->GetMethod( method.methodDef, &symMethod ))) 
+            ULONG32 points;
+            if(SUCCEEDED(hr = symMethod->GetSequencePointCount( &points ))) 
 			{
-                ULONG32 points;
-                if(SUCCEEDED(hr = symMethod->GetSequencePointCount( &points ))) 
+                ULONG32 pointsInRes;
+                DynamicArray<ULONG32> cPoints(points);
+                DynamicArray<ISymUnmanagedDocument*> pDocuments(points);
+                DynamicArray<ULONG32> lines(points);
+                DynamicArray<ULONG32> columns(points);
+                DynamicArray<ULONG32> endLines(points);
+                DynamicArray<ULONG32> endColumns(points);
+
+                if(SUCCEEDED(hr = symMethod->GetSequencePoints( points, &pointsInRes, cPoints, pDocuments, lines, columns, endLines, endColumns ))) 
 				{
-                    ULONG32 pointsInRes;
-                    DynamicArray<ULONG32> cPoints(points);
-                    DynamicArray<ISymUnmanagedDocument*> pDocuments(points);
-                    DynamicArray<ULONG32> lines(points);
-                    DynamicArray<ULONG32> columns(points);
-                    DynamicArray<ULONG32> endLines(points);
-                    DynamicArray<ULONG32> endColumns(points);
-
-                    if(SUCCEEDED(hr = symMethod->GetSequencePoints( points, &pointsInRes, cPoints, pDocuments, lines, columns, endLines, endColumns ))) 
-					{
 #ifdef DUMP_SYM_SEQUENCE_POINTS
-                        DumpSymSequencePoints(pointsInRes, cPoints, pDocuments, lines, columns, endLines, endColumns);
+                    DumpSymSequencePoints(pointsInRes, cPoints, pDocuments, lines, columns, endLines, endColumns);
 #endif
-                        //pointsInRes = pointsInRes <= 1 ? pointsInRes : pointsInRes - 1;
+                    //pointsInRes = pointsInRes <= 1 ? pointsInRes : pointsInRes - 1;
 
-                        LOGINFO(METHOD_INNER, "Insert block counters from source code");
-                        // here we may remove last seq point, because usually it points to exit point of method. do we really need it?
-                        ilbody.CreateSequenceCounters(pointsInRes, cPoints);
+                    LOGINFO(METHOD_INNER, "Insert block counters from source code");
+                    // here we may remove last seq point, because usually it points to exit point of method. do we really need it?
+                    ilbody.CreateSequenceCounters(pointsInRes, cPoints);
 
-                        InstrumentedBlocks& blocks = ilbody.GetInstrumentedBlocks();
-                        for(ULONG32 i = 0; i < pointsInRes; ++i) 
-						{
-                            InstrumentedBlock& block = blocks[i];
-
-                            ULONG32 urlSize;
-                            if (FAILED(hr = pDocuments[i]->GetURL(0, &urlSize, NULL))) 
-							{
-                                continue;
-                            }
-
-                            DynamicArray<TCHAR> url(urlSize);
-                            if (FAILED(hr = pDocuments[i]->GetURL(urlSize + 1, &urlSize, url))) 
-							{
-                                continue;
-                            }
-
-                            block.fileId = (ULONG32) GetFileUrlId(String(url));
-                            block.startLine = lines[i];
-                            block.startColumn = columns[i];
-                            block.endLine = endLines[i];
-                            block.endColumn = endColumns[i];
-                        }
-                    } 
-					else 
+                    InstrumentedBlocks& blocks = ilbody.GetInstrumentedBlocks();
+                    for(ULONG32 i = 0; i < pointsInRes; ++i) 
 					{
-                        LOGINFO3(METHOD_INNER, "Cannot exec GetSequencePoints for methodDef %s.%s. Error %X", typedefName.c_str(), methodName.c_str(), hr);
+                        InstrumentedBlock& block = blocks[i];
+
+                        ULONG32 urlSize;
+                        if (FAILED(hr = pDocuments[i]->GetURL(0, &urlSize, NULL))) 
+						{
+                            continue;
+                        }
+
+                        DynamicArray<TCHAR> url(urlSize);
+                        if (FAILED(hr = pDocuments[i]->GetURL(urlSize + 1, &urlSize, url))) 
+						{
+                            continue;
+                        }
+
+                        block.fileId = (ULONG32) GetFileUrlId(String(url));
+                        block.startLine = lines[i];
+                        block.startColumn = columns[i];
+                        block.endLine = endLines[i];
+                        block.endColumn = endColumns[i];
                     }
                 } 
 				else 
 				{
-                    LOGINFO3(METHOD_INNER, "Cannot exec GetSequencePointCount for methodDef %s.%s. Error %X", typedefName.c_str(), methodName.c_str(), hr);
+                    LOGINFO2(METHOD_INNER, "Cannot exec GetSequencePoints for methodDef %s. Error %X", methodName.c_str(), hr);
                 }
             } 
 			else 
 			{
-                LOGINFO3(METHOD_INNER, "Cannot get symMethod for methodDef %s.%s. Error %X", typedefName.c_str(), methodName.c_str(), hr);
+                LOGINFO2(METHOD_INNER, "Cannot exec GetSequencePointCount for methodDef %s. Error %X", methodName.c_str(), hr);
             }
         } 
-        
-        if( ilbody.GetInstrumentedBlocks().size() == 0 ) 
-		{
-            LOGINFO(METHOD_INNER, "Insert block counters from il-body");
-            ilbody.CreateSequenceCountersFromCode();
-        }
-
-        LOGINFO(METHOD_INNER, "Construct new body");
-        ilbody.ConstructNewBody();
-
-        ilbody.DumpNewBody();
-
-        CComPtr<IMethodMalloc> methodAllocator;
-        LOGINFO(METHOD_INNER, "Get IL Function Body Allocator");
-        if(FAILED(hr = profilerInfo->GetILFunctionBodyAllocator(moduleId, &methodAllocator)))  
-		{
-            LOGERROR2("Instrumentator", "InstrumentMethod", "GetILFunctionBodyAllocator failed for method '%s' in module %X", methodName.c_str(), moduleId);
-            continue;
-        }
-
-        LOGINFO(METHOD_INNER, "Allocate method body");
-        void* newBody = methodAllocator->Alloc( ilbody.GetInstrumentedBodySize() );
-
-        LOGINFO(METHOD_INNER, "Copy method body");
-        memcpy(newBody, ilbody.GetInstrumentedBody(), ilbody.GetInstrumentedBodySize() );
-
-        LOGINFO(METHOD_INNER, "Set new IL Function Body");
-        if (SUCCEEDED(hr = profilerInfo->SetILFunctionBody(moduleId, method.methodDef, (LPCBYTE) newBody))) 
-		{
-            LOGINFO4(METHOD_INSTRUMENT, "Asm %X: Method %s.%s (0x%X) il body updated", module->assembly, typedefName.c_str(), methodName.c_str(), method.methodDef);
-			method.bodyUpdated = true;
-			method.bodyBlocks = ilbody.GetInstrumentedBlocks();
-		} 
 		else 
 		{
-            LOGERROR3("Instrumentator", "InstrumentMethod", "SetILFunctionBody failed for method '%s' in module %X with error %X", methodName.c_str(), moduleId, hr);
+            LOGINFO2(METHOD_INNER, "Cannot get symMethod for methodDef %s. Error %X", methodName.c_str(), hr);
         }
+    } 
+    
+    if( ilbody.GetInstrumentedBlocks().size() == 0 ) 
+	{
+        LOGINFO(METHOD_INNER, "Insert block counters from il-body");
+        ilbody.CreateSequenceCountersFromCode();
     }
+
+    LOGINFO(METHOD_INNER, "Construct new body");
+    ilbody.ConstructNewBody();
+
+    ilbody.DumpNewBody();
+
+	// save new body created
+	method.bodyUpdated = true;
+	method.bodyBlocks = ilbody.GetInstrumentedBlocks();
+	method.bodyBytes.allocate(ilbody.GetInstrumentedBodySize());
+	memcpy_s(method.bodyBytes, method.bodyBytes.size(), ilbody.GetInstrumentedBody(), method.bodyBytes.size());
 }
 
 void Instrumentator::ActivateAppDomain(AppDomainID domain)
@@ -490,6 +555,7 @@ struct MethodResultsGatherer
 
 		methodResult.name = method.methodName;
 		methodResult.sig = method.methodSig;
+		methodResult.bodySize = method.bodySize;
 
 		if (method.bodyBlocks.size() == 0) {
 #ifdef DUMP_INSTRUMENT_RESULT

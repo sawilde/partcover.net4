@@ -46,8 +46,8 @@ namespace PartCover.Browser.Features.Controls
 
             switch (xDetector.Level)
             {
-            case 3: return methodComparer.Compare(nodeX, nodeY);
-            default: return nodeX.Text.CompareTo(nodeY.Text);
+                case 3: return methodComparer.Compare(nodeX, nodeY);
+                default: return nodeX.Text.CompareTo(nodeY.Text);
             }
         }
     }
@@ -292,9 +292,16 @@ namespace PartCover.Browser.Features.Controls
             coveredCodeSize = 0;
             foreach (var block in Method.Blocks)
             {
-                codeSize = block.Length;
-                coveredCodeSize = block.VisitCount > 0 ? block.Length : 0;
+                codeSize += block.Length;
+                coveredCodeSize += block.VisitCount > 0 ? block.Length : 0;
             }
+
+            if (Method.Blocks.Count == 0)
+            {
+                codeSize = Method.BodySize;
+            }
+
+
             var percent = codeSize == 0 ? 0 : coveredCodeSize / (float)codeSize * 100;
             Text = string.Format("{0} ({1:#0}%)", Method.Name, percent);
             ForeColor = Helpers.ColorProvider.GetForeColorForPercent(percent);

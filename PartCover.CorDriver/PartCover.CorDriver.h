@@ -4,7 +4,7 @@
 
 
  /* File created by MIDL compiler version 7.00.0500 */
-/* at Tue Jun 16 20:47:16 2009
+/* at Wed Jun 17 20:30:12 2009
  */
 /* Compiler settings for PartCover.CorDriver.idl:
     Oicf, W1, Zp8, env=Win32 (32b run)
@@ -178,6 +178,7 @@ EXTERN_C const IID IID_IReportReceiver;
         virtual HRESULT STDMETHODCALLTYPE EnterMethod( 
             /* [in] */ BSTR methodName,
             /* [in] */ BSTR methodSig,
+            /* [in] */ INT bodySize,
             /* [in] */ DWORD flags,
             /* [in] */ DWORD implFlags) = 0;
         
@@ -236,6 +237,7 @@ EXTERN_C const IID IID_IReportReceiver;
             IReportReceiver * This,
             /* [in] */ BSTR methodName,
             /* [in] */ BSTR methodSig,
+            /* [in] */ INT bodySize,
             /* [in] */ DWORD flags,
             /* [in] */ DWORD implFlags);
         
@@ -287,8 +289,8 @@ EXTERN_C const IID IID_IReportReceiver;
 #define IReportReceiver_EnterTypedef(This,typedefName,flags)	\
     ( (This)->lpVtbl -> EnterTypedef(This,typedefName,flags) ) 
 
-#define IReportReceiver_EnterMethod(This,methodName,methodSig,flags,implFlags)	\
-    ( (This)->lpVtbl -> EnterMethod(This,methodName,methodSig,flags,implFlags) ) 
+#define IReportReceiver_EnterMethod(This,methodName,methodSig,bodySize,flags,implFlags)	\
+    ( (This)->lpVtbl -> EnterMethod(This,methodName,methodSig,bodySize,flags,implFlags) ) 
 
 #define IReportReceiver_AddCoverageBlock(This,blockData)	\
     ( (This)->lpVtbl -> AddCoverageBlock(This,blockData) ) 

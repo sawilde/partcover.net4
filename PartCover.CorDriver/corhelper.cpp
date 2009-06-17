@@ -95,6 +95,21 @@ namespace CorHelper {
 		return String(buffer);
 	}
 
+	String GetMethodPath(ICorProfilerInfo* info, FunctionID func) 
+	{
+		ClassID funcClass;
+		ModuleID funcModule;
+		mdToken funcToken;
+		if(FAILED(info->GetFunctionInfo(func, &funcClass, &funcModule, &funcToken)))
+			return String();
+
+		CComPtr<IMetaDataImport> mdImport;
+		if (FAILED(info->GetModuleMetaData(funcModule, ofRead, IID_IMetaDataImport, (IUnknown**) &mdImport)))
+			return String();
+
+		return GetClassName(info, funcClass) + _T(".") + GetMethodName(mdImport, funcToken, NULL, NULL);
+	}
+
 	LPCTSTR StrCalling[] = {
 		_T("default"), _T("C"), _T("stdcall"), _T("thiscall"), _T("fastcall"), _T("vararg"), _T("field"), _T("localsig"), _T("property"), _T("unmanaged")
 	};
