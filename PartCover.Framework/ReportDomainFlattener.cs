@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using PartCover.Framework.Data;
 
@@ -85,6 +86,8 @@ namespace PartCover.Framework
 
         private static void CopyCoverage(MethodEntry dst, MethodEntry src)
         {
+            dst.BodySize = Math.Max(dst.BodySize, src.BodySize);
+
             foreach (var el in src.Blocks)
             {
                 var srcBlock = el;

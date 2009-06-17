@@ -11,7 +11,10 @@ namespace bidi
 	template<class T>
 	NamedPipe& operator << (NamedPipe& ar, const std::list<T>& a) 
 	{
-		ar << a.size();
+		typedef std::list<T> container;
+
+		container::size_type count = a.size();
+		ar << count;
 		for(std::list<T>::const_iterator it = a.begin(), it_end = a.end(); it != it_end; ++it)
 			ar << *it;
 		return ar;
@@ -38,8 +41,11 @@ namespace bidi
 
 	template<class T>
 	NamedPipe& operator << (NamedPipe& ar, const std::vector<T>& a) {
-		ar << a.size();
-		for(std::vector<T>::const_iterator it = a.begin(), it_end = a.end(); it != it_end; ++it)
+		typedef std::vector<T> container;
+
+		container::size_type count = a.size();
+		ar << count;
+		for(container::const_iterator it = a.begin(), it_end = a.end(); it != it_end; ++it)
 			ar << *it;
 		return ar;
 	}
@@ -106,11 +112,11 @@ namespace bidi
 	}
 
 	NamedPipe& operator << (NamedPipe& ar, const InstrumentResults::MethodResult &a) {
-		return ar << a.name << a.sig << a.flags << a.implFlags << a.blocks;
+		return ar << a.name << a.sig << a.flags << a.implFlags << a.blocks << a.bodySize;
 	}
 
 	NamedPipe& operator >> (NamedPipe& ar, InstrumentResults::MethodResult &a) {
-		return ar >> a.name >> a.sig >> a.flags >> a.implFlags >> a.blocks;
+		return ar >> a.name >> a.sig >> a.flags >> a.implFlags >> a.blocks >> a.bodySize;
 	}
 
 	NamedPipe& operator << (NamedPipe& ar, const InstrumentResults::SkippedItem &a) {

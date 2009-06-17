@@ -19,7 +19,7 @@ namespace PartCover.Browser.Features.Controls
 
         const string TYPEDEF_INFO = @"{{\rtf1\ansi\b {0}\b0\line\b Flags:\b0 {1}}}";
 
-        const string METHOD_INFO = @"{{\rtf1\ansi\b {0}\b0\line\b Sig:\b0 {1}\line\b Flags:\b0 {2}\line\b ImplFlags:\b0 {3}}}";
+        const string METHOD_INFO = @"{{\rtf1\ansi\b {0}\b0\line\b Sig:\b0 {1}\line\b Flags:\b0 {2}\line\b ImplFlags:\b0 {3}\line\b Body size:\b0 {4}}}";
 
         public void Select(AssemblyEntry assembly)
         {
@@ -38,7 +38,7 @@ namespace PartCover.Browser.Features.Controls
 
         public void Select(MethodEntry method)
         {
-            rtbNodeProps.Rtf = string.Format(METHOD_INFO, method.Name, method.Signature, method.Flags, method.ImplFlags);
+            rtbNodeProps.Rtf = string.Format(METHOD_INFO, method.Name, method.Signature, method.Flags, method.ImplFlags, method.BodySize);
         }
 
         public void Deselect()

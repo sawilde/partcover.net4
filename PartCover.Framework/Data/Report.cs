@@ -20,7 +20,8 @@ namespace PartCover.Framework.Data
 
         public string ResolveFilePath(int file)
         {
-            return Files.Find(x => x.Id == file).PathUri;
+            var entry = Files.Find(x => x.Id == file);
+            return entry == null ? null : entry.PathUri;
         }
 
         public Report Copy()
