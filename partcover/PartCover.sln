@@ -1,5 +1,5 @@
-Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual Studio 2008
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PartCover.Console", "PartCover.Console\PartCover.Console.csproj", "{7BF61BD2-84D9-4EFB-B6D8-3B851C8935A6}"
 	ProjectSection(ProjectDependencies) = postProject
 		{18D29461-7890-4EB6-8A8C-DAC5E6AB4B57} = {18D29461-7890-4EB6-8A8C-DAC5E6AB4B57}
@@ -20,9 +20,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PartViewer", "PartViewer\Pa
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PartViewer.Demo", "PartViewer.Demo\PartViewer.Demo.csproj", "{B8DC5C79-EA3B-423C-874B-815E0A619877}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PartCover", "PartCover.CorDriver\PartCover.CorDriver.vcproj", "{D179C0D8-461A-4FF1-8119-40CC73C520DB}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PartCover", "PartCover.CorDriver\PartCover.CorDriver.vcxproj", "{D179C0D8-461A-4FF1-8119-40CC73C520DB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PartCover.StressTest", "PartCover.StressTest\PartCover.StressTest.csproj", "{42F3F09C-FA74-4D75-9C68-CE074D94D513}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C4DD37FD-8D28-46E8-9A86-2BA19EE5A206}"
+	ProjectSection(SolutionItems) = preProject
+		UpgradeLog.XML = UpgradeLog.XML
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

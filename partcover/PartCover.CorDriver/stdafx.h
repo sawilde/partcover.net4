@@ -15,7 +15,7 @@
 #endif
 
 #ifndef _WIN32_WINNT		// Allow use of features specific to Windows NT 4 or later.
-#define _WIN32_WINNT 0x0400	// Change this to the appropriate value to target Windows 2000 or later.
+#define _WIN32_WINNT 0x0501	// Change this to the appropriate value to target Windows 2000 or later.
 #endif						
 
 #ifndef _WIN32_WINDOWS		// Allow use of features specific to Windows 98 or later.
@@ -89,7 +89,8 @@ typedef std::stringstream StringStream;
 # endif
 #endif
 
-template<bool static_assert>
+// static_assert is now a c++ keyword
+template<bool _static_assert>
 struct StaticAssert;
 
 template<> struct StaticAssert<true> {};
