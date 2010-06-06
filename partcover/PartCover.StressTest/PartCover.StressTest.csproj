@@ -52,6 +52,7 @@
   <ItemGroup>
     <Compile Include="Classes\ClassChain.cs" />
     <Compile Include="Classes\BigMethod.cs" />
+    <Compile Include="Classes\GenericClass.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
