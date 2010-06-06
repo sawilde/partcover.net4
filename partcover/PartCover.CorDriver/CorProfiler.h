@@ -10,7 +10,7 @@
     version(DRIVER_CORPROFILER2_VER)
 ]
 class CorProfiler 
-	: public ICorProfilerCallback2
+	: public ICorProfilerCallback3
 {
     static CorProfiler* m_currentInstance;
 
@@ -378,5 +378,16 @@ public:
     STDMETHOD( HandleDestroyed( 
         /* [in] */ GCHandleID handleId) )
     { return S_OK; }
+    
+	STDMETHOD( InitializeForAttach( 
+            /* [in] */ IUnknown *pCorProfilerInfoUnk,
+            /* [in] */ void *pvClientData,
+            /* [in] */ UINT cbClientData) )
+    { return S_OK; }
         
+    STDMETHOD( ProfilerAttachComplete( void) )
+    { return S_OK; }
+        
+    STDMETHOD( ProfilerDetachSucceeded( void) )
+    { return S_OK; }
 };
