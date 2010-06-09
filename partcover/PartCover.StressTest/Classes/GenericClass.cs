@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Diagnostics;
 
 namespace PartCover.StressTest.Classes
 {
@@ -16,6 +17,7 @@ namespace PartCover.StressTest.Classes
 
         public T DoAction<S>(S thing)
         {
+            Debug.WriteLine(thing);
             return default(T);
         }
 

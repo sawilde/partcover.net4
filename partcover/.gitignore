@@ -4,5 +4,6 @@ obj
 *.user
 *.suo
 *.sdf
+ipch/
 
 

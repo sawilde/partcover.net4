@@ -5,6 +5,27 @@
 #include "il_sigparser.h"
 
 namespace CorHelper {
+
+	typedef std::map<ModuleID, ClassID> ModuleClassMap;
+	ModuleClassMap moduleClassMap;
+
+	ClassID GetClassID(ICorProfilerInfo2* info, FunctionID funcID)
+	{
+		ClassID classId;
+		ModuleID moduleId;
+        mdToken token = mdTypeDefNil;
+		
+		if ((FAILED(info->GetFunctionInfo2(funcID, NULL, &classId, &moduleId, &token, 0, NULL, NULL))))
+			return 0;
+		
+		// if classId == 0 then this is probably a .NET2 module and there are known issues
+		// see http://blogs.msdn.com/b/carlos/archive/2009/11/09/net-generics-and-code-bloat-or-its-lack-thereof.aspx
+		// use a map to remember the last classid retrieved for that module (.ctor)
+		if (classId==0) return moduleClassMap[moduleId];
+		moduleClassMap[moduleId] = classId;
+		return classId;
+	}
+
 	String GetAppDomainName(ICorProfilerInfo* info, AppDomainID domain)
 	{
 		ULONG buffSize = 0;

@@ -147,7 +147,7 @@ public:
     void UnloadModule(ModuleID module);
 
     void UpdateClassCode(ClassID classId, ICorProfilerInfo* profilerInfo, ISymUnmanagedBinder2* binder);
-	void UpdateFunctionCode(FunctionID classId, ICorProfilerInfo* profilerInfo, ISymUnmanagedBinder2* binder);
+	void UpdateFunctionCode(FunctionID classId, ICorProfilerInfo2* profilerInfo, ISymUnmanagedBinder2* binder);
 
     void StoreResults(InstrumentResults&, ICorProfilerInfo* info);
 

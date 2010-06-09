@@ -237,16 +237,22 @@ void Instrumentator::InstrumentMethod(ModuleID module, TypeDef& typeDef, mdMetho
     LOGINFO4(METHOD_INSTRUMENT, "      Asm %X: Method %s.%s (0x%X) was introduced", helper.module->assembly, typedefName.c_str(), methodName.c_str(), method.methodDef);
 }
 
-void Instrumentator::UpdateFunctionCode(FunctionID func, ICorProfilerInfo* info, ISymUnmanagedBinder2* binder) 
+
+
+void Instrumentator::UpdateFunctionCode(FunctionID funcId, ICorProfilerInfo2* info, ISymUnmanagedBinder2* binder) 
 {
-	ClassID funcClass;
+    ClassID funcClass;
 	ModuleID funcModule;
 	mdToken funcToken;
-	if(FAILED(info->GetFunctionInfo(func, &funcClass, &funcModule, &funcToken))) {
-		return;
+	ULONG32 numTypes=0;
+	
+	if(FAILED(info->GetFunctionInfo2(funcId, NULL, NULL, &funcModule, &funcToken, 0, NULL, NULL))) {
+			return;
 	}
 
-	String funcPath = CorHelper::GetMethodPath(info, func);
+	funcClass = CorHelper::GetClassID(info, funcId);
+
+	String funcPath = CorHelper::GetMethodPath(info, funcId);
 
 	ModuleDescriptor* module = GetModuleDescriptor(funcModule);
 	if (module == 0) 
@@ -257,10 +263,13 @@ void Instrumentator::UpdateFunctionCode(FunctionID func, ICorProfilerInfo* info,
 	}
 
 	mdTypeDef typeDef;
-	if(FAILED(info->GetClassIDInfo(funcClass, NULL, &typeDef))) {
-		LOGERROR1("Instrumentator", "UpdateFunctionCode", "GetClassIDInfo failed for %s", funcPath.c_str());
-		return;
-	}
+	ModuleID moduleID;
+	ClassID parentClassID;
+	if(FAILED(info->GetClassIDInfo2(funcClass, &moduleID, &typeDef, &parentClassID, 0, NULL, NULL))) 
+		{
+			LOGERROR1("Instrumentator", "UpdateFunctionCode", "GetClassIDInfo2 failed for %s", funcPath.c_str());
+			return;
+		}
 	
     TypedefDescriptorMap::iterator typeDefinitionIt = module->typeDefs.find(typeDef);
     if (typeDefinitionIt == module->typeDefs.end()) {

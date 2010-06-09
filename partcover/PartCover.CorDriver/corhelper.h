@@ -4,6 +4,7 @@
 #include "il_sigparser.h"
 
 namespace CorHelper {
+	ClassID GetClassID(ICorProfilerInfo2* info, FunctionID funcID);
 	String GetAppDomainName(ICorProfilerInfo* info, AppDomainID domain);
     String GetAssemblyName(ICorProfilerInfo* info, AssemblyID assembly);
     String GetModuleName(ICorProfilerInfo* info, ModuleID module);

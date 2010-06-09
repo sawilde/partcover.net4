@@ -32,7 +32,7 @@ private:
 
     PartCoverMessageClient m_communication;
     CorProfilerOptions m_options;
-    CComQIPtr<ICorProfilerInfo> m_profilerInfo;
+    CComQIPtr<ICorProfilerInfo2> m_profilerInfo;
     CComQIPtr<ISymUnmanagedBinder2> m_binder;
 
 public:
