@@ -383,7 +383,7 @@ public:
             /* [in] */ IUnknown *pCorProfilerInfoUnk,
             /* [in] */ void *pvClientData,
             /* [in] */ UINT cbClientData) )
-    { return S_OK; }
+    { return E_FAIL; }
         
     STDMETHOD( ProfilerAttachComplete( void) )
     { return S_OK; }
