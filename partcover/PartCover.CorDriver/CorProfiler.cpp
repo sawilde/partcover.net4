@@ -33,6 +33,8 @@ STDMETHODIMP CorProfiler::Initialize( /* [in] */ IUnknown *pICorProfilerInfoUnk 
 {
 	//__asm int 3;
 
+	if (m_profilerInfo!=NULL) return E_FAIL; // Use First CLR wins 
+
     HRESULT hr;
 
     ATLTRACE("CorProfiler::Initialize");
