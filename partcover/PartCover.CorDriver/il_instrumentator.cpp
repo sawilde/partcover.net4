@@ -246,11 +246,9 @@ void Instrumentator::UpdateFunctionCode(FunctionID funcId, ICorProfilerInfo2* in
 	mdToken funcToken;
 	ULONG32 numTypes=0;
 	
-	if(FAILED(info->GetFunctionInfo2(funcId, NULL, NULL, &funcModule, &funcToken, 0, NULL, NULL))) {
+	if(FAILED(info->GetFunctionInfo2(funcId, NULL, &funcClass, &funcModule, &funcToken, 0, NULL, NULL))) {
 			return;
 	}
-
-	funcClass = CorHelper::GetClassID(info, funcId);
 
 	String funcPath = CorHelper::GetMethodPath(info, funcId);
 

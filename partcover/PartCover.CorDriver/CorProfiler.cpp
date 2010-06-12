@@ -33,7 +33,11 @@ STDMETHODIMP CorProfiler::Initialize( /* [in] */ IUnknown *pICorProfilerInfoUnk 
 {
 	//__asm int 3;
 
-	if (m_profilerInfo!=NULL) return E_FAIL; // Use First CLR wins 
+	CComQIPtr<ICorProfilerInfo3> v3 = pICorProfilerInfoUnk;
+	if (v3==NULL)
+	{
+		return E_FAIL;
+	}
 
     HRESULT hr;
 
@@ -88,7 +92,8 @@ STDMETHODIMP CorProfiler::Initialize( /* [in] */ IUnknown *pICorProfilerInfoUnk 
 
 	ATLTRACE("CorProfiler::Initialize - set DriverState::Running");
 	m_communication.SetDriverState(DriverState::Running);
-    return S_OK;   
+    	
+	return S_OK;   
 }
 
 STDMETHODIMP CorProfiler::Shutdown( void )
