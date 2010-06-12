@@ -9,8 +9,8 @@ namespace PartCover.StressTest
         {
             new Line001().Foo();
             new BigMethod().Foo(new Random(DateTime.Now.Millisecond).Next(255));
-            new GenericClass<int>(1).DoAction<string>("somedata");
             new GenericClass<string>("x").DoAction<float>(1);
+            new GenericClass<int>(1).DoAction<string>("somedata");
             new Subclass().Method("data");
             new SubclassGeneric<int>().Method(1);
 

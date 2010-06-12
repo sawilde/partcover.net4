@@ -112,6 +112,9 @@ struct LockGuard
 	}
 };
 
+typedef std::map<String, ULONG32> FileUrlMap;
+typedef std::pair<String, ULONG32> FileUrlMapPair;
+
 class Instrumentator
 {
 	ModuleAllocator m_allocator;
@@ -137,6 +140,8 @@ class Instrumentator
 	void ReplaceCode(ModuleDescriptor& module, TypeDef& defDescriptor, MethodDef& method, ICorProfilerInfo* profilerInfo);
 	void GenerateILCode(ModuleDescriptor& module, TypeDef& defDescriptor, MethodDef& method, ICorProfilerInfo* profilerInfo);
 
+	FileUrlMap FileMap;
+
 public:
     Instrumentator(Rules& rules);
     ~Instrumentator(void);
@@ -146,7 +151,7 @@ public:
     void InstrumentModule(ModuleID module, const String& moduleName, ICorProfilerInfo* profilerInfo, ISymUnmanagedBinder2* binder);
     void UnloadModule(ModuleID module);
 
-    void UpdateClassCode(ClassID classId, ICorProfilerInfo* profilerInfo, ISymUnmanagedBinder2* binder);
+    //void UpdateClassCode(ClassID classId, ICorProfilerInfo* profilerInfo, ISymUnmanagedBinder2* binder);
 	void UpdateFunctionCode(FunctionID classId, ICorProfilerInfo2* profilerInfo, ISymUnmanagedBinder2* binder);
 
     void StoreResults(InstrumentResults&, ICorProfilerInfo* info);

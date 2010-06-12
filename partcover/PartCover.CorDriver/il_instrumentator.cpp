@@ -27,10 +27,7 @@ struct CompareNoCase {
     }
 };
 
-typedef std::map<String, ULONG32> FileUrlMap;
-typedef std::pair<String, ULONG32> FileUrlMapPair;
 
-FileUrlMap FileMap;
 
 ULONG32 Instrumentator::GetFileUrlId(const String& url) {
     FileUrlMap::iterator it = FileMap.find(url);
@@ -241,12 +238,11 @@ void Instrumentator::InstrumentMethod(ModuleID module, TypeDef& typeDef, mdMetho
 
 void Instrumentator::UpdateFunctionCode(FunctionID funcId, ICorProfilerInfo2* info, ISymUnmanagedBinder2* binder) 
 {
-    ClassID funcClass;
 	ModuleID funcModule;
 	mdToken funcToken;
 	ULONG32 numTypes=0;
-	
-	if(FAILED(info->GetFunctionInfo2(funcId, NULL, &funcClass, &funcModule, &funcToken, 0, NULL, NULL))) {
+
+	if(FAILED(info->GetFunctionInfo2(funcId, NULL, NULL, &funcModule, &funcToken, 0, NULL, NULL))) {
 			return;
 	}
 
@@ -255,81 +251,22 @@ void Instrumentator::UpdateFunctionCode(FunctionID funcId, ICorProfilerInfo2* in
 	ModuleDescriptor* module = GetModuleDescriptor(funcModule);
 	if (module == 0) 
 	{
-		// dont log an error - it's happens very often
-		//LOGERROR1("Instrumentator", "UpdateFunctionCode", "GetModuleDescriptor failed for %s", funcPath.c_str());
 		return;
 	}
-
-	mdTypeDef typeDef;
-	ModuleID moduleID;
-	ClassID parentClassID;
-	if(FAILED(info->GetClassIDInfo2(funcClass, &moduleID, &typeDef, &parentClassID, 0, NULL, NULL))) 
+	    
+	TypedefDescriptorMap::iterator typeDefinitionIt;
+	for (typeDefinitionIt = module->typeDefs.begin(); typeDefinitionIt != module->typeDefs.end(); ++typeDefinitionIt)
+	{
+		TypeDef& defDescriptor = typeDefinitionIt->second;
+		MethodDefMap::iterator methodIt = defDescriptor.methodDefs.find(funcToken);
+		if (methodIt != defDescriptor.methodDefs.end())
 		{
-			LOGERROR1("Instrumentator", "UpdateFunctionCode", "GetClassIDInfo2 failed for %s", funcPath.c_str());
+			ReplaceCode(*module, defDescriptor, methodIt->second, info);
 			return;
 		}
-	
-    TypedefDescriptorMap::iterator typeDefinitionIt = module->typeDefs.find(typeDef);
-    if (typeDefinitionIt == module->typeDefs.end()) {
-		// dont log an error - it's happens very often
-		//LOGERROR1("Instrumentator", "UpdateFunctionCode", "No typedef found for %s", funcPath.c_str());
-        return;
-    }
-
-    TypeDef& defDescriptor = typeDefinitionIt->second;
-
-    MethodDefMap::iterator methodIt = defDescriptor.methodDefs.find(funcToken);
-	if (typeDefinitionIt == module->typeDefs.end()) 
-	{
-		LOGERROR1("Instrumentator", "UpdateFunctionCode", "No methoddef found for %s", funcPath.c_str());
-		return;
 	}
 
-	ReplaceCode(*module, defDescriptor, methodIt->second, info);
-}
-
-void Instrumentator::UpdateClassCode(ClassID classId, ICorProfilerInfo* profilerInfo, ISymUnmanagedBinder2* binder) {
-    ModuleID moduleId;
-    mdTypeDef typeDef;
-    if (FAILED(profilerInfo->GetClassIDInfo(classId, &moduleId, &typeDef))) {
-        LOGINFO(METHOD_INSTRUMENT, "Cannot update code for class (no typedef)");
-        return;
-    }
-
-    AssemblyID assembly;
-    if (FAILED(profilerInfo->GetModuleInfo(moduleId, NULL, 0, NULL, NULL, &assembly))) {
-        LOGINFO(METHOD_INSTRUMENT, "Cannot update code for class (no assembly)");
-        return;
-    }
-
-    LockGuard l = Lock();
-
-    ModuleDescriptor* module = GetModuleDescriptor(moduleId);
-    if (module == 0) {
-        LOGINFO(METHOD_INSTRUMENT, "Cannot update code for class (no module)");
-        return;
-    }
-
-	CComPtr<IMetaDataImport> mdImport;
-	if (S_OK != profilerInfo->GetModuleMetaData(module->module, ofRead, IID_IMetaDataImport, (IUnknown**) &mdImport))
-	{
-        LOGINFO(METHOD_INSTRUMENT, "Cannot update code for class (no module metadata)");
-		return;
-	}
-
-    TypedefDescriptorMap::iterator typeDefinitionIt = module->typeDefs.find(typeDef);
-    if (typeDefinitionIt == module->typeDefs.end()) {
-        LOGINFO(METHOD_INSTRUMENT, "Cannot update code for class (no data)");
-        return;
-    }
-
-    TypeDef& defDescriptor = typeDefinitionIt->second;
-
-    MethodDefMap::iterator methodIt = defDescriptor.methodDefs.begin();
-    while(methodIt != defDescriptor.methodDefs.end()) {
-        MethodDef& method = (methodIt++)->second;
-		ReplaceCode(*module, defDescriptor, method, profilerInfo);
-    }
+	LOGERROR1("Instrumentator", "UpdateFunctionCode", "Unable to locate methodDef information for %s", funcPath.c_str());
 }
 
 void Instrumentator::ReplaceCode(ModuleDescriptor& module, TypeDef& defDescriptor, MethodDef& method, ICorProfilerInfo* profilerInfo)
