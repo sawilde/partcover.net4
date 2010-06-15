@@ -29,15 +29,16 @@ CorProfiler::CorProfiler() : m_instrumentator(m_rules) {
     ATLTRACE("CorProfiler::CorProfiler");
 }
 
+int CorProfiler::m_initialized = 0;
+
 STDMETHODIMP CorProfiler::Initialize( /* [in] */ IUnknown *pICorProfilerInfoUnk )
 {
 	//__asm int 3;
+	if (m_initialized==1) return E_FAIL;
+	m_initialized=1;
 
-	CComQIPtr<ICorProfilerInfo3> v3 = pICorProfilerInfoUnk;
-	if (v3==NULL)
-	{
-		return E_FAIL;
-	}
+	CComQIPtr<ICorProfilerInfo2> v2Minimum = pICorProfilerInfoUnk;
+	if (v2Minimum==NULL) return E_FAIL;
 
     HRESULT hr;
 

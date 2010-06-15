@@ -24,6 +24,8 @@ public:
 
 private:
 
+	static int m_initialized;
+
     FunctionMap m_functions;
 
     Rules m_rules;
