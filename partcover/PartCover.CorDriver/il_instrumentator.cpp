@@ -246,7 +246,7 @@ void Instrumentator::UpdateFunctionCode(FunctionID funcId, ICorProfilerInfo2* in
 			return;
 	}
 
-	String funcPath = CorHelper::GetMethodPath(info, funcId);
+	String funcPath = CorHelper::GetMethodPath(info, funcId, NULL);
 
 	ModuleDescriptor* module = GetModuleDescriptor(funcModule);
 	if (module == 0) 

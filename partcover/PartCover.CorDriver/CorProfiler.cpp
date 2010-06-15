@@ -16,7 +16,8 @@
 #include "corhelper.h"
 #include <conio.h>
 
-CorProfiler* CorProfiler::m_currentInstance = 0;
+CorProfiler* CorProfiler::m_currentInstance = NULL;
+int CorProfiler::m_initialized = 0;
 
 HRESULT CoCreateInstanceWithoutModel(REFCLSID rclsid, REFIID riid, void **ppv);
 
@@ -29,15 +30,118 @@ CorProfiler::CorProfiler() : m_instrumentator(m_rules) {
     ATLTRACE("CorProfiler::CorProfiler");
 }
 
+void __stdcall FunctionEnterProper(
+	FunctionID id, 
+	UINT_PTR clientData, 
+	COR_PRF_FRAME_INFO frame, 
+	COR_PRF_FUNCTION_ARGUMENT_INFO * arguments)
+{
+}
+
+void __stdcall FunctionLeaveProper(
+	FunctionID id, 
+	UINT_PTR clientData, 
+	COR_PRF_FRAME_INFO frame, 
+	COR_PRF_FUNCTION_ARGUMENT_RANGE *retvals)
+{
+}
+
+void _declspec(naked) FunctionTailcallProper(
+	FunctionID id, 
+	UINT_PTR clientData, 
+	COR_PRF_FRAME_INFO frame)
+{
+}
+
+void _declspec(naked) FunctionLeaveNative(
+	FunctionID id, 
+	UINT_PTR clientData, 
+	COR_PRF_FRAME_INFO frame, 
+	COR_PRF_FUNCTION_ARGUMENT_RANGE *retvals)
+{
+	__asm
+    {
+        push    ebp
+        mov     ebp,esp
+        pushad
+
+        mov     eax,[ebp+0x14]      // retvals
+        push    eax
+        mov     ecx,[ebp+0x10]      // frame
+        push    ecx
+        mov     edx,[ebp+0x0C]      // clientData
+        push    edx
+        mov     eax,[ebp+0x08]      // id
+        push    eax
+        call    FunctionLeaveProper
+
+        popad
+        pop     ebp
+        ret     16
+    }
+}
+
+void __declspec(naked) FunctionEnterNative(
+	FunctionID id, 
+	UINT_PTR clientData, 
+	COR_PRF_FRAME_INFO frame, 
+	COR_PRF_FUNCTION_ARGUMENT_INFO * arguments)
+{
+	__asm
+    {
+        push    ebp                 
+        mov     ebp,esp
+        pushad
+
+        mov     eax,[ebp+0x14]		// arguments
+        push    eax
+        mov     ecx,[ebp+0x10]		// frame
+        push    ecx
+        mov     edx,[ebp+0x0C]		// clientData
+        push    edx
+        mov     eax,[ebp+0x08]		// id
+        push    eax
+        call    FunctionEnterProper
+
+        popad
+        pop     ebp
+        ret     16
+    }
+}
+
+void _declspec(naked) FunctionTailcallNative(
+	FunctionID id, 
+	UINT_PTR clientData, 
+	COR_PRF_FRAME_INFO frame)
+{
+    __asm
+    {
+        push    ebp
+        mov     ebp,esp
+        pushad
+
+        mov     ecx,[ebp+0x10]      // frame
+        push    ecx
+        mov     edx,[ebp+0x0C]      // clientData
+        push    edx
+        mov     eax,[ebp+0x08]      // id
+        push    eax
+        call    FunctionTailcallProper
+
+        popad
+        pop     ebp
+        ret     12
+    }
+}
+
 STDMETHODIMP CorProfiler::Initialize( /* [in] */ IUnknown *pICorProfilerInfoUnk )
 {
 	//__asm int 3;
+	if (m_initialized==1) return E_FAIL;
+	m_initialized=1;
 
-	CComQIPtr<ICorProfilerInfo3> v3 = pICorProfilerInfoUnk;
-	if (v3==NULL)
-	{
-		return E_FAIL;
-	}
+	CComQIPtr<ICorProfilerInfo2> v2Minimum = pICorProfilerInfoUnk;
+	if (v2Minimum==NULL) return E_FAIL;
 
     HRESULT hr;
 
@@ -75,7 +179,9 @@ STDMETHODIMP CorProfiler::Initialize( /* [in] */ IUnknown *pICorProfilerInfoUnk 
 			COR_PRF_MONITOR_APPDOMAIN_LOADS|
 			COR_PRF_MONITOR_JIT_COMPILATION|
 			COR_PRF_DISABLE_INLINING|
-			COR_PRF_DISABLE_OPTIMIZATIONS;
+			COR_PRF_DISABLE_OPTIMIZATIONS|
+			//COR_PRF_ENABLE_FRAME_INFO|
+			COR_PRF_MONITOR_ENTERLEAVE;
 
         if (FAILED(hr = CoCreateInstanceWithoutModel(CLSID_CorSymBinder_SxS, IID_ISymUnmanagedBinder2, (void**) &m_binder))) {
             LOGINFO(PROFILER_CALL_METHOD, "Cannot create symbol binder. Work as usual");
@@ -84,6 +190,7 @@ STDMETHODIMP CorProfiler::Initialize( /* [in] */ IUnknown *pICorProfilerInfoUnk 
     
     ATLTRACE("CorProfiler::Initialize - set event mask");
     m_profilerInfo->SetEventMask(dwMask);
+	m_profilerInfo->SetEnterLeaveFunctionHooks2(FunctionEnterNative,FunctionLeaveNative,FunctionTailcallNative);
 
     LOGINFO(PROFILER_CALL_METHOD, "CorProfiler was successfully turning on with:");
     m_options.DumpOptions();
@@ -229,7 +336,7 @@ STDMETHODIMP CorProfiler::ClassLoadFinished(ClassID classId, HRESULT hrStatus) {
 }
 
 STDMETHODIMP CorProfiler::JITCompilationStarted(FunctionID functionId, BOOL fIsSafeToBlock) {
-	String methodName = CorHelper::GetMethodPath(m_profilerInfo, functionId);
+	String methodName = CorHelper::GetMethodPath(m_profilerInfo, functionId, NULL);
 	LOGINFO2(PROFILER_CALL_METHOD, "Method %X jit started (%s)", functionId, methodName.length() == 0 ? _T("noname") : methodName.c_str());
 	m_instrumentator.UpdateFunctionCode(functionId, m_profilerInfo, m_binder);
 	return S_OK;

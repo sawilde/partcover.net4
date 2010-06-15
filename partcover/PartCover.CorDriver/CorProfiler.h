@@ -1,5 +1,6 @@
 #pragma once
 
+
 [   
     coclass,
     uuid(DRIVER_CORPROFILER2_GUID),
@@ -12,9 +13,9 @@
 class CorProfiler 
 	: public ICorProfilerCallback3
 {
-    static CorProfiler* m_currentInstance;
-
+    
 public:
+	static CorProfiler* m_currentInstance;
     static void FinalizeInstance();
 
     HRESULT FinalConstruct() { m_currentInstance = this; return S_OK; }
@@ -23,6 +24,7 @@ public:
     CorProfiler();
 
 private:
+	static int m_initialized;
 
     FunctionMap m_functions;
 
@@ -32,10 +34,10 @@ private:
 
     PartCoverMessageClient m_communication;
     CorProfilerOptions m_options;
-    CComQIPtr<ICorProfilerInfo2> m_profilerInfo;
     CComQIPtr<ISymUnmanagedBinder2> m_binder;
 
 public:
+    CComQIPtr<ICorProfilerInfo2> m_profilerInfo;
 
     /************************************************************************/
     /* ICorProfilerCallback methods                                         */

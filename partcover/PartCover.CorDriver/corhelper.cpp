@@ -96,12 +96,12 @@ namespace CorHelper {
 		return String(buffer);
 	}
 
-	String GetMethodPath(ICorProfilerInfo* info, FunctionID func) 
+	String GetMethodPath(ICorProfilerInfo2* info, FunctionID func, COR_PRF_FRAME_INFO frame) 
 	{
 		ClassID funcClass;
 		ModuleID funcModule;
 		mdToken funcToken;
-		if(FAILED(info->GetFunctionInfo(func, &funcClass, &funcModule, &funcToken)))
+		if(FAILED(info->GetFunctionInfo2(func, frame, &funcClass, &funcModule, &funcToken, 0, NULL, NULL)))
 			return String();
 
 		CComPtr<IMetaDataImport> mdImport;
