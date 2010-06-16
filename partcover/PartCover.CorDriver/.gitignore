@@ -2,8 +2,6 @@ Debug/
 Release/
 PartCover.CorDriver.idl
 PartCover.CorDriver.tlb
-PartCover.CorDriver.vcxproj
-PartCover.CorDriver.vcxproj.filters
 PartCover.CorDriver.h
 PartCover.CorDriver_i.c
 

@@ -1,0 +1,226 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectName>PartCover</ProjectName>
+    <ProjectGuid>{D179C0D8-461A-4FF1-8119-40CC73C520DB}</ProjectGuid>
+    <RootNamespace>PartCover.CorDriver</RootNamespace>
+    <Keyword>AtlProj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseOfMfc>Static</UseOfMfc>
+    <UseOfAtl>false</UseOfAtl>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <UseOfAtl>Static</UseOfAtl>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\bin\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Debug\</IntDir>
+    <IgnoreImportLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</IgnoreImportLibrary>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Release\</IntDir>
+    <IgnoreImportLibrary Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</IgnoreImportLibrary>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)\..\libraries\atlsvr\atlsvr_9_0_70425\include;$(SolutionDir)\..\libraries\boost\boost_1_43_0;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Midl>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <GenerateStublessProxies>false</GenerateStublessProxies>
+      <TypeLibraryName>$(IntDir)PartCover.CorDriver.tlb</TypeLibraryName>
+      <HeaderFileName>PartCover.CorDriver.h</HeaderFileName>
+      <DllDataFileName>
+      </DllDataFileName>
+      <InterfaceIdentifierFileName>PartCover.CorDriver_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>PartCover.CorDriver_p.c</ProxyFileName>
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;_USRDLL;_ATL_ATTRIBUTES;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0000</Culture>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>mscoree.lib;comsupp.lib;corguids.lib;comsuppw.lib;Psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)PartCover.dll</OutputFile>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ModuleDefinitionFile>
+      </ModuleDefinitionFile>
+      <MergedIDLBaseFileName>
+      </MergedIDLBaseFileName>
+      <TypeLibraryFile>PartCover.CorDriver.tlb</TypeLibraryFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <ImportLibrary>$(OutDir)PartCover.CorDriver.lib</ImportLibrary>
+      <TargetMachine>MachineX86</TargetMachine>
+      <KeyFile>PartCover.CorDriver.snk </KeyFile>
+      <ProgramDatabaseFile>$(TargetDir)$(TargetName).pdb</ProgramDatabaseFile>
+    </Link>
+    <PostBuildEvent>
+      <Message>Performing registration</Message>
+      <Command>regsvr32 /s /c "$(TargetPath)"</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Midl>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <GenerateStublessProxies>true</GenerateStublessProxies>
+      <TypeLibraryName>$(IntDir)PartCover.CorDriver.tlb</TypeLibraryName>
+      <HeaderFileName>PartCover.CorDriver.h</HeaderFileName>
+      <DllDataFileName>
+      </DllDataFileName>
+      <InterfaceIdentifierFileName>PartCover.CorDriver_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>PartCover.CorDriver_p.c</ProxyFileName>
+    </Midl>
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_USRDLL;_ATL_ATTRIBUTES;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0419</Culture>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>mscoree.lib;comsupp.lib;corguids.lib;comsuppw.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)PartCover.CorDriver.dll</OutputFile>
+      <IgnoreSpecificDefaultLibraries>atlmincrt.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ModuleDefinitionFile>
+      </ModuleDefinitionFile>
+      <TypeLibraryFile>PartCover.CorDriver.tlb</TypeLibraryFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <BaseAddress>0x67000000</BaseAddress>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <ImportLibrary>$(OutDir)PartCover.CorDriver.lib</ImportLibrary>
+      <TargetMachine>MachineX86</TargetMachine>
+      <KeyFile>PartCover.CorDriver.snk</KeyFile>
+    </Link>
+    <PostBuildEvent>
+      <Message>Performing registration</Message>
+      <Command>regsvr32 /s /c "$(TargetPath)"</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="allocator.cpp" />
+    <ClCompile Include="corhelper.cpp" />
+    <ClCompile Include="corprofiler.cpp" />
+    <ClCompile Include="corprofiler_options.cpp" />
+    <ClCompile Include="environment.cpp" />
+    <ClCompile Include="function_map.cpp" />
+    <ClCompile Include="helpers.cpp" />
+    <ClCompile Include="il_helpers.cpp" />
+    <ClCompile Include="il_instrumentator.cpp" />
+    <ClCompile Include="il_instrumented_body.cpp" />
+    <ClCompile Include="il_sigparser.cpp" />
+    <ClCompile Include="instrumented_results.cpp" />
+    <ClCompile Include="logging.cpp" />
+    <ClCompile Include="module.cpp" />
+    <ClCompile Include="partcover_connector.cpp" />
+    <ClCompile Include="protocol.cpp" />
+    <ClCompile Include="rules.cpp" />
+    <ClCompile Include="stdafx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="RPCLib\transport\pipeclient.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="allocator.h" />
+    <ClInclude Include="corhelper.h" />
+    <ClInclude Include="corprofiler.h" />
+    <ClInclude Include="corprofiler_options.h" />
+    <ClInclude Include="defines.h" />
+    <ClInclude Include="environment.h" />
+    <ClInclude Include="function_map.h" />
+    <ClInclude Include="helpers.h" />
+    <ClInclude Include="il_helpers.h" />
+    <ClInclude Include="il_instrumentator.h" />
+    <ClInclude Include="il_instrumentedbody.h" />
+    <ClInclude Include="il_sigparser.h" />
+    <ClInclude Include="instrumented_results.h" />
+    <ClInclude Include="interface.h" />
+    <ClInclude Include="logging.h" />
+    <ClInclude Include="partcover_connector.h" />
+    <ClInclude Include="protocol.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="rules.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="RPCLib\idl.h" />
+    <ClInclude Include="RPCLib\ifs_parameters.h" />
+    <ClInclude Include="RPCLib\parameters.h" />
+    <ClInclude Include="RPCLib\pipestransport.h" />
+    <ClInclude Include="RPCLib\preproc.h" />
+    <ClInclude Include="RPCLib\proxy.h" />
+    <ClInclude Include="RPCLib\rpcserver.h" />
+    <ClInclude Include="RPCLib\types.h" />
+    <ClInclude Include="RPCLib\mt\mtsync.h" />
+    <ClInclude Include="RPCLib\mt\SynchronousServer.h" />
+    <ClInclude Include="RPCLib\transport\pipeclient.h" />
+    <ClInclude Include="RPCLib\transport\transport.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="PartCover.CorDriver.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="PartCover.CorDriver.rgs" />
+    <None Include="readme.txt" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
