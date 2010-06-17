@@ -1,6 +1,6 @@
 #pragma once
 
-#define PRODUCT_VERSION			"2.1"
+#define PRODUCT_VERSION			"4.0"
 
 // driver 
 #define DRIVER_CORPROFILER_VI_PROGID    "PartCover.CorDriver.CorProfiler"
@@ -14,6 +14,11 @@
 #define DRIVER_CORPROFILER2_GUID		"717FF691-2ADF-4AC0-985F-1DD3C42FDF90"
 #define DRIVER_CORPROFILER2_PROGID		"PartCover.CorDriver.CorProfiler.2"
 #define DRIVER_CORPROFILER2_VER			"2.1"
+
+// driver version 4
+#define DRIVER_CORPROFILER4_GUID		"717FF691-2ADF-4AC0-985F-1DD3C42FDF90"
+#define DRIVER_CORPROFILER4_PROGID		"PartCover.CorDriver.CorProfiler.4"
+#define DRIVER_CORPROFILER4_VER			"4.0"
 
 // connector
 #define DRIVER_CONNECTOR_VI_PROGID      "PartCover.CorDriver.Connector"

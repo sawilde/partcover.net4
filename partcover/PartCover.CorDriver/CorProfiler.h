@@ -2,12 +2,12 @@
 
 [   
     coclass,
-    uuid(DRIVER_CORPROFILER2_GUID),
+    uuid(DRIVER_CORPROFILER4_GUID),
     vi_progid(DRIVER_CORPROFILER_VI_PROGID),
-    progid(DRIVER_CORPROFILER2_PROGID),
+    progid(DRIVER_CORPROFILER4_PROGID),
     threading(both),
     helpstring("CorDriver.CorProfiler2 Class"),
-    version(DRIVER_CORPROFILER2_VER)
+    version(DRIVER_CORPROFILER4_VER)
 ]
 class CorProfiler 
 	: public ICorProfilerCallback3
