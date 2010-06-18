@@ -2,15 +2,15 @@
 
 [   
     coclass,
-    uuid(DRIVER_CORPROFILER2_GUID),
+    uuid(DRIVER_CORPROFILER4_GUID),
     vi_progid(DRIVER_CORPROFILER_VI_PROGID),
-    progid(DRIVER_CORPROFILER2_PROGID),
+    progid(DRIVER_CORPROFILER4_PROGID),
     threading(both),
     helpstring("CorDriver.CorProfiler2 Class"),
-    version(DRIVER_CORPROFILER2_VER)
+    version(DRIVER_CORPROFILER4_VER)
 ]
 class CorProfiler 
-	: public ICorProfilerCallback2
+	: public ICorProfilerCallback3
 {
     static CorProfiler* m_currentInstance;
 
@@ -24,6 +24,8 @@ public:
 
 private:
 
+	static int m_initialized;
+
     FunctionMap m_functions;
 
     Rules m_rules;
@@ -32,7 +34,7 @@ private:
 
     PartCoverMessageClient m_communication;
     CorProfilerOptions m_options;
-    CComQIPtr<ICorProfilerInfo> m_profilerInfo;
+    CComQIPtr<ICorProfilerInfo2> m_profilerInfo;
     CComQIPtr<ISymUnmanagedBinder2> m_binder;
 
 public:
@@ -378,5 +380,16 @@ public:
     STDMETHOD( HandleDestroyed( 
         /* [in] */ GCHandleID handleId) )
     { return S_OK; }
+    
+	STDMETHOD( InitializeForAttach( 
+            /* [in] */ IUnknown *pCorProfilerInfoUnk,
+            /* [in] */ void *pvClientData,
+            /* [in] */ UINT cbClientData) )
+    { return E_FAIL; }
         
+    STDMETHOD( ProfilerAttachComplete( void) )
+    { return S_OK; }
+        
+    STDMETHOD( ProfilerDetachSucceeded( void) )
+    { return S_OK; }
 };

@@ -22,13 +22,13 @@
         "Entry"
         {
         "MsmKey" = "8:_19CDC09240F13C4274F94DD0F61234B6"
-        "OwnerKey" = "8:_AEA562FFC94E48979BC37448B19A77C1"
+        "OwnerKey" = "8:_4C317028834E5191033169F9BC182CE8"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_19CDC09240F13C4274F94DD0F61234B6"
-        "OwnerKey" = "8:_4C317028834E5191033169F9BC182CE8"
+        "OwnerKey" = "8:_AEA562FFC94E48979BC37448B19A77C1"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -94,7 +94,7 @@
         "Entry"
         {
         "MsmKey" = "8:_B989D77FF1B08D8CE0D81E30A6FFEA17"
-        "OwnerKey" = "8:_AEA562FFC94E48979BC37448B19A77C1"
+        "OwnerKey" = "8:_A087B20E5391409797A4A90B1E246738"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -106,7 +106,7 @@
         "Entry"
         {
         "MsmKey" = "8:_B989D77FF1B08D8CE0D81E30A6FFEA17"
-        "OwnerKey" = "8:_A087B20E5391409797A4A90B1E246738"
+        "OwnerKey" = "8:_AEA562FFC94E48979BC37448B19A77C1"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -154,37 +154,7 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_AEA562FFC94E48979BC37448B19A77C1"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_2A215F17EFFAD9BA25982181EE3FC7D3"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_BEB9371A197F502FFE3A9E860BE20D7F"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_4C317028834E5191033169F9BC182CE8"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_A087B20E5391409797A4A90B1E246738"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_19CDC09240F13C4274F94DD0F61234B6"
+        "OwnerKey" = "8:_B989D77FF1B08D8CE0D81E30A6FFEA17"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -196,7 +166,37 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_B989D77FF1B08D8CE0D81E30A6FFEA17"
+        "OwnerKey" = "8:_19CDC09240F13C4274F94DD0F61234B6"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_A087B20E5391409797A4A90B1E246738"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_4C317028834E5191033169F9BC182CE8"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_BEB9371A197F502FFE3A9E860BE20D7F"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_2A215F17EFFAD9BA25982181EE3FC7D3"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_AEA562FFC94E48979BC37448B19A77C1"
         "MsmSig" = "8:_UNDEFINED"
         }
     }
@@ -281,7 +281,7 @@
                 {
                 "Name" = "8:.NET Framework"
                 "Message" = "8:[VSDNETMSG]"
-                "Version" = "8:2.0.50727"
+                "FrameworkVersion" = "8:2.0.50727"
                 "AllowLaterVersions" = "11:TRUE"
                 "InstallUrl" = "8:http://go.microsoft.com/fwlink/?LinkId=9832"
                 }
@@ -296,11 +296,6 @@
             "AssemblyAsmDisplayName" = "8:PartCover.Framework, Version=2.3.0.17954, Culture=neutral, PublicKeyToken=ce32817471b40621, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_19CDC09240F13C4274F94DD0F61234B6"
-                    {
-                    "Name" = "8:PartCover.Framework.dll"
-                    "Attributes" = "3:512"
-                    }
                 }
             "SourcePath" = "8:PartCover.Framework.dll"
             "TargetName" = "8:"
@@ -327,11 +322,6 @@
             "AssemblyAsmDisplayName" = "8:PartViewer, Version=1.0.3375.17953, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_2A215F17EFFAD9BA25982181EE3FC7D3"
-                    {
-                    "Name" = "8:PartViewer.dll"
-                    "Attributes" = "3:512"
-                    }
                 }
             "SourcePath" = "8:PartViewer.dll"
             "TargetName" = "8:"
@@ -358,11 +348,6 @@
             "AssemblyAsmDisplayName" = "8:PartCover.Browser.Api, Version=2.3.0.17954, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_4C317028834E5191033169F9BC182CE8"
-                    {
-                    "Name" = "8:PartCover.Browser.Api.dll"
-                    "Attributes" = "3:512"
-                    }
                 }
             "SourcePath" = "8:PartCover.Browser.Api.dll"
             "TargetName" = "8:"
@@ -449,11 +434,6 @@
             "AssemblyAsmDisplayName" = "8:Interop.PartCover, Version=2.1.0.0, Culture=neutral, PublicKeyToken=ce32817471b40621, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_B989D77FF1B08D8CE0D81E30A6FFEA17"
-                    {
-                    "Name" = "8:Interop.PartCover.dll"
-                    "Attributes" = "3:512"
-                    }
                 }
             "SourcePath" = "8:Interop.PartCover.dll"
             "TargetName" = "8:"
@@ -500,11 +480,6 @@
             "AssemblyAsmDisplayName" = "8:log4net, Version=1.2.10.0, Culture=neutral, PublicKeyToken=1b44e1d426115821, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_BEB9371A197F502FFE3A9E860BE20D7F"
-                    {
-                    "Name" = "8:log4net.dll"
-                    "Attributes" = "3:512"
-                    }
                 }
             "SourcePath" = "8:log4net.dll"
             "TargetName" = "8:"
@@ -612,7 +587,7 @@
                 {
                     "{9EF0B969-E518-4E46-987F-47570745A589}:_E7123D5F0DF24669A9E6E74D729E5A13"
                     {
-                    "Name" = "8:Gubka Bob"
+                    "Name" = "8:PartCover"
                     "AlwaysCreate" = "11:FALSE"
                     "Condition" = "8:"
                     "Transitive" = "11:FALSE"
@@ -621,7 +596,7 @@
                         {
                             "{9EF0B969-E518-4E46-987F-47570745A589}:_AAD65075D43D45D7BFD021359C042E31"
                             {
-                            "Name" = "8:PartCover .NET 2"
+                            "Name" = "8:PartCover .NET 4"
                             "AlwaysCreate" = "11:FALSE"
                             "Condition" = "8:"
                             "Transitive" = "11:FALSE"
@@ -672,16 +647,17 @@
         "Product"
         {
         "Name" = "8:Microsoft Visual Studio"
-        "ProductName" = "8:PartCover .NET 2.3"
-        "ProductCode" = "8:{14841822-B60D-418A-9AD7-6FA73104D927}"
-        "PackageCode" = "8:{BB72A8C6-B4C1-4F7C-AA30-9DBC292C8D2F}"
+        "ProductName" = "8:PartCover .NET 4.0"
+        "ProductCode" = "8:{C0595E52-2AE0-4AE2-8C04-B4FED996C7B5}"
+        "PackageCode" = "8:{6CC103CB-727C-4433-A4DB-64060C468C1A}"
         "UpgradeCode" = "8:{EF0BEDF5-C9A7-41AD-A62D-B03FC0451645}"
+        "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:FALSE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:1.0.0"
-        "Manufacturer" = "8:Gubka Bob"
+        "ProductVersion" = "8:4.0.0"
+        "Manufacturer" = "8:PartCover"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
         "Title" = "8:partcover.setup"
@@ -1264,7 +1240,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_80931A57A56A4E48A18C19026171F6FB"
             {
-            "SourcePath" = "8:..\\PartCover.CorDriver\\Release\\PartCover.CorDriver.dll"
+            "SourcePath" = "8:"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_A6B20546387E4D1487E0C50E81F5C43A"

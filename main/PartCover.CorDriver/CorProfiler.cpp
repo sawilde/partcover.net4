@@ -29,9 +29,16 @@ CorProfiler::CorProfiler() : m_instrumentator(m_rules) {
     ATLTRACE("CorProfiler::CorProfiler");
 }
 
+int CorProfiler::m_initialized = 0;
+
 STDMETHODIMP CorProfiler::Initialize( /* [in] */ IUnknown *pICorProfilerInfoUnk )
 {
 	//__asm int 3;
+	if (m_initialized==1) return E_FAIL;
+	m_initialized=1;
+
+	CComQIPtr<ICorProfilerInfo2> v2Minimum = pICorProfilerInfoUnk;
+	if (v2Minimum==NULL) return E_FAIL;
 
     HRESULT hr;
 
@@ -86,7 +93,8 @@ STDMETHODIMP CorProfiler::Initialize( /* [in] */ IUnknown *pICorProfilerInfoUnk 
 
 	ATLTRACE("CorProfiler::Initialize - set DriverState::Running");
 	m_communication.SetDriverState(DriverState::Running);
-    return S_OK;   
+    	
+	return S_OK;   
 }
 
 STDMETHODIMP CorProfiler::Shutdown( void )

@@ -468,7 +468,10 @@ namespace ILHelpers {
     }
 
     unsigned EmitSection(LPBYTE *buffer, const COR_ILMETHOD_SECT* section) {
-        unsigned size = (unsigned)(section->NextLoc() - section);
+		// NextLoc has been removed from the API
+		// see http://files.edin.dk/php/win32/dev/php_build/dotnet/corhlpr.h fo a copy of what it used to look like
+		// using Next as it is virtually identical
+		unsigned size = (unsigned)(section->Next() - section);
         if (buffer != 0 ) {
             memcpy(*buffer, section, size);
             *buffer += size;
