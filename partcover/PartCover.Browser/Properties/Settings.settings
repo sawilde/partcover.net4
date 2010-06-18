@@ -1,0 +1,27 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="PartCover.Coverage.Browser.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="ViewPaneFont" Type="System.Drawing.Font" Scope="User">
+      <Value Profile="(Default)">Courier New, 9.75pt</Value>
+    </Setting>
+    <Setting Name="ViewPaneBackground" Type="System.Drawing.Color" Scope="User">
+      <Value Profile="(Default)">239, 239, 228</Value>
+    </Setting>
+    <Setting Name="ViewPaneForeground" Type="System.Drawing.Color" Scope="User">
+      <Value Profile="(Default)">Black</Value>
+    </Setting>
+    <Setting Name="ViewPaneCoveredBlockBackroung" Type="System.Drawing.Color" Scope="User">
+      <Value Profile="(Default)">200, 255, 200</Value>
+    </Setting>
+    <Setting Name="ViewPaneUncoveredBlockBackroung" Type="System.Drawing.Color" Scope="User">
+      <Value Profile="(Default)">255, 200, 200</Value>
+    </Setting>
+    <Setting Name="VolumeTreeMethodSort" Type="System.String" Scope="User">
+      <Value Profile="(Default)">ByName</Value>
+    </Setting>
+    <Setting Name="HighlightAllFile" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

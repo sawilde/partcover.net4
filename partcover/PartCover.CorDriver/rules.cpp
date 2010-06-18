@@ -1,0 +1,296 @@
+#include "StdAfx.h"
+#include "interface.h"
+#include "rules.h"
+#include "logging.h"
+#include "corhelper.h"
+
+#define ATTRIBUTE_RULE_TAG _T("attribute:")
+
+RegexMap Rules::m_regexMap;
+
+namespace RulesHelpers {
+    String ExtractNamespace(const String& className) {
+        String::size_type namespaceEnd = className.find_last_of(_T('.'));
+        if (namespaceEnd == String::npos)
+            return String();
+
+        String namespaceName = className.substr(0, namespaceEnd);
+        if (namespaceName.length() == 0)
+            return String();
+
+        return namespaceName;
+    }
+}
+
+Rules::Rules(void)
+{
+    enable_coverage_profile = false;
+    enable_call_tree_profile = false;
+    profiler_level = COVERAGE_USE_ASSEMBLY_LEVEL;
+}
+
+Rules::~Rules(void)
+{
+}
+
+void Rules::ReleaseResources()
+{
+	m_regexMap.clear();
+}
+
+void Rules::Dump() const {
+    DriverLog& log = DriverLog::get();
+    log.WriteLine(_T("  Count Coverage - %s"), enable_coverage_profile ? _T("ON") : _T("OFF"));
+    log.WriteLine(_T("  Count Call Tree - %s"), enable_call_tree_profile ? _T("ON") : _T("OFF"));
+
+    for(StringArray::const_iterator it = m_excludeItems.begin(); it != m_excludeItems.end(); ++it )
+        log.WriteLine(_T("  Exclude %s"), it->c_str());
+    for(StringArray::const_iterator it = m_includeItems.begin(); it != m_includeItems.end(); ++it )
+        log.WriteLine(_T("  Include %s"), it->c_str());
+    log.WriteLine(_T(""));
+}
+
+void Rules::EnableMode(const ProfilerMode& mode) {
+    switch(mode) {
+//        case COUNT_CALL_DIAGRAM: enable_call_tree_profile = true; break;
+        case COUNT_COVERAGE: enable_coverage_profile = true; break;
+        case COVERAGE_USE_ASSEMBLY_LEVEL:
+        case COVERAGE_USE_CLASS_LEVEL: 
+            profiler_level = mode; break;
+        default: ATLTRACE("Mode %d is invalid", mode);
+    }
+}
+
+bool Rules::IsEnabledMode(const ProfilerMode& mode) const {
+    switch(mode) {
+//        case COUNT_CALL_DIAGRAM: return enable_call_tree_profile;
+        case COUNT_COVERAGE: return enable_coverage_profile;
+        case COVERAGE_USE_ASSEMBLY_LEVEL: 
+        case COVERAGE_USE_CLASS_LEVEL: 
+            return profiler_level == mode;
+        default: ATLTRACE("Mode %d is invalid", mode); return false;
+    }
+}
+
+void Rules::IncludeItem(const String& item) {
+    m_includeItems.push_back(item);
+}
+
+void Rules::ExcludeItem(const String& item) {
+    m_excludeItems.push_back(item);
+}
+
+bool Rules::CreateRuleFromItem(const String& item, String* rule) {
+	if (IsAttributeBasedRule(item))
+	{
+		String whole = item.substr();
+		if (rule)
+			rule->swap(whole);
+		return true;
+	}
+
+    LPCTSTR metas = _T(".[]^?+(){}\\$|!");
+    String res;
+	for(String::const_iterator it = item.begin(); it != item.end(); ++it) {
+        if (_T('*') != *it) {
+            if (NULL != wcschr(metas, *it))
+                res += _T('\\');
+            res += *it;
+        } else {
+            res += _T("(.*)");
+        }
+    }
+    if (res.length() == 0)
+        return false;
+
+    res.insert(res.begin(), _T('^'));
+    res.insert(res.end(), _T('$'));
+
+	if (0 == GetRegex(res))
+		return false;
+
+    if (rule) 
+        rule->swap(res);
+    return rule ? rule->length() > 0 : res.length() > 0;
+}
+
+void Rules::PrepareItemRules() {
+    String rule;
+    for(StringArray::const_iterator it = m_includeItems.begin(); it != m_includeItems.end(); ++it) {
+        if (CreateRuleFromItem(*it, &rule))
+            m_includeRules.push_back(rule);
+    }
+    for(StringArray::const_iterator it = m_excludeItems.begin(); it != m_excludeItems.end(); ++it) {
+        if (CreateRuleFromItem(*it, &rule))
+            m_excludeRules.push_back(rule);
+    }
+}
+
+String GetAttributeTypeDefName(const mdToken attrib, IMetaDataImport *mdImport)
+{
+	mdToken attribDef;
+	if (SUCCEEDED(mdImport->GetCustomAttributeProps(attrib, NULL, &attribDef, NULL, NULL)))
+	{
+		ULONG pchMethodName;
+		DWORD flags;
+		PCCOR_SIGNATURE sig;
+		ULONG sigSize;
+		ULONG codeRva;
+		DWORD implFlags;
+		mdToken attribTypeDef;
+		switch (TypeFromToken(attribDef))
+		{
+			case mdtMethodDef:
+				if (SUCCEEDED(mdImport->GetMethodProps(attribDef, &attribTypeDef, NULL, 0, &pchMethodName, 
+					&flags, &sig, &sigSize, &codeRva, &implFlags)))
+				{
+					return CorHelper::GetTypedefFullName(mdImport, attribTypeDef, NULL);
+				}
+				break;
+			case mdtMemberRef:
+				CComPtr<IMetaDataImport> refImport;
+				if (SUCCEEDED(mdImport->GetMemberRefProps(attribDef, &attribTypeDef, NULL, 0, 
+					&pchMethodName, &sig, &sigSize)))
+				{
+					switch (TypeFromToken(attribTypeDef))
+					{
+						case mdtTypeRef:
+							// TODO: does this work correctly with attributes that are inner classes?
+							return CorHelper::TypeRefName(mdImport, attribTypeDef);
+						case mdtTypeDef:
+							return CorHelper::GetTypedefFullName(mdImport, attribTypeDef, NULL);
+					}
+				}
+				break;
+		}
+	}
+	return String();
+}
+
+bool DoesAttributeMatch(const mdToken attribDef, const String& rule, IMetaDataImport *mdImport)
+{
+	String attribTypeDefName = GetAttributeTypeDefName(attribDef, mdImport);
+	return (rule.compare(attribTypeDefName) == 0);
+}
+
+bool DoAttributesMatch(const String& rule, const mdTypeDef typeDef, IMetaDataImport *mdImport)
+{
+	HCORENUM hEnum = 0;
+	mdCustomAttribute attrib;
+	ULONG bufferSize;
+	bool found = false;
+    while (SUCCEEDED(mdImport->EnumCustomAttributes(&hEnum, typeDef, 0, &attrib, 1, &bufferSize)) && bufferSize > 0)
+	{
+		if (DoesAttributeMatch(attrib, rule, mdImport))
+		{
+			found = true;
+			break;
+		}
+    }
+	mdImport->CloseEnum(hEnum);
+	return found;
+}
+
+bool Rules::IsTargetForRules(const String& target, const StringArray& rules, 
+					  const mdTypeDef typeDef, IMetaDataImport *mdImport)
+{
+	// Process the non-attribute rules first, as they are faster to match.
+    for (StringArray::const_iterator it = rules.begin(); it != rules.end(); ++it) {
+		if (Rules::IsAttributeBasedRule(*it))
+			continue;
+
+        RegexPtr reg = Rules::GetRegex(*it);
+		if (0 == reg)
+			continue;
+
+        CAtlREMatchContext<RegExpCharTraits> mcUrl;
+        if( reg->Match( target.c_str(), &mcUrl ) )
+            return true;
+    }
+
+	for (StringArray::const_iterator it = rules.begin(); it != rules.end(); ++it) {
+		if (Rules::IsAttributeBasedRule(*it))
+		{
+			if (DoAttributesMatch(it->substr(wcslen(ATTRIBUTE_RULE_TAG)), typeDef, mdImport))
+				return true;
+		}
+    }
+    return false;
+}
+
+bool Rules::IsItemValidForReport(const String& assembly, const String& className, 
+								 const mdTypeDef typeDef, IMetaDataImport *mdImport) const {
+    String ruleTarget = _T("[");
+    ruleTarget += assembly;
+    ruleTarget += _T("]");
+    ruleTarget += className;
+
+    if( IsTargetForRules(ruleTarget, m_excludeRules, typeDef, mdImport) ) return false;
+    if( IsTargetForRules(ruleTarget, m_includeRules, typeDef, mdImport) ) return true;
+    return false;
+}
+
+RegexPtr Rules::GetRegex(const String& regex)
+{
+	RegexMap::iterator it = m_regexMap.find(regex);
+	if (it != m_regexMap.end())
+	{
+		return it->second;
+	}
+
+	CAtlRegExp<RegExpCharTraits> reg;
+	if( REPARSE_ERROR_OK != reg.Parse( regex.c_str() ) ) {
+		return 0;
+	}
+
+	RegexPtr regPtr = new CAtlRegExp<RegExpCharTraits>();
+	regPtr->Parse(regex.c_str());
+
+	return m_regexMap[regex] = regPtr;
+}
+
+bool Rules::IsAttributeBasedRule(const String& rule)
+{
+	return rule.find(ATTRIBUTE_RULE_TAG) == 0;
+}
+
+bool Rules::HasAttributeBasedRules(const StringArray& rules)
+{
+	for (StringArray::const_iterator it = rules.begin(); it != rules.end(); ++it) {
+		if (IsAttributeBasedRule(*it))
+			return true;
+	}
+	return false;
+}
+
+String RemoveRuleClassPart(const String& rule)
+{
+	String::size_type ind = rule.find(_T(']'));
+	if (ind == String::npos)
+		return rule;
+	return rule.substr(0, ind + 1) + _T("$");
+}
+
+bool Rules::IsAssemblyIncludedInRules(const String& assembly) const
+{
+	if (HasAttributeBasedRules(m_includeRules))
+		return true;
+
+	String assemblyInBrackets = _T("[") + assembly + _T("]");
+	for (StringArray::const_iterator it = m_includeRules.begin(); it != m_includeRules.end(); ++it) {
+		if (IsAttributeBasedRule(*it))
+			continue;
+
+		String assemblyOnlyRule = RemoveRuleClassPart(*it);
+
+		RegexPtr reg = Rules::GetRegex(assemblyOnlyRule);
+		if (0 == reg)
+			continue;
+
+        CAtlREMatchContext<RegExpCharTraits> mcUrl;
+        if( reg->Match( assemblyInBrackets.c_str(), &mcUrl ) )
+            return true;
+	}
+	
+	return false;
+}

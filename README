@@ -1,0 +1,3 @@
+partcover - originally forked from SourceForge - now modified to handle .NET CLRv4
+
+libraries - contains all 3rd party libraries used by the project (this is so that all developers working on the project use the same tools)
