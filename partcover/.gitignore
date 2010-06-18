@@ -1,0 +1,9 @@
+bin
+obj
+*.ncb
+*.user
+*.suo
+*.sdf
+ipch/
+
+
