@@ -22,8 +22,8 @@
 					<xsl:value-of select="@name"/>
 				</xsl:element>
 				
-				<xsl:variable name="codeSize" select="sum(./Method/pt/@len)+0"/>
-				<xsl:variable name="coveredCodeSize" select="sum(./Method/pt[@visit>0]/@len)+0"/>
+				<xsl:variable name="codeSize" select="sum(./Method/pt/@len)+sum(./Method[count(pt)=0]/@bodysize)"/>
+				<xsl:variable name="coveredCodeSize" select="sum(./Method/pt[@visit>0]/@len)"/>
 				
 				<xsl:element name="td">
 					<xsl:if test="$codeSize=0">

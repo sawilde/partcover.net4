@@ -24,8 +24,8 @@
 					<xsl:value-of select="//Assembly[@id=$current-asm]/@name"/>
 				</xsl:element>
 				
-				<xsl:variable name="codeSize" select="sum(//Type[@asmref=$current-asm]/Method/pt/@len)+0"/>
-				<xsl:variable name="coveredCodeSize" select="sum(//Type[@asmref=$current-asm]/Method/pt[@visit>0]/@len)+0"/>
+				<xsl:variable name="codeSize" select="sum(//Type[@asmref=$current-asm]/Method/pt/@len)+sum(//Type[@asmref=$current-asm]/Method[count(pt)=0]/@bodysize)"/>
+				<xsl:variable name="coveredCodeSize" select="sum(//Type[@asmref=$current-asm]/Method/pt[@visit>0]/@len)"/>
 				
 				<xsl:element name="td">
 					<xsl:if test="$codeSize=0">
