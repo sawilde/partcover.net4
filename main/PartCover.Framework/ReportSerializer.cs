@@ -12,7 +12,11 @@ namespace PartCover.Framework
         public static void Save(XmlTextWriter writer, Report report)
         {
             var xmlDoc = new XmlDocument();
-            var doc = (XmlElement)xmlDoc.AppendChild(xmlDoc.CreateElement("PartCoverReport"));
+            var el = xmlDoc.CreateElement("PartCoverReport");
+            var at = xmlDoc.CreateAttribute("version");
+            at.Value = "4.0";
+            el.Attributes.Append(at);
+            var doc = (XmlElement)xmlDoc.AppendChild(el);
             Save(doc, report);
             doc.WriteTo(writer);
         }

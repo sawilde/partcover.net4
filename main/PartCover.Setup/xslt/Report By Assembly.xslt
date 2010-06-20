@@ -14,18 +14,18 @@
 	<table style="border-collapse: collapse;">
 		<tr style="font-weight:bold; background:whitesmoke;"><td colspan="2">Coverage by assembly</td></tr>
 		
-		<xsl:variable name="unique-asms" select="/PartCoverReport/type[not(@asm=following::type/@asm)]"/>
+		<xsl:variable name="unique-asms" select="/PartCoverReport[@version='4.0']/Type[not(@asmref=following::Type/@asmref)]"/>
 		<xsl:for-each select="$unique-asms">
-			<xsl:variable name="current-asm" select="./@asm"/>
+			<xsl:variable name="current-asm" select="./@asmref"/>
 			<tr>
 				
 				<xsl:element name="td">
 					<xsl:attribute name="style">background:ghostwhite; padding: 5px  30px 5px  5px;</xsl:attribute>
-					<xsl:value-of select="$current-asm"/>
+					<xsl:value-of select="//Assembly[@id=$current-asm]/@name"/>
 				</xsl:element>
 				
-				<xsl:variable name="codeSize" select="sum(/PartCoverReport/type[@asm=$current-asm]/method/code/pt/@len)+0"/>
-				<xsl:variable name="coveredCodeSize" select="sum(/PartCoverReport/type[@asm=$current-asm]/method/code/pt[@visit>0]/@len)+0"/>
+				<xsl:variable name="codeSize" select="sum(//Type[@asmref=$current-asm]/Method/pt/@len)+0"/>
+				<xsl:variable name="coveredCodeSize" select="sum(//Type[@asmref=$current-asm]/Method/pt[@visit>0]/@len)+0"/>
 				
 				<xsl:element name="td">
 					<xsl:if test="$codeSize=0">
