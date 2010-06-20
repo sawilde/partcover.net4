@@ -1,0 +1,6 @@
+Debug/
+Release/
+PartCover.CorDriver.h
+PartCover.CorDriver.idl
+PartCover.CorDriver.tlb
+PartCover.CorDriver_i.c
