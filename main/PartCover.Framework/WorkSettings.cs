@@ -59,7 +59,8 @@ namespace PartCover.Framework
             new ArgumentOption("--exclude", readExclude),
             new ArgumentOption("--output", readOutput),
             new ArgumentOption("--settings", readSettingsFile),
-            new ArgumentOption("--disabledomainflatten", readDisableDomainFlatten)
+            new ArgumentOption("--disabledomainflatten", readDisableDomainFlatten),
+            new ArgumentOption("--errors-to-stdout", readErrorsToStdOut)
         };
 
         private ArgumentOption currentOption;
@@ -75,6 +76,11 @@ namespace PartCover.Framework
         private static void readGenerateSettingsFile(WorkSettings settings, string value)
         {
             settings.generateSettingsFileName = value;
+        }
+
+        private static void readErrorsToStdOut(WorkSettings settings)
+        {
+            settings.ErrorsToStdout = true;
         }
 
         private static void readHelp(WorkSettings settings)
@@ -237,6 +243,7 @@ namespace PartCover.Framework
             Console.Out.WriteLine("                [--include <item> ... ] [--exclude <item> ... ]");
             Console.Out.WriteLine("                [--output <file_name>] [--log <log_level>]");
             Console.Out.WriteLine("                [--generate <file_name>] [--help] [--version]");
+            Console.Out.WriteLine("                [--errors-to-stdout");
             Console.Out.WriteLine("");
             if (showNext)
             {
@@ -282,6 +289,8 @@ namespace PartCover.Framework
             Console.Out.WriteLine("       shows current help");
             Console.Out.WriteLine("   --version :");
             Console.Out.WriteLine("       shows version of PartCover console application");
+            Console.Out.WriteLine("   --errors-to-stdout :");
+            Console.Out.WriteLine("       errors are sent to the standard output stream instead of the the error output stream");
             Console.Out.WriteLine("");
         }
 
@@ -342,6 +351,8 @@ namespace PartCover.Framework
         public string TargetArgs { get; set; }
         public string FileNameForReport { get; set; }
 
+        public bool ErrorsToStdout { get; set; }
+
         public bool DisableFlattenDomains { get; set; }
 
         public bool OutputToFile
@@ -371,6 +382,7 @@ namespace PartCover.Framework
             if (DisableFlattenDomains) AppendValue(xmlDoc.DocumentElement, "DisableFlattenDomains", DisableFlattenDomains.ToString(CultureInfo.InvariantCulture));
             if (printLongHelp) AppendValue(xmlDoc.DocumentElement, "ShowHelp", printLongHelp.ToString(CultureInfo.InvariantCulture));
             if (printVersion) AppendValue(xmlDoc.DocumentElement, "ShowVersion", printVersion.ToString(CultureInfo.InvariantCulture));
+            if (ErrorsToStdout) AppendValue(xmlDoc.DocumentElement, "ErrorsToStdout", ErrorsToStdout.ToString(CultureInfo.InvariantCulture));
 
             foreach (var item in IncludeItems) AppendValue(xmlDoc.DocumentElement, "Rule", "+" + item);
             foreach (var item in ExcludeItems) AppendValue(xmlDoc.DocumentElement, "Rule", "-" + item);
@@ -412,6 +424,8 @@ namespace PartCover.Framework
                 if (node != null && node.Value != null) DisableFlattenDomains = bool.Parse(node.Value);
                 node = xmlDoc.SelectSingleNode("/PartCoverSettings/ShowVersion/text()");
                 if (node != null && node.Value != null) printVersion = bool.Parse(node.Value);
+                node = xmlDoc.SelectSingleNode("/PartCoverSettings/ErrorsToStdout/text()");
+                if (node != null && node.Value != null) ErrorsToStdout = bool.Parse(node.Value);
 
                 var list = xmlDoc.SelectNodes("/PartCoverSettings/Rule");
                 if (list != null)
