@@ -106,7 +106,8 @@ namespace PartCover.Browser.Features.Controls
                 codeSize += iInfo.GetCodeSize();
                 coveredCodeSize += iInfo.GetCoveredCodeSize();
             }
-            var percent = codeSize == 0 ? 0 : coveredCodeSize / (float)codeSize * 100;
+            var percent = codeSize == 0 ? 0 : coveredCodeSize / (double)codeSize * 100;
+            percent = System.Math.Round(percent);
             Text = string.Format("{0} ({1:#0}%)", Assembly.Name, percent);
             ForeColor = Helpers.ColorProvider.GetForeColorForPercent(percent);
         }
@@ -154,7 +155,8 @@ namespace PartCover.Browser.Features.Controls
                 codeSize += iInfo.GetCodeSize();
                 coveredCodeSize += iInfo.GetCoveredCodeSize();
             }
-            var percent = codeSize == 0 ? 0 : coveredCodeSize / (float)codeSize * 100;
+            var percent = codeSize == 0 ? 0 : coveredCodeSize / (double)codeSize * 100;
+            percent = System.Math.Round(percent);
             Text = string.Format("{0} ({1:#0}%)", Namespace, percent);
             ForeColor = Helpers.ColorProvider.GetForeColorForPercent(percent);
         }
@@ -206,14 +208,15 @@ namespace PartCover.Browser.Features.Controls
                 codeSize += iInfo.GetCodeSize();
                 coveredCodeSize += iInfo.GetCoveredCodeSize();
             }
-            var percent = codeSize == 0 ? 0 : coveredCodeSize / (float)codeSize * 100;
+            var percent = codeSize == 0 ? 0 : coveredCodeSize / (double)codeSize * 100;
+            percent = System.Math.Round(percent);
             Text = string.Format("{0} ({1:#0}%)", Types.RemoveNamespacePath(Typedef.Name), percent);
             ForeColor = Helpers.ColorProvider.GetForeColorForPercent(percent);
         }
 
         #endregion
     }
-
+    
     internal class PropertyTreeNode : TreeNodeBase, ICoverageInfo
     {
         readonly string _property;
@@ -250,8 +253,8 @@ namespace PartCover.Browser.Features.Controls
             if (Setter != null) Setter.UpdateCoverageInfo();
             if (Getter != null) Getter.UpdateCoverageInfo();
 
-            var percent = GetCodeSize() == 0 ? 0 : GetCoveredCodeSize() / (float)GetCodeSize() * 100;
-
+            var percent = GetCodeSize() == 0 ? 0 : GetCoveredCodeSize() / (double)GetCodeSize() * 100;
+            percent = System.Math.Round(percent);
             Text = string.Format("{0} ({1:#0}%)", _property, percent);
             ForeColor = Helpers.ColorProvider.GetForeColorForPercent(percent);
         }
@@ -302,7 +305,8 @@ namespace PartCover.Browser.Features.Controls
             }
 
 
-            var percent = codeSize == 0 ? 0 : coveredCodeSize / (float)codeSize * 100;
+            var percent = codeSize == 0 ? 0 : coveredCodeSize / (double)codeSize * 100;
+            percent = System.Math.Round(percent);
             Text = string.Format("{0} ({1:#0}%)", Method.Name, percent);
             ForeColor = Helpers.ColorProvider.GetForeColorForPercent(percent);
         }

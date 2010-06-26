@@ -139,7 +139,7 @@ STDMETHODIMP PartCoverConnector2::StartTarget(
         if (curLength = ::GetCurrentDirectory(curLength + 1, curBuffer)) 
 		{
             int written = _stprintf_s(curBuffer + curLength, 25, DRIVER_LOG_FILENAME);
-            env[OPTION_LOGFILE] = String(curBuffer, written);
+            env[OPTION_LOGFILE] = String(curBuffer, curBuffer.size());
 
 			m_logFile = curBuffer;
         }

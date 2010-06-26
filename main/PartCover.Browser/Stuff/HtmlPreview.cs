@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Xml.Xsl;
 using PartCover.Browser.Api;
+using System.Reflection;
 
 namespace PartCover.Browser.Stuff
 {
@@ -14,7 +15,7 @@ namespace PartCover.Browser.Stuff
 
         public static string XsltDir
         {
-            get { return Path.Combine(Environment.CurrentDirectory, XsltDirName); }
+            get { return Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), XsltDirName); }
         }
 
         public static IEnumerable<string> enumTransforms()

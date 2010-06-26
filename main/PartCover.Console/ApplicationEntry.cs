@@ -19,6 +19,11 @@ namespace PartCover
                     return -1;
                 }
 
+                if (settings.ErrorsToStdout)
+                {
+                    Console.SetError(Console.Out);
+                }
+
                 var connector = new Connector();
                 connector.StatusMessageReceived += connector_StatusMessageReceived;
                 connector.LogEntryReceived += connector_LogEntryReceived;

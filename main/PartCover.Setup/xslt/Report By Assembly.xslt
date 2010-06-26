@@ -34,7 +34,7 @@
 					</xsl:if>
 
 					<xsl:if test="$codeSize &gt; 0">
-						<xsl:variable name="coverage" select="ceiling(100 * $coveredCodeSize div $codeSize)"/>
+						<xsl:variable name="coverage" select="round(100 * $coveredCodeSize div $codeSize)"/>
 						
 						<xsl:if test="$coverage &gt;=  0 and $coverage &lt; 20"><xsl:attribute name="style"><xsl:value-of select="$cov20style"/></xsl:attribute></xsl:if>
 						<xsl:if test="$coverage &gt;= 20 and $coverage &lt; 40"><xsl:attribute name="style"><xsl:value-of select="$cov40style"/></xsl:attribute></xsl:if>
