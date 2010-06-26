@@ -13,7 +13,7 @@ namespace PartCover.Browser.Helpers
 	{
 		private ColorProvider() {}
 
-        public static Color GetForeColorForPercent(float percent) {
+        public static Color GetForeColorForPercent(double percent) {
             if (percent < 10) return Color.FromArgb(0xFF, 0x00, 0x00);
             if (percent < 20) return Color.FromArgb(0xF0, 0x00, 0x00);
             if (percent < 30) return Color.FromArgb(0xE0, 0x00, 0x00);
