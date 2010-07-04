@@ -449,6 +449,13 @@ namespace ILHelpers {
             ehClause.HandlerOffset = handlerOffset;
             ehClause.HandlerLength = handlerLOffset - handlerOffset;
 
+			if ((ehClause.Flags & COR_ILEXCEPTION_CLAUSE_FILTER) == COR_ILEXCEPTION_CLAUSE_FILTER)
+			{
+				DWORD filterOffset;
+				filterOffset = UpdateOffset(ehClause.FilterOffset, changes, fixups);
+				ehClause.FilterOffset = filterOffset;
+			}
+
             LOGINFO4(DUMP_INSTRUMENTATION, "            new values: try %X, length %X, handler %X, length %X", 
                 ehClause.TryOffset, ehClause.TryLength, ehClause.HandlerOffset, ehClause.HandlerLength);
         }
