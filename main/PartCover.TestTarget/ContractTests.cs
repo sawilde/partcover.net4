@@ -9,21 +9,12 @@ namespace PartCover.TestTarget
 {
     internal class ContractClass
     {
-        private bool _x;
-        private bool _y;
-
-        public ContractClass(bool x)
-        {
-            _x = x;
-            _y = true;
-        }
-
-        public bool RunContract(string data)
+        public static bool RunContract(string data)
         {
             Contract.Requires(data != null);
-            Contract.Ensures(_x != false);
-
-            return _x;
+            Contract.Ensures(data != null);
+            Contract.Ensures(data != string.Empty);
+            return data.Contains("fred");
         }
     }
 
@@ -38,17 +29,9 @@ namespace PartCover.TestTarget
     public class ContractTests
     {
         [Test]
-        public void Contract_Throws_ContractException()
+        public void Contract_Bombs_Under_Profiling()
         {
-            try
-            {
-                new ContractClass(true).RunContract("data");
-                Assert.Fail();
-            }
-            catch (Exception)
-            {
-
-            } 
+            ContractClass.RunContract("data");
         }
     }
 }
