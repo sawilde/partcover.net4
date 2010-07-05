@@ -15,6 +15,7 @@
 //#define DUMP_CONTINUOUS_BLOCKS
 //#define DUMP_CHANGED_BLOCK
 //#define DUMP_NEW_CODE
+#define CODE_CONTRACTS_FIX
 
 //#undef METHOD_INNER
 //#define METHOD_INNER eNull
@@ -62,6 +63,16 @@ void InstrumentedILBody::ParseBody(LPCBYTE ilStart, LPCBYTE ilEnd) {
 #endif
 }
 
+struct CompareChangeBlock
+{
+	DWORD Original;
+	CompareChangeBlock(DWORD position) : Original(position) {}
+	bool operator () (const ChangeBlock &rhs) const
+	{
+		return rhs.original == Original;
+	}
+};
+
 struct InstrumentedCodeInserter {
     ChangeBlocks& changes;
     InstrumentedBlocks& counters;
@@ -81,7 +92,10 @@ struct InstrumentedCodeInserter {
     }
 
     void CreateBlockFromPoint(ULONG32 point) {
-        ChangeBlock change;
+#ifdef CODE_CONTRACTS_FIX		
+		if (std::find_if(changes.begin(), changes.end(), CompareChangeBlock(point)) != changes.end()) return;
+#endif
+		ChangeBlock change;
         change.original     = point;
         change.originalSize = 0;
         ILopCodes& modified = change.modifiedCode;
@@ -100,7 +114,7 @@ struct InstrumentedCodeInserter {
         ldc_i4_maxCounter.inlineParameter.opDword = iBlock.maxCounter;
         ILop branch = ILHelpers::FindILOpByCode(CEE_BEQ_S);
         branch.SetBranchOffset(10);
-
+		
         LOGINFO1(DUMP_INSTRUMENTATION, "%sallocate counter code", LogPrefix);
 
         modified.push_back( ldc_i4_counter );

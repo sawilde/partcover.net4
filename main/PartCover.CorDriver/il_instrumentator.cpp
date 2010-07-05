@@ -11,8 +11,9 @@
 
 //#define DUMP_TYPEDEFS
 //#define DUMP_METHODDEFS
-//#define DUMP_SYM_SEQUENCE_POINTS
+#define DUMP_SYM_SEQUENCE_POINTS
 //#define DUMP_INSTRUMENT_RESULT
+#define CODE_CONTRACTS_FIX
 
 void DumpTypeDef(DriverLog& log, DWORD typeDefFlags, LPCTSTR typedefName);
 void DumpMethodDef(DriverLog& log, DWORD flags, LPCTSTR methoddefName, DWORD implFlag);
@@ -362,10 +363,16 @@ void Instrumentator::GenerateILCode(ModuleDescriptor& module, TypeDef& defDescri
                     ilbody.CreateSequenceCounters(pointsInRes, cPoints);
 
                     InstrumentedBlocks& blocks = ilbody.GetInstrumentedBlocks();
+					ULONG32 loop = 0;
+					ULONG32 lastPoint = -1;
                     for(ULONG32 i = 0; i < pointsInRes; ++i) 
 					{
-                        InstrumentedBlock& block = blocks[i];
-
+#ifdef CODE_CONTRACTS_FIX
+						if (lastPoint == cPoints[i]) continue;
+						lastPoint = cPoints[i];
+#endif
+                        InstrumentedBlock& block = blocks[loop++];
+						
                         ULONG32 urlSize;
                         if (FAILED(hr = pDocuments[i]->GetURL(0, &urlSize, NULL))) 
 						{
