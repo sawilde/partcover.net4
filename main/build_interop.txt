@@ -1,0 +1,9 @@
+tlbimp bin\PartCover.dll /out:Interop\Interop.PartCover.dll /namespace:PartCover.Framework
+ildasm Interop\Interop.PartCover.dll /out:Interop\Interop.PartCover.il
+
+open il and change version number of mscorlib from 
+.ver 4:0:0:0
+to
+.ver 2:0:0:0
+
+ilasm.exe Interop\Interop.PartCover.il /dll /output=Interop\Interop.PartCover.dll /key=PartCover.Framework\PartCover.Framework.snk /mdv=2.0.50727

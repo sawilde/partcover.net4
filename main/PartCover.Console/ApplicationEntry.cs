@@ -24,75 +24,80 @@ namespace PartCover
                     Console.SetError(Console.Out);
                 }
 
-                var connector = new Connector();
-                connector.StatusMessageReceived += connector_StatusMessageReceived;
-                connector.LogEntryReceived += connector_LogEntryReceived;
-
-                connector.UseFileLogging(true);
-                connector.UsePipeLogging(true);
-                connector.SetLogging((Logging)settings.LogLevel);
-
-                foreach (var item in settings.IncludeItems)
+                using (Registration.Create(settings.Register ? System.Reflection.Assembly.GetExecutingAssembly().Location : null))
                 {
+                    //Console.ReadLine();
+
+                    var connector = new Connector();
+                    connector.StatusMessageReceived += connector_StatusMessageReceived;
+                    connector.LogEntryReceived += connector_LogEntryReceived;
+
+                    connector.UseFileLogging(true);
+                    connector.UsePipeLogging(true);
+                    connector.SetLogging((Logging)settings.LogLevel);
+
+                    foreach (var item in settings.IncludeItems)
+                    {
+                        try
+                        {
+                            connector.IncludeItem(item);
+                        }
+                        catch (ArgumentException)
+                        {
+                            Console.Error.WriteLine("Item '" + item + "' have wrong format");
+                        }
+                    }
+
+                    foreach (var item in settings.ExcludeItems)
+                    {
+                        try
+                        {
+                            connector.ExcludeItem(item);
+                        }
+                        catch (ArgumentException)
+                        {
+                            Console.Error.WriteLine("Item '" + item + "' have wrong format");
+                        }
+                    }
+
+                    var options = new SessionRunOptions
+                    {
+                        TargetPath = settings.TargetPath,
+                        TargetDirectory = settings.TargetWorkingDir,
+                        TargetArguments = settings.TargetArgs,
+                        RedirectOutput = true,
+                        DelayClose = false,
+                        FlattenDomains = !settings.DisableFlattenDomains
+                    };
+
+                    connector.Options = options;
+                    connector.StartTarget();
+
                     try
                     {
-                        connector.IncludeItem(item);
+                        var writer = settings.OutputToFile
+                            ? new XmlTextWriter(File.CreateText(settings.FileNameForReport))
+                            : new XmlTextWriter(Console.Out);
+                        using (writer)
+                        {
+                            writer.Formatting = Formatting.Indented;
+                            writer.Indentation = 1;
+                            writer.IndentChar = ' ';
+                            ReportSerializer.Save(writer, connector.Report);
+                        }
                     }
-                    catch (ArgumentException)
+                    catch (Exception ex)
                     {
-                        Console.Error.WriteLine("Item '" + item + "' have wrong format");
+                        Console.Error.WriteLine("Can't save report (" + ex.Message + ")");
                     }
-                }
-
-                foreach (var item in settings.ExcludeItems)
-                {
-                    try
-                    {
-                        connector.ExcludeItem(item);
-                    }
-                    catch (ArgumentException)
-                    {
-                        Console.Error.WriteLine("Item '" + item + "' have wrong format");
-                    }
-                }
-
-                var options = new SessionRunOptions
-                {
-                    TargetPath = settings.TargetPath,
-                    TargetDirectory = settings.TargetWorkingDir,
-                    TargetArguments = settings.TargetArgs,
-                    RedirectOutput = true,
-                    DelayClose = false,
-                    FlattenDomains = !settings.DisableFlattenDomains
-                };
-
-                connector.Options = options;
-                connector.StartTarget();
-
-                try
-                {
-                    var writer = settings.OutputToFile
-                        ? new XmlTextWriter(File.CreateText(settings.FileNameForReport))
-                        : new XmlTextWriter(Console.Out);
-                    using (writer)
-                    {
-                        writer.Formatting = Formatting.Indented;
-                        writer.Indentation = 1;
-                        writer.IndentChar = ' ';
-                        ReportSerializer.Save(writer, connector.Report);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine("Can't save report (" + ex.Message + ")");
-                }
 
 #if DEBUG
-                WriteListOfSkippedItems(connector.Report);
+                    WriteListOfSkippedItems(connector.Report);
 #endif
 
-                if (connector.TargetExitCode.HasValue)
-                    return connector.TargetExitCode.Value;
+                    if (connector.TargetExitCode.HasValue)
+                        return connector.TargetExitCode.Value;
+                } // end using
             }
             catch (SettingsException ex)
             {

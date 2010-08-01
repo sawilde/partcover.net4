@@ -48,6 +48,7 @@ namespace PartCover.Framework
 
         private static readonly ArgumentOption[] Options =
         { 
+            new ArgumentOption("--register", register),
             new ArgumentOption("--target", readTarget),
             new ArgumentOption("--version", readVersion),
             new ArgumentOption("--help", readHelp),
@@ -66,6 +67,11 @@ namespace PartCover.Framework
         private ArgumentOption currentOption;
 
         #region settings readers
+        private static void register(WorkSettings settings)
+        {
+            settings.Register = true;
+        }
+
         private static void readTarget(WorkSettings settings, string value)
         {
             if (!File.Exists(value))
@@ -238,7 +244,7 @@ namespace PartCover.Framework
         public static void PrintShortUsage(bool showNext)
         {
             Console.Out.WriteLine("Usage:");
-            Console.Out.WriteLine("  PartCover.exe  --target <file_name> [--target-work-dir <path>]");
+            Console.Out.WriteLine("  PartCover.exe  [--register] --target <file_name> [--target-work-dir <path>]");
             Console.Out.WriteLine("                [--target-args <arguments>] [--settings <file_name>]");
             Console.Out.WriteLine("                [--include <item> ... ] [--exclude <item> ... ]");
             Console.Out.WriteLine("                [--output <file_name>] [--log <log_level>]");
@@ -255,6 +261,9 @@ namespace PartCover.Framework
         public static void PrintLongUsage()
         {
             Console.Out.WriteLine("Arguments:  ");
+            Console.Out.WriteLine("   --register :");
+            Console.Out.WriteLine("       the COM components are temporarily registered to the current user for profiling,");
+            Console.Out.WriteLine("       removing the need to install with elevated privilege.");
             Console.Out.WriteLine("   --target=<file_name> :");
             Console.Out.WriteLine("       specifies path to executable file to count coverage. <file_name> may be");
             Console.Out.WriteLine("       either full path or relative path to file.");
@@ -359,6 +368,8 @@ namespace PartCover.Framework
         {
             get { return FileNameForReport != null; }
         }
+
+        public bool Register { get; set; }
 
         #endregion //Properties
 

@@ -56,7 +56,7 @@
     <UseVSHostingProcess>false</UseVSHostingProcess>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath>..\bin\</OutputPath>
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
     <BaseAddress>285212672</BaseAddress>
     <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
@@ -80,6 +80,10 @@
     <UseVSHostingProcess>false</UseVSHostingProcess>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Interop.PartCover">
+      <HintPath>..\Interop\Interop.PartCover.dll</HintPath>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
     <Reference Include="System">
       <Name>System</Name>
     </Reference>
@@ -106,6 +110,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Data\Report.cs" />
+    <Compile Include="Registration.cs" />
     <Compile Include="ReportReceiver.cs" />
     <Compile Include="Stuff\IVisitable.cs" />
     <Compile Include="Stuff\Methods.cs" />
@@ -134,17 +139,6 @@
     <Compile Include="ReportHelper.cs" />
     <Compile Include="ReportSerializer.cs" />
     <Compile Include="SessionRunOptions.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <COMReference Include="PartCover">
-      <Guid>{7D0E6AAB-C5FC-4103-AAD4-8BF3112A56C4}</Guid>
-      <VersionMajor>4</VersionMajor>
-      <VersionMinor>0</VersionMinor>
-      <Lcid>0</Lcid>
-      <WrapperTool>tlbimp</WrapperTool>
-      <Isolated>False</Isolated>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </COMReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

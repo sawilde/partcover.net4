@@ -1,0 +1,24 @@
+PartCover has dependancies on 2 external libraries atlsvr and boost; both libraries are in compressed packages as part of the download - so that all developers use the same versions.
+
+In order to allow those of us who use github and sourceforge to develop against partcover please follow these instructions when laying out the libraries such that 
+the relative paths for both sourceforge and github are the same 
+
+.\libraries\atlsvr\atlsvr_9_0_70425
+		\include
+		\source
+.\libraries\boost\boost_1_43_0
+.\partcover.git\working\partcover.net4
+			\libraries
+			\main
+.\partcover.sf\partcover\trunk
+			\libraries
+			\main
+
+see layout.jpg for an idea of what the structure looks like on my machine.
+
+I apologise for the slight complexity but it does help those of us to work on both repositories at the same time (and to merge between them).
+			
+
+
+
+
