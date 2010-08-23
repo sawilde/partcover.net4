@@ -3,28 +3,17 @@
 <TestFixture()> _
 Public Class TestClass
 
-    Public x As Integer
-
     <Test()> _
-    Public Sub ExceptionTest()
-
-        Try
-
-        Catch ex As Exception ' When x = 0
-
-        End Try
-
-    End Sub
-
-    <Test()> _
-    Public Sub WhenTest()
-
-        Try
-
-        Catch ex As Exception When x = 0
-
-        End Try
-
+    Public Sub ExceptionFilterTest()
+        For i As Integer = 1 To 100
+            Try
+                Throw New DemoException(i)
+            Catch ex2 As DemoException When i Mod 2 = 0
+                Debug.WriteLine("ex2")
+            Catch ex As DemoException
+                Debug.WriteLine("ex")
+            End Try
+        Next
     End Sub
 
 End Class

@@ -29,7 +29,7 @@ namespace PartCover.TestTarget
     public class ContractTests
     {
         [Test]
-        public void Contract_Bombs_Under_Profiling()
+        public void RunContractsInMethod()
         {
             ContractClass.RunContract("data");
         }
