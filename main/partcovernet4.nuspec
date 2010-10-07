@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package>
+  <metadata>
+    <id>partcovernet4</id>
+    <version>4.0.0.0</version>
+    <authors>
+      <author>Dmitri Kashtanov</author> 
+      <author>Loginov Oleg</author> 
+      <author>Shaun Wilde</author>      
+    </authors>
+    <description>PartCover is a .NET 4 (and 2) compatible code coverage tool hosted on github (and sourceforge)</description>
+    <language>en-US</language>
+  </metadata>
+  <files src="bin\**\*.*" target="tools" /> 
+</package>

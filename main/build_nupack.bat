@@ -1,0 +1,1 @@
+..\libraries\nupack\0.0.0.0\nupack partcovernet4.nuspec
