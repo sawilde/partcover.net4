@@ -73,6 +73,8 @@ namespace PartCover.Framework
                     AddAttribute(metNode, "name").Value = m.Name;
                     AddAttribute(metNode, "sig").Value = m.Signature;
                     AddAttribute(metNode, "bodysize").Value = m.BodySize.ToString();
+                    AddAttribute(metNode, "linecount").Value = m.BodyLineCount.ToString();
+                    AddAttribute(metNode, "seqcount").Value = m.BodySeqCount.ToString();
                     AddAttribute(metNode, "flags").Value = ((long)m.Flags).ToString();
                     AddAttribute(metNode, "iflags").Value = ((long)m.ImplFlags).ToString();
 

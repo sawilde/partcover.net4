@@ -34,6 +34,8 @@ struct MethodDef {
 
     bool                bodyUpdated;
 	int                 bodySize;
+    int                 bodySeqCount;
+    int                 bodyLineCount;
 	InstrumentedBlocks  bodyBlocks;
 	DynamicArray<BYTE>  bodyBytes;
 
