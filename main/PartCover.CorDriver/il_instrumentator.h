@@ -24,7 +24,7 @@ struct LoadedClassInfo;
 class Rules;
 
 struct MethodDef {
-	MethodDef() : bodyBytes(0)
+	MethodDef() : bodyBytes(0), bodySize(0), bodySeqCount(0), bodyLineCount(0)
 	{
         bodyUpdated = false;
         methodDef = 0;
