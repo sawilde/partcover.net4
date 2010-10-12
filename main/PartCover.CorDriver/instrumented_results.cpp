@@ -50,7 +50,7 @@ void InstrumentResults::GetReport(IReportReceiver& walker) {
                 CComBSTR methodSig(methodResult.sig.c_str());
 				if(FAILED(walker.EnterMethod(methodName, methodSig, methodResult.bodySize, 
                     methodResult.bodyLineCount, methodResult.bodySeqCount, methodResult.flags, 
-                    methodResult.implFlags)))
+                    methodResult.implFlags, methodResult.symbolEntryFound)))
                     return;
 
                 for(MethodBlocks::const_iterator blockIt = methodResult.blocks.begin(); blockIt != methodResult.blocks.end(); blockIt++) {

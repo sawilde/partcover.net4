@@ -112,11 +112,11 @@ namespace bidi
 	}
 
 	NamedPipe& operator << (NamedPipe& ar, const InstrumentResults::MethodResult &a) {
-		return ar << a.name << a.sig << a.flags << a.implFlags << a.blocks << a.bodySize << a.bodyLineCount << a.bodySeqCount;
+		return ar << a.name << a.sig << a.flags << a.implFlags << a.blocks << a.bodySize << a.bodyLineCount << a.bodySeqCount << a.symbolEntryFound;
 	}
 
 	NamedPipe& operator >> (NamedPipe& ar, InstrumentResults::MethodResult &a) {
-		return ar >> a.name >> a.sig >> a.flags >> a.implFlags >> a.blocks >> a.bodySize >> a.bodyLineCount >> a.bodySeqCount;
+		return ar >> a.name >> a.sig >> a.flags >> a.implFlags >> a.blocks >> a.bodySize >> a.bodyLineCount >> a.bodySeqCount >> a.symbolEntryFound;
 	}
 
 	NamedPipe& operator << (NamedPipe& ar, const InstrumentResults::SkippedItem &a) {

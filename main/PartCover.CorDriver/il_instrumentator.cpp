@@ -239,6 +239,7 @@ void Instrumentator::InstrumentMethod(ModuleID module, TypeDef& typeDef, mdMetho
             ULONG32 points;
             if(SUCCEEDED(hr = symMethod->GetSequencePointCount( &points ))) 
 			{
+                method.symbolEntryFound = TRUE;
                 method.bodySeqCount = points;
                 ULONG32 pointsInRes;
                 DynamicArray<ULONG32> lines(points);
@@ -543,6 +544,7 @@ struct MethodResultsGatherer
 		methodResult.bodySize = method.bodySize;
         methodResult.bodyLineCount = method.bodyLineCount;
         methodResult.bodySeqCount = method.bodySeqCount;
+        methodResult.symbolEntryFound = method.symbolEntryFound;
 
 		if (method.bodyBlocks.size() == 0) {
 #ifdef DUMP_INSTRUMENT_RESULT
