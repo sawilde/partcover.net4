@@ -104,6 +104,7 @@ void Instrumentator::InstrumentModule(ModuleID module, const String& moduleName,
         binder->GetReaderForFile2(mdImport, moduleName.c_str(), NULL, searchPolicy, &desc.symReader);
     }
 
+
     InstrumentHelper helper;
     helper.profilerInfo = profilerInfo;
     helper.module       = &desc;
@@ -228,6 +229,40 @@ void Instrumentator::InstrumentMethod(ModuleID module, TypeDef& typeDef, mdMetho
 	method.bodyUpdated = false;
 	method.methodName = CorHelper::GetMethodName(helper.mdImport, method.methodDef, NULL, NULL);
 	method.bodySize = methodSize;
+
+    if (helper.module->symReader) 
+	{
+        CComPtr<ISymUnmanagedMethod> symMethod;
+        HRESULT hr;
+		if(SUCCEEDED(hr = helper.module->symReader->GetMethod( methodDef, &symMethod ))) 
+		{
+            ULONG32 points;
+            if(SUCCEEDED(hr = symMethod->GetSequencePointCount( &points ))) 
+			{
+                method.symbolEntryFound = TRUE;
+                method.bodySeqCount = points;
+                ULONG32 pointsInRes;
+                DynamicArray<ULONG32> lines(points);
+                DynamicArray<ULONG32> endLines(points);
+                
+                if(SUCCEEDED(hr = symMethod->GetSequencePoints( points, &pointsInRes, NULL, NULL, lines, NULL, endLines, NULL ))) 
+				{
+                    std::list<ULONG32> actualLines;
+                    for(ULONG32 i=0; i < points; i++)
+                    {
+                        actualLines.push_back(lines[i]);
+                        actualLines.push_back(endLines[i]);
+                    }
+                    actualLines.sort();
+                    actualLines.unique();
+
+                    method.bodyLineCount = actualLines.size();
+                    LOGINFO3(METHOD_INSTRUMENT, "      >> %s %d %d", methodName.c_str(), method.bodyLineCount, method.bodySeqCount);
+                }
+            }
+        }
+    }
+
 	CorHelper::ParseMethodSig(helper.profilerInfo, helper.mdImport, method.methodDef, &method.methodSig);
 
     methods.insert(MethodDefMapPair(method.methodDef, method));
@@ -507,6 +542,9 @@ struct MethodResultsGatherer
 		methodResult.name = method.methodName;
 		methodResult.sig = method.methodSig;
 		methodResult.bodySize = method.bodySize;
+        methodResult.bodyLineCount = method.bodyLineCount;
+        methodResult.bodySeqCount = method.bodySeqCount;
+        methodResult.symbolEntryFound = method.symbolEntryFound;
 
 		if (method.bodyBlocks.size() == 0) {
 #ifdef DUMP_INSTRUMENT_RESULT

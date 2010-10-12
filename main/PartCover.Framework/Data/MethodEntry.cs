@@ -13,6 +13,9 @@ namespace PartCover.Framework.Data
         public string Name { get; set; }
         public string Signature { get; set; }
         public int BodySize { get; set; }
+        public int BodyLineCount { get; set; }
+        public int BodySeqCount { get; set; }
+        public bool SymbolEntryFound { get; set; }
         public MethodAttributes Flags { get; set; }
         public MethodImplAttributes ImplFlags { get; set; }
 
@@ -24,11 +27,14 @@ namespace PartCover.Framework.Data
             return new MethodEntry
             {
                 Type = type,
-                Name = Name,
-                Flags = Flags,
-                BodySize = BodySize,
-                ImplFlags = ImplFlags,
-                Signature = Signature,
+                Name = this.Name,
+                Flags = this.Flags,
+                BodySize = this.BodySize,
+                ImplFlags = this.ImplFlags,
+                Signature = this.Signature,
+                BodyLineCount = this.BodyLineCount,
+                BodySeqCount = this.BodySeqCount,
+                SymbolEntryFound = this.SymbolEntryFound,
                 Blocks = new List<MethodBlock>(Blocks.ConvertAll(x => x.Copy()))
             };
         }

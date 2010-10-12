@@ -28,15 +28,19 @@ public:
 
     struct MethodResult {
 		MethodResult() 
-			: flags(0), implFlags(0), bodySize(0)
+			: flags(0), implFlags(0), bodySize(0), bodyLineCount(0), bodySeqCount(0), symbolEntryFound(FALSE)
 		{}
 
         String name;
         String sig;
 		DWORD bodySize;
+        DWORD bodyLineCount;
+        DWORD bodySeqCount;
 
         DWORD flags;
         DWORD implFlags;
+
+        BOOL symbolEntryFound;
 
         MethodBlocks blocks;
     };

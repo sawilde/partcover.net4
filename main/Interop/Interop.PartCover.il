@@ -22,13 +22,13 @@
   .ver 4:0:0:0
 }
 .module Interop.PartCover.dll
-// MVID: {7E43AD17-A883-455F-921F-BFDE1B463404}
+// MVID: {16F8C15F-901F-491F-B400-47EE87D47686}
 .imagebase 0x00400000
 .file alignment 0x00000200
 .stackreserve 0x00100000
 .subsystem 0x0003       // WINDOWS_CUI
 .corflags 0x00000001    //  ILONLY
-// Image base: 0x00420000
+// Image base: 0x015A0000
 
 
 // =============== CLASS MEMBERS DECLARATION ===================
@@ -616,8 +616,11 @@
           instance void  EnterMethod([in] string  marshal( bstr) methodName,
                                      [in] string  marshal( bstr) methodSig,
                                      [in] int32 bodySize,
+                                     [in] int32 bodyLineCount,
+                                     [in] int32 bodySeqCount,
                                      [in] uint32 'flags',
-                                     [in] uint32 implFlags) runtime managed internalcall
+                                     [in] uint32 implFlags,
+                                     [in] int32 symbolEntryFound) runtime managed internalcall
   {
   } // end of method IReportReceiver::EnterMethod
 
@@ -708,4 +711,4 @@
 // =============================================================
 
 // *********** DISASSEMBLY COMPLETE ***********************
-// WARNING: Created Win32 resource file Interop.PartCover.res
+// WARNING: Created Win32 resource file Interop\Interop.PartCover.res

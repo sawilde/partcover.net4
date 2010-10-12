@@ -24,7 +24,7 @@ struct LoadedClassInfo;
 class Rules;
 
 struct MethodDef {
-	MethodDef() : bodyBytes(0)
+	MethodDef() : bodyBytes(0), bodySize(0), bodySeqCount(0), bodyLineCount(0), symbolEntryFound(false)
 	{
         bodyUpdated = false;
         methodDef = 0;
@@ -34,8 +34,11 @@ struct MethodDef {
 
     bool                bodyUpdated;
 	int                 bodySize;
+    int                 bodySeqCount;
+    int                 bodyLineCount;
 	InstrumentedBlocks  bodyBlocks;
 	DynamicArray<BYTE>  bodyBytes;
+    bool                symbolEntryFound;
 
 	String				methodName;
 	String				methodSig;

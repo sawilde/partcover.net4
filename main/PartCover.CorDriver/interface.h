@@ -83,7 +83,7 @@ __interface IReportReceiver : IUnknown {
 
 	HRESULT EnterAssembly([in] INT domain, [in] BSTR domainName, [in] BSTR assemblyName, [in] BSTR moduleName);
     HRESULT EnterTypedef([in] BSTR typedefName, [in] DWORD flags);
-    HRESULT EnterMethod([in] BSTR methodName, [in] BSTR methodSig, [in] INT bodySize, [in] DWORD flags, [in] DWORD implFlags);
+    HRESULT EnterMethod([in] BSTR methodName, [in] BSTR methodSig, [in] INT bodySize, [in] INT bodyLineCount, [in] INT bodySeqCount, [in] DWORD flags, [in] DWORD implFlags, [in] BOOL symbolEntryFound);
     HRESULT AddCoverageBlock([in] BLOCK_DATA blockData);
     HRESULT LeaveMethod();
     HRESULT LeaveTypedef();
