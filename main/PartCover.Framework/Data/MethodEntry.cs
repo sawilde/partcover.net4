@@ -15,7 +15,7 @@ namespace PartCover.Framework.Data
         public int BodySize { get; set; }
         public int BodyLineCount { get; set; }
         public int BodySeqCount { get; set; }
-        public bool SymbolEntryFound { get; set; }
+        public int SymbolFileId { get; set; }
         public MethodAttributes Flags { get; set; }
         public MethodImplAttributes ImplFlags { get; set; }
 
@@ -34,7 +34,7 @@ namespace PartCover.Framework.Data
                 Signature = this.Signature,
                 BodyLineCount = this.BodyLineCount,
                 BodySeqCount = this.BodySeqCount,
-                SymbolEntryFound = this.SymbolEntryFound,
+                SymbolFileId = this.SymbolFileId,
                 Blocks = new List<MethodBlock>(Blocks.ConvertAll(x => x.Copy()))
             };
         }

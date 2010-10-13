@@ -28,7 +28,7 @@ public:
 
     struct MethodResult {
 		MethodResult() 
-			: flags(0), implFlags(0), bodySize(0), bodyLineCount(0), bodySeqCount(0), symbolEntryFound(FALSE)
+			: flags(0), implFlags(0), bodySize(0), bodyLineCount(0), bodySeqCount(0), symbolFileId(-1)
 		{}
 
         String name;
@@ -40,7 +40,7 @@ public:
         DWORD flags;
         DWORD implFlags;
 
-        BOOL symbolEntryFound;
+        BOOL symbolFileId;
 
         MethodBlocks blocks;
     };

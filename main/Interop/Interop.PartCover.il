@@ -22,13 +22,13 @@
   .ver 4:0:0:0
 }
 .module Interop.PartCover.dll
-// MVID: {16F8C15F-901F-491F-B400-47EE87D47686}
+// MVID: {F6A386BD-E909-40BA-8F19-E6D985585DE8}
 .imagebase 0x00400000
 .file alignment 0x00000200
 .stackreserve 0x00100000
 .subsystem 0x0003       // WINDOWS_CUI
 .corflags 0x00000001    //  ILONLY
-// Image base: 0x015A0000
+// Image base: 0x00890000
 
 
 // =============== CLASS MEMBERS DECLARATION ===================
@@ -620,7 +620,7 @@
                                      [in] int32 bodySeqCount,
                                      [in] uint32 'flags',
                                      [in] uint32 implFlags,
-                                     [in] int32 symbolEntryFound) runtime managed internalcall
+                                     [in] int32 symbolFileId) runtime managed internalcall
   {
   } // end of method IReportReceiver::EnterMethod
 

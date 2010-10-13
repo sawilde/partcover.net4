@@ -17,7 +17,7 @@
 
 void DumpTypeDef(DriverLog& log, DWORD typeDefFlags, LPCTSTR typedefName);
 void DumpMethodDef(DriverLog& log, DWORD flags, LPCTSTR methoddefName, DWORD implFlag);
-void DumpSymSequencePoints(ULONG32 cPoints, ULONG32 offsets[], ISymUnmanagedDocument *documents[], ULONG32 lines[], ULONG32 columns[], ULONG32 endLines[], ULONG32 endColumns[]);
+void DumpSymSequencePoints(ULONG32 cPoints, ULONG32 offsets[], ULONG32 lines[], ULONG32 columns[], ULONG32 endLines[], ULONG32 endColumns[]);
 
 Instrumentator::Instrumentator(Rules& rules) : m_rules(rules), m_nextDomainIndex(1) {}
 Instrumentator::~Instrumentator(void) {}
@@ -239,19 +239,36 @@ void Instrumentator::InstrumentMethod(ModuleID module, TypeDef& typeDef, mdMetho
             ULONG32 points;
             if(SUCCEEDED(hr = symMethod->GetSequencePointCount( &points ))) 
 			{
-                method.symbolEntryFound = TRUE;
+                method.symbolFileId = -1;
                 method.bodySeqCount = points;
                 ULONG32 pointsInRes;
                 DynamicArray<ULONG32> lines(points);
                 DynamicArray<ULONG32> endLines(points);
-                
-                if(SUCCEEDED(hr = symMethod->GetSequencePoints( points, &pointsInRes, NULL, NULL, lines, NULL, endLines, NULL ))) 
+                DynamicArray<ISymUnmanagedDocument*> pDocuments(points);
+
+                if(SUCCEEDED(hr = symMethod->GetSequencePoints( points, &pointsInRes, NULL, pDocuments, lines, NULL, endLines, NULL ))) 
 				{
                     std::list<ULONG32> actualLines;
                     for(ULONG32 i=0; i < points; i++)
                     {
-                        actualLines.push_back(lines[i]);
-                        actualLines.push_back(endLines[i]);
+                        for(ULONG32 j = lines[i]; j <= endLines[i]; j++)
+                        {
+                            actualLines.push_back(j);
+                        }
+
+                        if (method.symbolFileId<0)
+                        {
+                            ULONG32 urlSize;
+                            if (SUCCEEDED(hr = pDocuments[i]->GetURL(0, &urlSize, NULL))) 
+						    {
+                                DynamicArray<TCHAR> url(urlSize);
+                                if (SUCCEEDED(hr = pDocuments[i]->GetURL(urlSize + 1, &urlSize, url))) 
+						        {
+                                    method.symbolFileId = (ULONG32) GetFileUrlId(String(url));
+                                }
+                            }
+                        }
+                        pDocuments[i]->Release();
                     }
                     actualLines.sort();
                     actualLines.unique();
@@ -389,7 +406,7 @@ void Instrumentator::GenerateILCode(ModuleDescriptor& module, TypeDef& defDescri
                 if(SUCCEEDED(hr = symMethod->GetSequencePoints( points, &pointsInRes, cPoints, pDocuments, lines, columns, endLines, endColumns ))) 
 				{
 #ifdef DUMP_SYM_SEQUENCE_POINTS
-                    DumpSymSequencePoints(pointsInRes, cPoints, pDocuments, lines, columns, endLines, endColumns);
+                    DumpSymSequencePoints(pointsInRes, cPoints, lines, columns, endLines, endColumns);
 #endif
                     //pointsInRes = pointsInRes <= 1 ? pointsInRes : pointsInRes - 1;
 
@@ -425,6 +442,11 @@ void Instrumentator::GenerateILCode(ModuleDescriptor& module, TypeDef& defDescri
                         block.startColumn = columns[i];
                         block.endLine = endLines[i];
                         block.endColumn = endColumns[i];
+                    }
+
+                    for(ULONG32 i = 0; i < pointsInRes; ++i) 
+					{
+                        pDocuments[i]->Release();
                     }
                 } 
 				else 
@@ -544,7 +566,7 @@ struct MethodResultsGatherer
 		methodResult.bodySize = method.bodySize;
         methodResult.bodyLineCount = method.bodyLineCount;
         methodResult.bodySeqCount = method.bodySeqCount;
-        methodResult.symbolEntryFound = method.symbolEntryFound;
+        methodResult.symbolFileId = method.symbolFileId;
 
 		if (method.bodyBlocks.size() == 0) {
 #ifdef DUMP_INSTRUMENT_RESULT
@@ -744,7 +766,7 @@ void DumpMethodDef(DriverLog& log, DWORD flags, LPCTSTR methoddefName, DWORD imp
     log.WriteLine(_T("    Methoddef '%s'%s"), methoddefName, flagString.c_str());
 }
 
-void DumpSymSequencePoints(ULONG32 points, ULONG32 offsets[], ISymUnmanagedDocument *documents[], ULONG32 lines[], ULONG32 columns[], ULONG32 endLines[], ULONG32 endColumns[]) {
+void DumpSymSequencePoints(ULONG32 points, ULONG32 offsets[], ULONG32 lines[], ULONG32 columns[], ULONG32 endLines[], ULONG32 endColumns[]) {
     LOGINFO(METHOD_INNER, "Method Sequence Points");
     LOGINFO(METHOD_INNER, "Offset        Line        Col         EndLine     EndCol    ");
     LOGINFO(METHOD_INNER, "============  ==========  ==========  ==========  ==========" );

@@ -51,7 +51,7 @@ namespace PartCover.Framework
         }
 
         private MethodEntry currentMethod;
-        public void EnterMethod(string methodName, string methodSig, int bodySize, int bodyLineCount, int bodySeqCount, uint flags, uint implFlags, int symbolEntryFound)
+        public void EnterMethod(string methodName, string methodSig, int bodySize, int bodyLineCount, int bodySeqCount, uint flags, uint implFlags, int symbolFileId)
         {
             currentTypedef.Methods.Add(currentMethod = new MethodEntry
             {
@@ -61,7 +61,7 @@ namespace PartCover.Framework
                 BodySize = bodySize,
                 BodyLineCount = bodyLineCount,
                 BodySeqCount = bodySeqCount,
-                SymbolEntryFound = (symbolEntryFound != 0),
+                SymbolFileId = symbolFileId,
                 Flags = (MethodAttributes)flags,
                 ImplFlags = (MethodImplAttributes)implFlags
             });

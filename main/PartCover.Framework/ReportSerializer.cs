@@ -42,7 +42,7 @@ namespace PartCover.Framework
             foreach (var dFile in report.Files)
             {
                 var fileNode = AddElement(node, "File");
-                AddAttribute(fileNode, "id").Value = dFile.Id.ToString();
+                AddAttribute(fileNode, "id").Value = dFile.Id.ToString(CultureInfo.InvariantCulture);
                 AddAttribute(fileNode, "url").Value = dFile.PathUri;
             }
 
@@ -65,19 +65,19 @@ namespace PartCover.Framework
                 var typeNode = AddElement(node, "Type");
                 AddAttribute(typeNode, "asmref").Value = x.Assembly.AssemblyRef.ToString(CultureInfo.InvariantCulture);
                 AddAttribute(typeNode, "name").Value = x.Name;
-                AddAttribute(typeNode, "flags").Value = ((long)x.Attributes).ToString();
+                AddAttribute(typeNode, "flags").Value = ((long)x.Attributes).ToString(CultureInfo.InvariantCulture);
 
                 new List<MethodEntry>(x.Methods).ForEach(m =>
                 {
                     var metNode = AddElement(typeNode, "Method");
                     AddAttribute(metNode, "name").Value = m.Name;
                     AddAttribute(metNode, "sig").Value = m.Signature;
-                    AddAttribute(metNode, "symbolentryfound").Value = m.SymbolEntryFound.ToString();
-                    AddAttribute(metNode, "bodysize").Value = m.BodySize.ToString();
-                    AddAttribute(metNode, "linecount").Value = m.BodyLineCount.ToString();
-                    AddAttribute(metNode, "seqcount").Value = m.BodySeqCount.ToString();
-                    AddAttribute(metNode, "flags").Value = ((long)m.Flags).ToString();
-                    AddAttribute(metNode, "iflags").Value = ((long)m.ImplFlags).ToString();
+                    if (m.SymbolFileId > 0) AddAttribute(metNode, "fid").Value = m.SymbolFileId.ToString(CultureInfo.InvariantCulture);
+                    AddAttribute(metNode, "bodysize").Value = m.BodySize.ToString(CultureInfo.InvariantCulture);
+                    AddAttribute(metNode, "linecount").Value = m.BodyLineCount.ToString(CultureInfo.InvariantCulture);
+                    AddAttribute(metNode, "seqcount").Value = m.BodySeqCount.ToString(CultureInfo.InvariantCulture);
+                    AddAttribute(metNode, "flags").Value = ((long)m.Flags).ToString(CultureInfo.InvariantCulture);
+                    AddAttribute(metNode, "iflags").Value = ((long)m.ImplFlags).ToString(CultureInfo.InvariantCulture);
 
                     new List<MethodBlock>(m.Blocks).ForEach(b =>
                     {
