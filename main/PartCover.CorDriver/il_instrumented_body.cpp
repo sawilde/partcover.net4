@@ -106,7 +106,7 @@ struct InstrumentedCodeInserter {
         iBlock.maxCounter = 999999;
         iBlock.position = change.original;
 
-        ASSERT_SIZEOF(LPDWORD, DWORD);
+        //ASSERT_SIZEOF(LPDWORD, DWORD);
 
         ILop ldc_i4_counter = ILHelpers::FindILOpByCode(CEE_LDC_I4);
         ldc_i4_counter.inlineParameter.opDword = (DWORD)iBlock.counter;

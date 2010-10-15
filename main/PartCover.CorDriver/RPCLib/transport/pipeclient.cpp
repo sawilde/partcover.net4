@@ -137,4 +137,28 @@ namespace bidi {
 		ar.read(&t, sizeof t);
 		return ar;
 	}
+
+	NamedPipe & operator << (NamedPipe &ar, __int64 const& t)
+	{
+		ar.write(&t, sizeof t);
+		return ar;
+	}
+
+	NamedPipe & operator >> (NamedPipe &ar, __int64 &t)
+	{
+		ar.read(&t, sizeof t);
+		return ar;
+	}
+
+	NamedPipe & operator << (NamedPipe &ar, unsigned __int64 const& t)
+	{
+		ar.write(&t, sizeof t);
+		return ar;
+	}
+
+	NamedPipe & operator >> (NamedPipe &ar, unsigned __int64 &t)
+	{
+		ar.read(&t, sizeof t);
+		return ar;
+	}
 }

@@ -77,7 +77,7 @@ void operator delete(void * mem) throw() {
 #endif
 
 void print_memory_usage() {
-	long total = 0;
+	size_t total = 0;
 	track_type::const_iterator mem_it = get_map()->begin();
 	while(mem_it != get_map()->end())
 	{

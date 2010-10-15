@@ -273,7 +273,7 @@ void Instrumentator::InstrumentMethod(ModuleID module, TypeDef& typeDef, mdMetho
                     actualLines.sort();
                     actualLines.unique();
 
-                    method.bodyLineCount = actualLines.size();
+                    method.bodyLineCount = (int)actualLines.size();
                     LOGINFO3(METHOD_INSTRUMENT, "      >> %s %d %d", methodName.c_str(), method.bodyLineCount, method.bodySeqCount);
                 }
             }
