@@ -33,7 +33,8 @@ int CorProfiler::m_initialized = 0;
 
 STDMETHODIMP CorProfiler::Initialize( /* [in] */ IUnknown *pICorProfilerInfoUnk )
 {
-	//__asm int 3;
+	//DebugBreak();
+
 	if (m_initialized==1) return E_FAIL;
 	m_initialized=1;
 

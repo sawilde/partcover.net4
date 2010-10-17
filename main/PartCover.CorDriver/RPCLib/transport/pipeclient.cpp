@@ -138,6 +138,7 @@ namespace bidi {
 		return ar;
 	}
 
+#ifdef _X64
 	NamedPipe & operator << (NamedPipe &ar, __int64 const& t)
 	{
 		ar.write(&t, sizeof t);
@@ -161,4 +162,5 @@ namespace bidi {
 		ar.read(&t, sizeof t);
 		return ar;
 	}
+#endif
 }

@@ -1,8 +1,14 @@
+bin64/
 bin/
+
 ipch/
+
 obj/
 *.suo
+
 *.user
+
 *.sdf
+
 
 *.nupkg

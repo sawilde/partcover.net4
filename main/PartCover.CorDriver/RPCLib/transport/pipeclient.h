@@ -63,10 +63,12 @@ namespace bidi {
 	NamedPipe & operator << (NamedPipe &ar, bool const& t);
 	NamedPipe & operator >> (NamedPipe &ar, bool &t);
 
+#ifdef _X64
 	NamedPipe & operator << (NamedPipe &ar, __int64 const& t);
 	NamedPipe & operator >> (NamedPipe &ar, __int64 &t);
 	NamedPipe & operator << (NamedPipe &ar, unsigned __int64 const& t);
 	NamedPipe & operator >> (NamedPipe &ar, unsigned __int64 &t);
+#endif
 }
 
 #endif
