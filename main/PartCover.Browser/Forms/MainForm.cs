@@ -52,9 +52,14 @@ namespace PartCover.Browser.Forms
             if (dlgOpen.ShowDialog(this) != DialogResult.OK)
                 return;
 
-            CloseViews();
-            ServiceContainer.getService<IReportService>().LoadFromFile(dlgOpen.FileName);
+            this.OpenReport(dlgOpen.FileName);
         }
+        
+        public void OpenReport(string fileName)
+        {
+            CloseViews();
+            ServiceContainer.getService<IReportService>().LoadFromFile(fileName);
+ 	}
 
         private void mmFileExit_Click(object sender, EventArgs e)
         {

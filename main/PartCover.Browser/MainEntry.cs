@@ -27,9 +27,43 @@ namespace PartCover.Browser
 
             host.build();
 
-            Application.Run(host.getService<MainForm>());
+            var mainForm = host.getService<MainForm>();
+
+            var reportName = FindReportArgument();
+            if (!String.IsNullOrEmpty(reportName))
+            {
+                if (System.IO.File.Exists(reportName))
+                {
+                    log.Debug("open form with report argument: " + reportName);
+                    mainForm.OpenReport(reportName);
+                }
+                else
+                {
+                    // todo: should we report this to the user?
+                    log.Debug("report argument file does not exist: " + reportName);
+                }
+            }
+            
+            Application.Run(mainForm);
 
             host.destroy();
+        }
+
+        private static string FindReportArgument()
+        {
+            var reportNameIsNextArg = false;
+
+            foreach (string arg in Environment.GetCommandLineArgs())
+            {
+                if (reportNameIsNextArg)
+                {
+                    log.Debug("Found report argument: " + arg);
+                    return arg;
+                }
+                reportNameIsNextArg = (arg.ToLower().Equals("--report"));
+            }
+
+            return null;
         }
     }
 }
