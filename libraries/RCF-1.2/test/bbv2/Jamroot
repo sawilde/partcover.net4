@@ -1,0 +1,366 @@
+
+import testing ;
+import feature : feature ;
+
+import os ;
+local BOOST_ROOT            = [ os.environ BOOST_ROOT    ] ;
+local BOOST_BUILD_PATH      = [ os.environ BOOST_BUILD_PATH    ] ;
+local SOCKET_NAME_1         = [ os.environ SOCKET_NAME_1    ] ;
+local SOCKET_NAME_2         = [ os.environ SOCKET_NAME_2    ] ;
+local OPENSSL_ROOT          = [ os.environ OPENSSL_ROOT    ] ;
+local OPENSSL_NAME_1        = [ os.environ OPENSSL_NAME_1    ] ;
+local OPENSSL_NAME_2        = [ os.environ OPENSSL_NAME_2    ] ;
+local ZLIB_ROOT             = [ os.environ ZLIB_ROOT    ] ;
+local ZLIB_NAME             = [ os.environ ZLIB_NAME    ] ;
+local PROTOBUF_ROOT         = [ os.environ PROTOBUF_ROOT ] ;
+local PROTOBUF_NAME_DEBUG   = [ os.environ PROTOBUF_NAME_DEBUG ] ;
+local PROTOBUF_NAME_RELEASE = [ os.environ PROTOBUF_NAME_RELEASE ] ;
+local BUILD_CONFIG_TEMP_DIR = [ os.environ BUILD_CONFIG_TEMP_DIR    ] ;
+
+ECHO "BOOST_ROOT =" $(BOOST_ROOT) ;
+ECHO "BOOST_BUILD_PATH =" $(BOOST_BUILD_PATH) ;
+ECHO "OS =" [ os.name ] ;
+
+LIBS = ;
+DEFINES = ;
+
+lib ws2_32          : : <name>ws2_32 ;
+lib mswsock         : : <name>mswsock ;
+lib advapi32        : : <name>advapi32 ;
+lib user32          : : <name>user32 ;
+lib crypt32         : : <name>crypt32 ;
+lib nsl             : : <name>nsl ;
+lib socket          : : <name>socket ;
+
+if [ os.name ] = NT
+{  
+    LIBS += /RcfTest//ws2_32 ;
+    LIBS += /RcfTest//mswsock ;
+    LIBS += /RcfTest//advapi32 ;
+    LIBS += /RcfTest//user32 ;
+    LIBS += /RcfTest//crypt32 ;
+    
+    # Defining _WIN32_WINNT, with or without a value, causes problems on a number of compilers.
+    #DEFINES += _WIN32_WINNT=0x0500 ;
+    DEFINES += WIN32_LEAN_AND_MEAN ;
+    DEFINES += WIN32 ;
+}   
+
+DEFINES += RCF_ENABLE_PROGRAM_TIME_LIMIT ;
+DEFINES += RCF_NO_AUTO_INIT_DEINIT ;
+DEFINES += RCF_ALWAYS_ABORT_ON_ASSERT ;
+
+if [ os.name ] = SOLARIS
+{   
+    LIBS += /RcfTest//nsl ;
+    LIBS += /RcfTest//socket ;
+}
+
+feature with-spc : on off : composite propagated symmetric link-incompatible ;
+feature.compose <with-spc>off : ;
+feature.compose <with-spc>on : <define>BOOST_SP_ENABLE_DEBUG_HOOKS ;
+
+feature with-asio : off on : composite propagated symmetric link-incompatible ;
+feature.compose <with-asio>off : ;
+feature.compose <with-asio>on : <define>RCF_USE_BOOST_ASIO ;
+
+#feature with-bthread : off on : composite propagated symmetric link-incompatible ;
+#feature.compose <with-bthread>off : ;
+#feature.compose <with-bthread>on : <define>RCF_USE_BOOST_THREADS ;
+
+feature with-proto : off on : composite propagated symmetric link-incompatible ;
+feature.compose <with-proto>off : ;
+feature.compose <with-proto>on : <define>RCF_USE_PROTOBUF ;
+
+feature with-sf : on off : composite propagated symmetric link-incompatible ;
+feature.compose <with-sf>off : ;
+feature.compose <with-sf>on : <define>RCF_USE_SF_SERIALIZATION ;
+
+feature with-bser : off on : composite propagated symmetric link-incompatible ;
+feature.compose <with-bser>off : ;
+feature.compose <with-bser>on : <define>RCF_USE_BOOST_SERIALIZATION ;
+
+feature with-zlib : off on : composite propagated symmetric link-incompatible ;
+feature.compose <with-zlib>off : ;
+feature.compose <with-zlib>on : <define>RCF_USE_ZLIB <include>$(ZLIB_ROOT) ;
+
+feature with-ssl : off on : composite propagated symmetric link-incompatible ;
+feature.compose <with-ssl>off : ;
+feature.compose <with-ssl>on : <define>RCF_USE_OPENSSL <include>$(OPENSSL_ROOT) ;
+
+feature with-all : off on : composite propagated symmetric link-incompatible ;
+feature.compose <with-all>off : ;
+feature.compose <with-all>on : <with-spc>on <with-asio>on <with-sf>on <with-bser>on <with-zlib>on <with-ssl>on ;
+
+project RcfTest
+:
+    requirements
+    <include>../../include
+    <include>$(BOOST_ROOT)
+    <include>$(PROTOBUF_ROOT)
+    <define>BOOST_ALL_NO_LIB
+    <define>TEMP_DIR_UNQUOTED=$(BUILD_CONFIG_TEMP_DIR)
+    <define>UTIL_OUTPUTDEBUGSTRING_TO_STDOUT
+    <warnings>off
+    <define>$(DEFINES)
+    <library>$(LIBS)    
+    <address-model>64:<cxxflags>/bigobj # TODO: only for msvc
+    <toolset-msvc:version>8.0:<define>_WIN32_WINNT=0x0500
+    <toolset-msvc:version>7.1:<define>_WIN32_WINNT=0x0500
+    <toolset-msvc:version>6.5:<define>_WIN32_WINNT=0x0500
+    
+    # Pdbs for release builds. Unfortunately, it deepens the build directory 
+    # structure significantly, and makes parallel builds impossible.
+    #<toolset>msvc:<debug-symbols>on
+    #<toolset>msvc:<debug-store>database
+;
+
+use-project /boost          : $(BOOST_ROOT) ;
+alias BoostThread           : /boost/thread//boost_thread : <link>static ;
+alias BoostSerialization    : /boost/serialization//boost_serialization : <link>static ;
+alias BoostSystem           : /boost/system//boost_system : <link>static ;
+lib Zlib                    : : <name>$(ZLIB_NAME) ;
+lib OpenSsl1                : : <name>$(OPENSSL_NAME_1) ;
+lib OpenSsl2                : : <name>$(OPENSSL_NAME_2) ;
+lib Protobuf                : : <name>$(PROTOBUF_NAME_DEBUG) <variant>debug ;
+lib Protobuf                : : <name>$(PROTOBUF_NAME_RELEASE) <variant>release ;
+
+alias RcfMt                 : RcfMtLib//Rcf ;
+alias RcfMt                 : RcfMtLib//Rcf3 : <toolset>borland ;
+
+alias RcfSt                 : RcfStLib//Rcf ;
+alias RcfSt                 : RcfStLib//Rcf3 : <toolset>borland ;
+
+alias RcfMtUnicode          : RcfMtUnicodeLib//Rcf ;
+alias RcfMtUnicode          : RcfMtUnicodeLib//Rcf3 : <toolset>borland ;
+
+alias RcfMtDll              : RcfMtDll//Rcf ;
+alias RcfMtDll              : RcfMtDll//Rcf3 : <toolset>borland ;
+
+obj SpCollector
+:
+    ../../src/RCF/SpCollector.cpp
+;
+
+test-suite Test
+: 
+    # Typical multithreaded builds
+    [ run ../Test_Binding.cpp                       RcfMt ]
+    [ run ../Test_ConnectionDrop.cpp                RcfMt ]
+    [ run ../Test_ClientInfo.cpp                    RcfMt ]
+    [ run ../Test_ClientProgress.cpp                RcfMt ]
+    [ run ../Test_ClientTimeout.cpp                 RcfMt ]
+    [ run ../Test_CycleServer_Mt.cpp                RcfMt ]
+    [ run ../Test_Endpoint.cpp                      RcfMt ]
+    [ run ../Test_Endurance.cpp                     RcfMt ]
+    [ run ../Test_ErrorReporting.cpp                RcfMt ]
+    [ run ../Test_FileTransfer.cpp                  RcfMt ]
+    [ run ../Test_FilterPerformance.cpp             RcfMt ]
+    [ run ../Test_Filters.cpp                       RcfMt ]
+    [ run ../Test_General.cpp                       RcfMt ]
+    [ run ../Test_InitDeinit.cpp                    RcfMt ]
+    [ run ../Test_IpRestriction.cpp                 RcfMt ]
+    [ run ../Test_Minimal.cpp                       RcfMt ]
+    [ run ../Test_MultipleClient.cpp                RcfMt ]
+    [ run ../Test_Multicast.cpp                     RcfMt ]
+    [ run ../Test_MultiTransport.cpp                RcfMt ]
+    [ run ../Test_NamedPipes.cpp                    RcfMt ]
+    
+    # To display the gpf dialog instead of suppressing it as we normally do:
+    #[ run ../Test_Notification.cpp                  RcfMt : -timelimit 600 -gpfdialog 1 ]
+    
+    [ run ../Test_Notification.cpp                  RcfMt : -timelimit 600 ]
+    [ run ../Test_ObjectFactory.cpp                 RcfMt ]
+    [ run ../Test_OpenSslFilter.cpp                 RcfMt ]
+    [ run ../Test_Performance.cpp                   RcfMt ]
+    [ run ../Test_Polymorphic.cpp                   RcfMt ]
+    [ run ../Test_Protobuf.cpp                      RcfMt ]
+    [ run ../Test_Schannel.cpp                      RcfMt ]
+    [ run ../Test_Serialization.cpp                 RcfMt ]
+    [ run ../Test_ServerConcurrency.cpp             RcfMt ]
+    [ run ../Test_SspiFilter.cpp                    RcfMt : -timelimit 600 ]
+    [ run ../Test_StubSerialization.cpp             RcfMt ]
+    [ run ../Test_ThreadManager.cpp                 RcfMt ]
+    [ run ../Test_Versioning.cpp                    RcfMt ]
+    [ run ../Test_ZeroAllocation.cpp                RcfMt ]
+  
+    # Singlethreaded builds
+    [ run ../Test_CycleServer_St.cpp                RcfSt ]
+    [ run ../Test_StServer.cpp                      RcfSt ]
+  
+    # Multithreaded unicode build
+    [ run ../Test_SchannelU.cpp                     RcfMtUnicode ]
+    [ run ../Test_SspiFilterU.cpp                   RcfMtUnicode : -timelimit 600 ]
+    [ run ../Test_NamedPipesU.cpp                   RcfMtUnicode ]
+
+    # Multithreaded DLL build
+    [ run ../Test_Minimal_Dll.cpp                   RcfMtDll ]
+    
+    # Need to define RCF_USE_BOOST_XML_SERIALIZATION for this one.
+    # We are maxed out on features already (build directory strucuture 
+    # exceeding MAX_PATH), so for now, don't build this.
+    #[ run ../Test_XmlSerialization.cpp              RcfMt ]
+    
+    [ run ../Test_Ami.cpp                RcfMt ]
+    [ run ../Test_Amd.cpp                RcfMt ]
+; 
+
+obj Test_NoWarnings
+:
+    ../Test_NoWarnings.cpp
+:
+    <define>RCF_NO_DIAGNOSTIC_WARNINGS
+    <warnings>on
+    <warnings-as-errors>on
+    <toolset>gcc:<cxxflags>-Wno-deprecated # Otherwise get warnings on strstreams.
+    <toolset>msvc-7.1:<cxxflags>/Wp64 # Visual C++: detect 64 bit portability issues.
+    <toolset>msvc-8.0:<cxxflags>/Wp64 # Visual C++: detect 64 bit portability issues.
+    <threading>multi
+;
+
+# Compile all source files separately.
+
+lib TcpAsioServerTransport_1 : ../../src/RCF/Empty.cpp : <link>static ;
+lib TcpAsioServerTransport_2 : ../../src/RCF/TcpAsioServerTransport.cpp ../../src/RCF/AsioServerTransport.cpp : <link>static <with-asio>on ;
+
+alias TcpAsioServerTransport : /RcfTest//TcpAsioServerTransport_1 ;
+alias TcpAsioServerTransport : /RcfTest//TcpAsioServerTransport_2 : <with-asio>on ;
+
+exe Test_IndependentHeaders
+: 
+    [ glob ../../src/RCF/*.cpp : ../../src/RCF/RCF.cpp ../../src/RCF/RCF_*.cpp ../../src/RCF/UsingOpenSsl.cpp ../../src/RCF/OpenSslEncryptionFilter.cpp ../../src/RCF/ZlibCompressionFilter.cpp ../../src/RCF/TcpAsioServerTransport.cpp ../../src/RCF/AsioServerTransport.cpp ../../src/RCF/UnixLocalEndpoint.cpp ../../src/RCF/UnixLocalClientTransport.cpp ../../src/RCF/UnixLocalServerTransport.cpp ../../src/RCF/BoostSystem.cpp ../../src/RCF/SpCollector.cpp ../../src/RCF/FileTransferService.cpp ../../src/RCF/BoostFilesystem.cpp ]
+    
+    [ glob ../../src/SF/*.cpp : ../../src/SF/SF.cpp ../../src/SF/Tools.cpp ]
+    
+    ../../src/RCF/util/Trace.cpp
+    ../../src/RCF/util/Platform.cpp
+    ../../src/RCF/Protocol/Protocol.cpp
+    ../../src/RCF/RcfBoostThreads/RcfBoostThreads.cpp
+    
+    TcpAsioServerTransport
+    
+    ../Test_Minimal.cpp
+:
+    <toolset>msvc:<cxxflags>/WX
+    <toolset>msvc:<cxxflags>/wd4308
+    <with-spc>on:<library>/RcfTest//SpCollector
+    #<with-bthread>on:<library>/RcfTest//BoostThread
+    <with-bser>on:<library>/RcfTest//BoostSerialization 
+    <with-asio>on:<library>/RcfTest//BoostSystem 
+    <with-zlib>on:<library>/RcfTest//Zlib
+    <with-ssl>on:<library>/RcfTest//OpenSsl1
+    <with-ssl>on:<library>/RcfTest//OpenSsl2
+;
+
+alias Targets_Common
+: 
+    Test_Binding
+    Test_ConnectionDrop
+    Test_ClientInfo    
+    Test_ClientProgress
+    Test_ClientTimeout
+    Test_CycleServer_Mt
+    Test_Endpoint
+    Test_Endurance
+    Test_ErrorReporting
+    Test_FilterPerformance
+    Test_Filters
+    Test_General
+    Test_InitDeinit
+    Test_IpRestriction
+    Test_Minimal
+    Test_MultipleClient
+    Test_Multicast
+    Test_MultiTransport
+    Test_Notification
+    Test_ObjectFactory
+    Test_OpenSslFilter
+    Test_Performance
+    Test_Polymorphic
+    Test_Serialization
+    Test_ServerConcurrency
+    Test_StubSerialization
+    Test_ThreadManager
+    Test_Versioning    
+;
+
+alias Targets_Win32
+:
+    Test_NamedPipes
+    Test_ZeroAllocation
+    Test_CycleServer_St
+    Test_StServer
+    Test_NamedPipesU
+    Test_NoWarnings
+    Test_IndependentHeaders
+    Test_Ami
+    Test_Amd
+;
+
+alias Targets_Dll
+:
+    Test_Minimal_Dll
+;
+
+alias Targets_Sspi
+:
+    Test_SspiFilter
+    Test_SspiFilterU
+    Test_Schannel
+    Test_SchannelU
+;
+
+alias Targets_All
+:
+    Targets_Common
+    Targets_Win32
+    Targets_Dll
+    Targets_Sspi
+;
+
+alias Targets_AllExceptSspi
+:
+    Targets_Common
+    Targets_Win32
+    Targets_Dll
+;
+
+# Special alias for the PCBSD VM. Doesn't run Test_Multicast, as it reboots the VM...
+alias Targets_Common_FreeBsd32
+: 
+    Test_Binding
+    Test_ConnectionDrop
+    Test_ClientInfo    
+    Test_ClientProgress
+    Test_ClientTimeout
+    Test_CycleServer_Mt
+    Test_Endpoint
+    Test_Endurance
+    Test_ErrorReporting
+    Test_FilterPerformance
+    Test_Filters
+    Test_General
+    Test_InitDeinit
+    Test_IpRestriction
+    Test_Minimal
+    Test_MultipleClient
+    Test_MultiTransport
+    Test_Notification
+    Test_ObjectFactory
+    Test_OpenSslFilter
+    Test_Performance
+    Test_Polymorphic
+    Test_Serialization
+    Test_ServerConcurrency
+    Test_StubSerialization
+    Test_ThreadManager
+    Test_Versioning    
+;
+
+# Some of the tests have timing-related tests, and don't run in parallel very well.
+alias Targets_Timing
+:
+    Test_Notification
+    Test_ObjectFactory
+    Test_ThreadManager
+;

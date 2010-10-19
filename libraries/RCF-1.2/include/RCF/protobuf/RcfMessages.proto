@@ -1,0 +1,92 @@
+
+message FilterHeader 
+{
+  repeated int32 filterIds = 1;
+  required int32 unfilteredLen = 2;
+}
+
+message RequestHeader 
+{
+  required int32 token = 1;
+  required string subInterface = 2;
+  required int32 fnId = 3;
+  required int32 serializationProtocol = 4;
+  required bool oneway = 5;
+  required bool close = 6;
+  required string service = 7;
+  required int32 rcfRuntimeVersion = 8;
+  required int32 pingBackInterval = 9;
+  required int32 archiveVersion = 10;
+}
+
+// contains ok, (error, arg) or (exception, RemoteException).
+message ResponseHeader
+{
+
+  enum ResponseType 
+  {
+    Ok = 0;
+    Error = 1;
+    Exception = 2;  
+  }
+  
+  required ResponseType responseType = 1;
+  
+  message ResponseError
+  {
+    required int32 error = 1;
+    required int32 errorArg = 2;
+  }
+  
+  optional ResponseError responseError = 2;
+  
+  message ResponseException 
+  {
+    required string what = 1;
+    required string context = 2;
+    required int32 error = 3;
+    required int32 subsystemError = 4;
+    required int32 subsystem = 5;
+    required string remoteExceptionType = 6;
+  }
+  
+  optional ResponseException responseException = 3;
+  
+}
+
+message CreateRemoteObject
+{
+	required string objectName = 1;
+	required int32 token = 2;
+}
+
+message CreateRemoteObjectResponse
+{
+	required int32 errorCode = 1;
+	required int32 token = 2;
+}
+
+message DeleteRemoteObject
+{
+	required int32 token = 1;
+}
+
+message CreateSessionObject
+{
+	required string objectName = 1;
+}
+
+message DeleteSessionObject
+{
+}
+
+message RequestSubscription
+{
+	required string subscriptionName = 1;
+}
+
+message RequestTransportFilters
+{
+	repeated int32 filterIds = 1;
+	required bool queryOnly = 2;
+}

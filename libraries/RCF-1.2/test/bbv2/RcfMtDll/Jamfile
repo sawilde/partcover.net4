@@ -1,0 +1,62 @@
+
+project RcfMtDll ;
+
+lib Rcf
+: 
+    ../../../src/RCF/RCF.cpp
+:     
+    <link>shared 
+    <with-spc>on:<library>/RcfTest//SpCollector
+    #<with-bthread>on:<library>/RcfTest//BoostThread
+    <with-proto>on:<library>/RcfTest//Protobuf
+    <with-bser>on:<library>/RcfTest//BoostSerialization 
+    <with-asio>on:<library>/RcfTest//BoostSystem 
+    <with-zlib>on:<library>/RcfTest//Zlib
+    <with-ssl>on:<library>/RcfTest//OpenSsl1
+    <with-ssl>on:<library>/RcfTest//OpenSsl2
+    <define>RCF_NO_AUTO_INIT_DEINIT
+    <define>RCF_MULTI_THREADED
+    <define>RCF_BUILD_DLL
+    <threading>multi
+    <toolset>gcc:<cxxflags>-fvisibility=hidden
+: :
+    <with-bser>on:<library>/RcfTest//BoostSerialization 
+    <with-asio>on:<library>/RcfTest//BoostSystem
+    #<with-bthread>on:<library>/RcfTest//BoostThread
+    <with-proto>on:<library>/RcfTest//Protobuf
+    <with-spc>on:<library>/RcfTest//SpCollector
+    <define>RCF_MULTI_THREADED
+    <threading>multi
+    <define>RCF_NO_AUTO_INIT_DEINIT
+;
+
+lib Rcf3
+: 
+    ../../../src/RCF/RCF_1.cpp
+    ../../../src/RCF/RCF_2.cpp
+    ../../../src/RCF/RCF_3.cpp
+:     
+    <link>shared 
+    <with-spc>on:<library>/RcfTest//SpCollector
+    #<with-bthread>on:<library>/RcfTest//BoostThread
+    <with-proto>on:<library>/RcfTest//Protobuf
+    <with-bser>on:<library>/RcfTest//BoostSerialization 
+    <with-asio>on:<library>/RcfTest//BoostSystem 
+    <with-zlib>on:<library>/RcfTest//Zlib
+    <with-ssl>on:<library>/RcfTest//OpenSsl1
+    <with-ssl>on:<library>/RcfTest//OpenSsl2
+    <define>RCF_NO_AUTO_INIT_DEINIT
+    <define>RCF_MULTI_THREADED
+    <define>RCF_BUILD_DLL
+    <threading>multi
+: :
+    <with-bser>on:<library>/RcfTest//BoostSerialization 
+    <with-asio>on:<library>/RcfTest//BoostSystem
+    #<with-bthread>on:<library>/RcfTest//BoostThread
+    <with-proto>on:<library>/RcfTest//Protobuf
+    <with-spc>on:<library>/RcfTest//SpCollector
+    <define>RCF_MULTI_THREADED
+    <threading>multi
+    <define>RCF_NO_AUTO_INIT_DEINIT
+;
+

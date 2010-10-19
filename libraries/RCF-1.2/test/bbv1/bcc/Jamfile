@@ -1,0 +1,196 @@
+
+## Jamfile for building and testing RCF with C++Builder 6 compiler.
+## Boost.Serialization and Boost.Asio are not used.
+## The lib target type doesn't work, so we have to compile RCF
+## , and eventually serialization, into each and every test executable.
+
+project-root ; #so we can find Jamrules
+
+import testing ;
+
+template CommonRcfSettings
+:
+:                  
+  <sysinclude>$(BOOST_ROOT)
+  <sysinclude>$(ASIO_ROOT)
+  <sysinclude>$(OPENSSL_ROOT)
+  <sysinclude>$(ZLIB_ROOT)
+  <sysinclude>../../../include
+  <define>_WINSOCKAPI_
+ 
+ 
+  #<define>RCF_USE_BOOST_ASIO
+ 
+  <define>RCF_USE_OPENSSL
+  <define>RCF_USE_ZLIB
+  <define>RCF_USE_SF_SERIALIZATION
+  #<define>RCF_USE_BOOST_SERIALIZATION
+  #<define>RCF_USE_BOOST_ASIO # causes borland ICE (F1008: out of memory)
+  <define>BOOST_ALL_NO_LIB
+  <define>BOOST_THREAD_BUILD_DLL
+  <define>TEMP_DIR_UNQUOTED=$(BUILD_CONFIG_TEMP_DIR)
+  <define>UTIL_OUTPUTDEBUGSTRING_TO_STDOUT
+  <find-library>$(SOCKET_LIBRARY_1)
+  <find-library>$(SOCKET_LIBRARY_2)
+  <find-library>$(OPENSSL_LIBRARY_1)
+  <find-library>$(OPENSSL_LIBRARY_2)
+  <find-library>$(ZLIB_LIBRARY)
+  <borland><*><cxxflags>"-w-" # disable warnings
+ 
+  # disabling causes ICE's, but helps with dtor calling
+  #<borland><release><cxxflags>"-Od"
+ 
+  # To use old Rogue Wave STL
+  # Setting this requires rebuilding boost threads as well, with _USE_OLD_RW_STL
+  # (add a line to threads.jam). Also, need to correct compiler error (disambiguation)
+  # in auto_ptr.
+  #<borland><*><define>_USE_OLD_RW_STL
+ 
+  <vc-7_1><*><find-library>advapi32
+  <vc-7_1><*><find-library>user32
+  <vc-7_1><*><find-library>secur32
+  <vc-7_1><*><find-library>crypt32
+ 
+  <vc-8_0><*><find-library>advapi32
+  <vc-8_0><*><find-library>user32
+  <vc-8_0><*><find-library>secur32
+  <vc-8_0><*><find-library>crypt32
+ 
+  <mingw><*><cxxflags>"-w"
+  
+  <vc-6_5><*><define>_WIN32_WINNT=0x0500
+ 
+  <define>test_main=test_main
+;
+
+
+template CommonRcfSettingsUnicode
+:
+  <template>CommonRcfSettings
+:
+  <define>UNICODE
+  <define>_UNICODE
+;
+
+
+template RcfStTestSettingsSt
+:
+  ../../../src/RCF/RCF_1.cpp
+  ../../../src/RCF/RCF_2.cpp
+  ../../../src/RCF/RCF_3.cpp
+  <template>CommonRcfSettings
+:
+  <define>RCF_SINGLE_THREADED
+  <threading>multi
+;  
+
+
+template RcfStTestSettingsMt
+:
+  ../../../src/RCF/RCF_1.cpp
+  ../../../src/RCF/RCF_2.cpp
+  ../../../src/RCF/RCF_3.cpp
+  <dll>@boost/libs/thread/build/boost_thread
+  <template>CommonRcfSettings
+:
+  <define>RCF_SINGLE_THREADED
+  <threading>multi
+;  
+
+
+template RcfMtTestSettings
+:
+  ../../../src/RCF/RCF_1.cpp
+  ../../../src/RCF/RCF_2.cpp
+  ../../../src/RCF/RCF_3.cpp
+  <dll>@boost/libs/thread/build/boost_thread
+  <template>CommonRcfSettings
+:
+  <define>RCF_MULTI_THREADED
+  <threading>multi
+;
+
+
+template RcfMtTestSettingsUnicode
+:
+  ../../../src/RCF/RCF_1.cpp
+  ../../../src/RCF/RCF_2.cpp
+  ../../../src/RCF/RCF_3.cpp
+  <dll>@boost/libs/thread/build/boost_thread
+  <template>CommonRcfSettingsUnicode
+:
+  <define>RCF_MULTI_THREADED
+  <threading>multi
+;
+
+## TODO: get more of these tests working
+## tests marked #RF are failing in release builds
+test-suite "RcfTest"
+:
+  [ run ../../Test_Binding.cpp                        <template>RcfMtTestSettings ]
+  [ run ../../Test_ClientConnectionDrop.cpp        <template>RcfMtTestSettings ]
+  [ run ../../Test_ClientInfo.cpp                    <template>RcfMtTestSettings ]
+  [ run ../../Test_ClientProgress.cpp                <template>RcfMtTestSettings ]
+  [ run ../../Test_ClientTimeout.cpp                <template>RcfMtTestSettings ] #RF
+  [ run ../../Test_CycleServer_St.cpp                <template>RcfStTestSettingsMt ] #RF
+  [ run ../../Test_CycleServer_Mt.cpp                <template>RcfMtTestSettings ]
+  [ run ../../Test_Endpoint.cpp                    <template>RcfMtTestSettings ]
+  [ run ../../Test_Endurance.cpp                    <template>RcfMtTestSettings ]
+  [ run ../../Test_ErrorReporting.cpp                <template>RcfMtTestSettings ] #RF
+  [ run ../../Test_FilterPerformance.cpp          <template>RcfMtTestSettings ]
+  [ run ../../Test_Filters.cpp                        <template>RcfMtTestSettings ] #RF
+  [ run ../../Test_General.cpp                        <template>RcfMtTestSettings ]
+  [ run ../../Test_InitDeinit.cpp                  <template>RcfMtTestSettings ]
+  [ run ../../Test_IpRestriction.cpp                <template>RcfMtTestSettings ]
+  [ run ../../Test_Minimal.cpp                        <template>RcfMtTestSettings ]
+  [ run ../../Test_MultipleClient.cpp                <template>RcfMtTestSettings ]
+  [ run ../../Test_MultiTransportServer.cpp        <template>RcfMtTestSettings ]
+  [ run ../../Test_MultiThreadedServer.cpp            <template>RcfMtTestSettings ]
+  [ run ../../Test_Notification.cpp                <template>RcfMtTestSettings ]
+  [ run ../../Test_ObjectFactoryService.cpp        <template>RcfMtTestSettings ] #RF
+  [ run ../../Test_OpenSslFilter.cpp               <template>RcfMtTestSettings ]
+  [ run ../../Test_Performance.cpp                    <template>RcfMtTestSettings ]
+  [ run ../../Test_Polymorphic.cpp                    <template>RcfMtTestSettings ]
+  [ run ../../Test_Serialization.cpp                <template>RcfMtTestSettings ]
+  [ run ../../Test_ServerTransportConcurrency.cpp    <template>RcfMtTestSettings ]
+  [ run ../../Test_SingleThreadedServer.cpp        <template>RcfStTestSettingsMt ]
+  [ run ../../Test_SspiFilter.cpp                    <template>RcfMtTestSettings ] #RF
+  [ run ../../Test_SspiFilterUnicode.cpp            <template>RcfMtTestSettingsUnicode ] #RF
+  [ run ../../Test_StubSerialization.cpp            <template>RcfMtTestSettings ]
+  [ run ../../Test_ThreadManager.cpp                <template>RcfMtTestSettings ]
+  #[ run ../Test_Unified.cpp                        <template>RcfMtTestSettings ]
+  [ run ../../Test_Versioning.cpp                    <template>RcfMtTestSettings ]
+  [ run ../../Test_ZeroAllocation.cpp                <template>RcfMtTestSettings ]
+;
+
+exe Test_Endurance
+:
+  ../../Test_Endurance.cpp
+  <template>RcfMtTestSettings
+;
+
+exe Test_Minimal
+:
+  ../../Test_Minimal.cpp
+  <template>RcfMtTestSettings
+;
+
+exe Test_Performance
+:
+  ../../Test_Performance.cpp
+  <template>RcfMtTestSettings
+;
+
+exe Test_ServerTransportConcurrency
+:
+  ../../Test_ServerTransportConcurrency.cpp
+  <template>RcfMtTestSettings
+;
+
+exe Test_NetworkPerformance
+:
+  ../../Test_NetworkPerformance.cpp
+  <template>RcfStTestSettingsSt
+;
+
+

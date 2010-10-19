@@ -1,0 +1,354 @@
+
+## Jamfile for building and testing RCF
+
+## Note: due to some bugs when building lib targets with the borland toolset,
+## there is a borland-specific Jamfile in the borland directory.
+
+## Responds to following environment variables:
+## BOOST_ROOT : include directory of Boost
+## ASIO_ROOT : include directory of asio
+## OPENSSL_ROOT: include directory of OpenSSL
+## ZLIB_ROOT: include directory of Zlib
+## SOCKET_LIBRARY_1 : first socket library to link to (eg "ws2_32" for win32, "nsl" for linux)
+## SOCKET_LIBRARY_2 : second socket library to link to, eg "socket" for Solaris
+## OPENSSL_LIBRARY_1 : first openssl library to link to
+## OPENSSL_LIBRARY_2 : second openssl library to link to
+## ZLIB_LIBRARY : zlib library to link to
+## BUILD_CONFIG_TEMP_DIR : directory for writing and reading temporary files, eg /home/xyz/temp, or C:\\temp
+## ALL_LOCATE_TARGET : where to build
+
+## to turn off compilation warnings, try eg
+## <mingw><*><cxxflags>"-w"
+## <vc-7_1><*><cxxflags>"/wd4675" # ADL lookup
+## <vc-7_1><*><cxxflags>"/wd4355" #'this' used in base initializer list
+
+project-root ; #so we can find Jamrules
+
+import testing ;
+
+template CommonRcfSettings
+:
+:
+  <sysinclude>$(BOOST_ROOT)
+  <sysinclude>$(ASIO_ROOT)
+  <sysinclude>$(OPENSSL_ROOT)
+  <sysinclude>$(ZLIB_ROOT)
+  <sysinclude>../../include
+  <define>_WINSOCKAPI_ # more portable than defining WIN32,
+ 
+  #<define>RCF_USE_BOOST_ASIO
+  <vc-7_1><*><define>RCF_USE_BOOST_ASIO
+  <vc-8_0><*><define>RCF_USE_BOOST_ASIO
+  #<cw><*><define>RCF_USE_BOOST_ASIO
+  #<borland><*><define>RCF_USE_BOOST_ASIO
+  <mingw><*><define>RCF_USE_BOOST_ASIO
+  <gcc><*><define>RCF_USE_BOOST_ASIO
+   
+  <define>RCF_USE_OPENSSL
+  <define>RCF_USE_ZLIB
+  <define>RCF_USE_SF_SERIALIZATION
+  <define>RCF_USE_BOOST_SERIALIZATION
+  <define>BOOST_ALL_NO_LIB
+  <define>TEMP_DIR_UNQUOTED=$(BUILD_CONFIG_TEMP_DIR)
+  <define>UTIL_OUTPUTDEBUGSTRING_TO_STDOUT
+ 
+  <define>BOOST_SP_ENABLE_DEBUG_HOOKS
+ 
+  <find-library>$(SOCKET_LIBRARY_1)
+  <find-library>$(SOCKET_LIBRARY_2)
+  <find-library>$(OPENSSL_LIBRARY_1)
+  <find-library>$(OPENSSL_LIBRARY_2)
+  <find-library>$(ZLIB_LIBRARY)
+ 
+  <vc-7_1><*><find-library>advapi32
+  <vc-8_0><*><find-library>advapi32
+  <vc-8_0-amd64><*><find-library>advapi32
+  <vc-8_0-x86_amd64><*><find-library>advapi32
+  <mingw><*><find-library>advapi32
+  <mingw-3_2><*><find-library>advapi32
+  <mingw-3_3><*><find-library>advapi32
+  <mingw-3_4><*><find-library>advapi32
+  <cw><*><find-library>advapi32
+ 
+  <vc-7_1><*><find-library>user32
+  <vc-8_0><*><find-library>user32
+  <vc-8_0-amd64><*><find-library>user32
+  <vc-8_0-x86_amd64><*><find-library>user32
+  <mingw><*><find-library>user32
+  <mingw-3_2><*><find-library>user32
+  <mingw-3_3><*><find-library>user32
+  <mingw-3_4><*><find-library>user32
+  <cw><*><find-library>user32
+ 
+  <vc-7_1><*><find-library>secur32
+  <vc-8_0><*><find-library>secur32
+  <vc-8_0-amd64><*><find-library>secur32
+  <vc-8_0-x86_amd64><*><find-library>secur32
+  <mingw><*><find-library>secur32
+  <mingw-3_2><*><find-library>secur32
+  <mingw-3_3><*><find-library>secur32
+  <mingw-3_4><*><find-library>secur32
+  <cw><*><find-library>secur32
+  
+  <vc-7_1><*><find-library>crypt32
+  <vc-8_0><*><find-library>crypt32
+  <vc-8_0-amd64><*><find-library>crypt32
+  <vc-8_0-x86_amd64><*><find-library>crypt32
+  <mingw><*><find-library>crypt32
+  <mingw-3_2><*><find-library>crypt32
+  <mingw-3_3><*><find-library>crypt32
+  <mingw-3_4><*><find-library>crypt32
+  <cw><*><find-library>crypt32
+ 
+  <cw><*><find-library>mswsock
+  <mingw><*><find-library>mswsock
+  <mingw-3_2><*><find-library>mswsock
+  <mingw-3_3><*><find-library>mswsock
+  <mingw-3_4><*><find-library>mswsock
+ 
+  <vc-7_1><*><cxxflags>"-wd4127 -wd4511 -wd4512" # (4127: conditional expr constant, 4511: copy ctor / 4512: assignment op could not be generated)
+  #<vc-7_1><*><cxxflags>"-W4"
+  <vc-7_1><*><cxxflags>"-W0"
+ 
+  <vc-8_0><*><cxxflags>"-wd4127 -wd4511 -wd4512" # (4127: conditional expr constant, 4511: copy ctor / 4512: assignment op could not be generated)
+  #<vc-8_0><*><cxxflags>"-W4"
+  <vc-8_0><*><cxxflags>"-W0"
+  
+  <vc-8_0-x86_amd64><*><cxxflags>"-wd4127 -wd4511 -wd4512" # (4127: conditional expr constant, 4511: copy ctor / 4512: assignment op could not be generated)
+  #<vc-8_0-x86_amd64><*><cxxflags>"-W4"
+  <vc-8_0-x86_amd64><*><cxxflags>"-W0"
+  
+  <vc-8_0-amd64><*><cxxflags>"-wd4127 -wd4511 -wd4512" # (4127: conditional expr constant, 4511: copy ctor / 4512: assignment op could not be generated)
+  #<vc-8_0-amd64><*><cxxflags>"-W4"
+  <vc-8_0-amd64><*><cxxflags>"-W0"
+ 
+  <mingw><*><cxxflags>"-w"
+  <mingw-3_2><*><cxxflags>"-w"
+  <mingw-3_3><*><cxxflags>"-w"
+  <mingw-3_4><*><cxxflags>"-w"
+  <gcc><*><cxxflags>"-w"
+ 
+  <mingw><*><define>BOOST_NO_STD_WSTRING
+  <mingw-3_2><*><define>BOOST_NO_STD_WSTRING
+  <mingw-3_3><*><define>BOOST_NO_STD_WSTRING
+  <mingw-3_4><*><define>BOOST_NO_STD_WSTRING
+ 
+  # settings for generation of map file with line numbers (no go on vc 8)
+  #<vc-8_0><*><cxxflags>"-Zd"
+  #<vc-8_0><*><linkflags>"-INCREMENTAL:NO"
+  #<vc-8_0><*><linkflags>"-MAP"
+  #<vc-8_0><*><linkflags>"-MAPINFO:LINES"
+  #<vc-8_0><*><linkflags>"-MAPINFO:EXPORTS"
+ 
+  # settings for pdb debug symbols, for use with CrashFinder
+  #<vc-7_1><release><cxxflags>"-Zi"
+  #<vc-7_1><release><linkflags>"-DEBUG"
+  #<vc-7_1><release><linkflags>"-PDB:DebugSymbols_vc71.pdb"
+ 
+  <vc-8_0><release><cxxflags>"-Zi"
+  <vc-8_0><release><linkflags>"-DEBUG"
+  <vc-8_0><release><linkflags>"-PDB:DebugSymbols_vc80.pdb"
+ 
+  <vc-8_0-amd64><*><cxxflags>"-bigobj"
+  <vc-8_0-x86_amd64><*><cxxflags>"-bigobj"
+  
+  <vc-6_5><*><define>_WIN32_WINNT=0x0500
+ 
+;
+
+template CommonRcfSettingsUnicode
+:
+  <template>CommonRcfSettings
+:
+  <define>UNICODE
+  <define>_UNICODE
+;
+
+exe RcfBsWithoutSf
+:
+  ../../src/RCF/RCF.cpp
+  $(BOOST_ROOT)/libs/smart_ptr/src/sp_collector.cpp
+  ../Test_Minimal.cpp
+  <dll>@boost/libs/serialization/build/boost_serialization
+  <dll>@boost/libs/thread/build/boost_thread   
+:
+  <sysinclude>$(BOOST_ROOT)
+  <sysinclude>../../include
+  <define>_WINSOCKAPI_
+  <define>RCF_USE_BOOST_SERIALIZATION
+  <define>BOOST_ALL_NO_LIB
+  <find-library>$(SOCKET_LIBRARY_1)
+  <find-library>$(SOCKET_LIBRARY_2)
+  <mingw><*><cxxflags>"-w"
+  <mingw-2_95><*><cxxflags>"-w"
+  <mingw-3_2><*><cxxflags>"-w" 
+  <gcc><*><cxxflags>"-w"
+  <vc-8_0-amd64><*><cxxflags>"-bigobj"
+  <vc-8_0-x86_amd64><*><cxxflags>"-bigobj"
+  <find-library>advapi32
+  <find-library>user32
+  <find-library>secur32
+  <define>RCF_TEST_MAIN=test_main
+  <define>RCF_MULTI_THREADED
+  <threading>multi
+  ;
+
+lib RcfSt
+:
+  ../../src/RCF/RCF.cpp
+  $(BOOST_ROOT)/libs/smart_ptr/src/sp_collector.cpp
+  <template>CommonRcfSettings
+:
+  <define>RCF_SINGLE_THREADED
+;
+
+lib RcfMt
+:
+  ../../src/RCF/RCF.cpp
+  $(BOOST_ROOT)/libs/smart_ptr/src/sp_collector.cpp
+  <template>CommonRcfSettings
+:
+  <define>RCF_MULTI_THREADED
+  <threading>multi
+;
+
+lib RcfMtUnicode
+:
+  ../../src/RCF/RCF.cpp
+  $(BOOST_ROOT)/libs/smart_ptr/src/sp_collector.cpp
+  <template>CommonRcfSettingsUnicode
+:
+  <define>RCF_MULTI_THREADED
+  <threading>multi
+;
+
+# RCF in singlethreaded mode, and app in singlethreaded mode
+template RcfStTestSettingsSt
+:
+  <lib>RcfSt
+  <dll>@boost/libs/serialization/build/boost_serialization
+  <dll>@boost/libs/system/build/boost_system
+  <template>CommonRcfSettings
+:
+  <define>RCF_SINGLE_THREADED
+  <threading>single
+  <gcc><*><find-library>pthread # otherwise we get linker errors from asio
+;
+
+# RCF in singlethreaded mode, and app in multithreaded mode and with boost.threads
+template RcfStTestSettingsMt
+:
+  <lib>RcfSt
+  <dll>@boost/libs/serialization/build/boost_serialization
+  <dll>@boost/libs/system/build/boost_system
+  <dll>@boost/libs/thread/build/boost_thread   
+  <template>CommonRcfSettings
+:
+  <define>RCF_SINGLE_THREADED
+  <threading>multi
+;
+
+# RCF in multithreaded mode
+template RcfMtTestSettings
+:
+  <lib>RcfMt
+  <dll>@boost/libs/serialization/build/boost_serialization
+  <dll>@boost/libs/system/build/boost_system
+  <dll>@boost/libs/thread/build/boost_thread
+  <template>CommonRcfSettings
+:
+  <define>RCF_MULTI_THREADED
+  <threading>multi
+;
+
+# RCF in multithreaded mode, with unicode
+template RcfMtTestSettingsUnicode
+:
+  <lib>RcfMtUnicode
+  <dll>@boost/libs/serialization/build/boost_serialization
+  <dll>@boost/libs/system/build/boost_system
+  <dll>@boost/libs/thread/build/boost_thread
+  <template>CommonRcfSettingsUnicode
+:
+  <define>RCF_MULTI_THREADED
+  <threading>multi
+;
+
+test-suite "RcfTest"
+:
+  [ run ../Test_Binding.cpp                        <template>RcfMtTestSettings ]
+  [ run ../Test_ConnectionDrop.cpp                 <template>RcfMtTestSettings ]
+  [ run ../Test_ClientInfo.cpp                     <template>RcfMtTestSettings ]
+  [ run ../Test_ClientProgress.cpp                 <template>RcfMtTestSettings ]
+  [ run ../Test_ClientTimeout.cpp                  <template>RcfMtTestSettings ]
+  [ run ../Test_CycleServer_St.cpp                 <template>RcfStTestSettingsMt ]
+  [ run ../Test_CycleServer_Mt.cpp                 <template>RcfMtTestSettings ]
+  [ run ../Test_Endpoint.cpp                       <template>RcfMtTestSettings ]
+  [ run ../Test_Endurance.cpp                      <template>RcfMtTestSettings ]
+  [ run ../Test_ErrorReporting.cpp                 <template>RcfMtTestSettings ]
+  [ run ../Test_Filters.cpp                        <template>RcfMtTestSettings ]
+  [ run ../Test_FilterPerformance.cpp              <template>RcfMtTestSettings ]
+  [ run ../Test_General.cpp                        <template>RcfMtTestSettings ]
+  [ run ../Test_InitDeinit.cpp                     <template>RcfMtTestSettings ]
+  [ run ../Test_IpRestriction.cpp                  <template>RcfMtTestSettings ]
+  [ run ../Test_Minimal.cpp                        <template>RcfMtTestSettings ]
+  [ run ../Test_MultipleClient.cpp                 <template>RcfMtTestSettings ]
+  [ run ../Test_Multicast.cpp                      <template>RcfMtTestSettings ]
+  [ run ../Test_MultiTransport.cpp                 <template>RcfMtTestSettings ]
+  [ run ../Test_Notification.cpp                   <template>RcfMtTestSettings ]
+  [ run ../Test_ObjectFactory.cpp                  <template>RcfMtTestSettings ]
+  [ run ../Test_OpenSslFilter.cpp                  <template>RcfMtTestSettings ]
+  [ run ../Test_Performance.cpp                    <template>RcfMtTestSettings ]
+  [ run ../Test_Polymorphic.cpp                    <template>RcfMtTestSettings ]
+  [ run ../Test_Serialization.cpp                  <template>RcfMtTestSettings ]
+  [ run ../Test_ServerConcurrency.cpp              <template>RcfMtTestSettings ]
+  [ run ../Test_StServer.cpp                       <template>RcfStTestSettingsMt ]
+  [ run ../Test_StubSerialization.cpp              <template>RcfMtTestSettings ]
+  [ run ../Test_ThreadManager.cpp                  <template>RcfMtTestSettings ]
+  [ run ../Test_Versioning.cpp                     <template>RcfMtTestSettings ]
+  [ run ../Test_ZeroAllocation.cpp                 <template>RcfMtTestSettings ]
+;
+
+## The following tests are run manually, with server/client command line settings. Either on a single machine, or across a network.
+
+exe Test_Endurance
+:
+  ../Test_Endurance.cpp
+  <template>RcfMtTestSettings
+;
+
+exe Test_Minimal
+:
+  ../Test_Minimal.cpp
+  <template>RcfMtTestSettings
+;
+
+exe Test_Performance
+:
+  ../Test_Performance.cpp
+  <template>RcfMtTestSettings
+;
+
+exe Test_ServerConcurrency
+:
+  ../Test_ServerConcurrency.cpp
+  <template>RcfMtTestSettings
+;
+
+exe Test_NetworkPerformance
+:
+  ../Test_NetworkPerformance.cpp
+  <template>RcfStTestSettingsSt
+;
+
+exe Test_SspiFilter
+:
+  ../Test_SspiFilter.cpp                     
+  <template>RcfMtTestSettings
+;
+  
+exe Test_SspiFilterU
+:
+  ../Test_SspiFilterU.cpp                     
+  <template>RcfMtTestSettingsUnicode
+;
