@@ -7,8 +7,10 @@ using PartCover.Framework.Data;
 
 namespace PartCover.Framework
 {
+
     public class ReportSerializer
     {
+        
         public static void Save(XmlTextWriter writer, Report report)
         {
             var xmlDoc = new XmlDocument();
@@ -70,12 +72,11 @@ namespace PartCover.Framework
                 new List<MethodEntry>(x.Methods).ForEach(m =>
                 {
                     var metNode = AddElement(typeNode, "Method");
+                    AddAttribute(metNode, "methoddef").Value = m.MethodDef.ToString(CultureInfo.InvariantCulture);
                     AddAttribute(metNode, "name").Value = m.Name;
                     AddAttribute(metNode, "sig").Value = m.Signature;
                     if (m.SymbolFileId > 0) AddAttribute(metNode, "fid").Value = m.SymbolFileId.ToString(CultureInfo.InvariantCulture);
                     AddAttribute(metNode, "bodysize").Value = m.BodySize.ToString(CultureInfo.InvariantCulture);
-                    AddAttribute(metNode, "linecount").Value = m.BodyLineCount.ToString(CultureInfo.InvariantCulture);
-                    AddAttribute(metNode, "seqcount").Value = m.BodySeqCount.ToString(CultureInfo.InvariantCulture);
                     AddAttribute(metNode, "flags").Value = ((long)m.Flags).ToString(CultureInfo.InvariantCulture);
                     AddAttribute(metNode, "iflags").Value = ((long)m.ImplFlags).ToString(CultureInfo.InvariantCulture);
 

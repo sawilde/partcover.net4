@@ -13,11 +13,11 @@ namespace PartCover.Framework.Data
         public string Name { get; set; }
         public string Signature { get; set; }
         public int BodySize { get; set; }
-        public int BodyLineCount { get; set; }
-        public int BodySeqCount { get; set; }
         public int SymbolFileId { get; set; }
         public MethodAttributes Flags { get; set; }
         public MethodImplAttributes ImplFlags { get; set; }
+
+        public int MethodDef { get; set; }
 
         public List<MethodBlock> Blocks { get; private set; }
         public TypedefEntry Type { get; set; }
@@ -32,9 +32,8 @@ namespace PartCover.Framework.Data
                 BodySize = this.BodySize,
                 ImplFlags = this.ImplFlags,
                 Signature = this.Signature,
-                BodyLineCount = this.BodyLineCount,
-                BodySeqCount = this.BodySeqCount,
                 SymbolFileId = this.SymbolFileId,
+                MethodDef = this.MethodDef,
                 Blocks = new List<MethodBlock>(Blocks.ConvertAll(x => x.Copy()))
             };
         }

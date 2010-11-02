@@ -41,11 +41,6 @@ typedef struct BLOCK_DATA {
 	INT position;
 	INT blockLen;
 	INT visitCount;
-	INT fileId;
-	INT startLine;
-	INT startColumn;
-	INT endLine;
-	INT endColumn;
 } BLOCK_DATA;
 
 #ifndef REMOVE_ATTRIBUTES
@@ -78,12 +73,11 @@ typedef struct MEMORY_COUNTERS
 ]
 #endif
 __interface IReportReceiver : IUnknown {
-    HRESULT RegisterFile([in] INT fileId, [in] BSTR fileUrl);
     HRESULT RegisterSkippedItem([in] BSTR assemblyName, [in] BSTR typedefName);
 
 	HRESULT EnterAssembly([in] INT domain, [in] BSTR domainName, [in] BSTR assemblyName, [in] BSTR moduleName);
     HRESULT EnterTypedef([in] BSTR typedefName, [in] DWORD flags);
-    HRESULT EnterMethod([in] BSTR methodName, [in] BSTR methodSig, [in] INT bodySize, [in] INT bodyLineCount, [in] INT bodySeqCount, [in] DWORD flags, [in] DWORD implFlags, [in] INT symbolFileId);
+    HRESULT EnterMethod([in] BSTR methodName, [in] BSTR methodSig, [in] INT bodySize, [in] DWORD flags, [in] DWORD implFlags, [in] INT symbolFileId, [in] INT methodDef);
     HRESULT AddCoverageBlock([in] BLOCK_DATA blockData);
     HRESULT LeaveMethod();
     HRESULT LeaveTypedef();

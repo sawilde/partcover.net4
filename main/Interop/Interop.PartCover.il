@@ -22,13 +22,13 @@
   .ver 4:0:0:0
 }
 .module Interop.PartCover.dll
-// MVID: {F6A386BD-E909-40BA-8F19-E6D985585DE8}
+// MVID: {BC4F1F71-0042-4B4E-B458-C0C973A64896}
 .imagebase 0x00400000
 .file alignment 0x00000200
 .stackreserve 0x00100000
 .subsystem 0x0003       // WINDOWS_CUI
 .corflags 0x00000001    //  ILONLY
-// Image base: 0x00890000
+// Image base: 0x00230000
 
 
 // =============== CLASS MEMBERS DECLARATION ===================
@@ -582,16 +582,10 @@
 
 .class interface public abstract auto ansi import PartCover.Framework.IReportReceiver
 {
-  .custom instance void [mscorlib]System.Runtime.InteropServices.InterfaceTypeAttribute::.ctor(valuetype [mscorlib]System.Runtime.InteropServices.ComInterfaceType) = ( 01 00 01 00 00 00 00 00 ) 
   .custom instance void [mscorlib]System.Runtime.InteropServices.GuidAttribute::.ctor(string) = ( 01 00 24 34 42 41 44 30 30 34 45 2D 31 45 46 39   // ..$4BAD004E-1EF9
                                                                                                   2D 34 33 44 32 2D 38 44 33 41 2D 30 39 35 39 36   // -43D2-8D3A-09596
                                                                                                   33 45 33 32 34 45 46 00 00 )                      // 3E324EF..
-  .method public hidebysig newslot abstract virtual 
-          instance void  RegisterFile([in] int32 fileId,
-                                      [in] string  marshal( bstr) fileUrl) runtime managed internalcall
-  {
-  } // end of method IReportReceiver::RegisterFile
-
+  .custom instance void [mscorlib]System.Runtime.InteropServices.InterfaceTypeAttribute::.ctor(valuetype [mscorlib]System.Runtime.InteropServices.ComInterfaceType) = ( 01 00 01 00 00 00 00 00 ) 
   .method public hidebysig newslot abstract virtual 
           instance void  RegisterSkippedItem([in] string  marshal( bstr) assemblyName,
                                              [in] string  marshal( bstr) typedefName) runtime managed internalcall
@@ -616,11 +610,10 @@
           instance void  EnterMethod([in] string  marshal( bstr) methodName,
                                      [in] string  marshal( bstr) methodSig,
                                      [in] int32 bodySize,
-                                     [in] int32 bodyLineCount,
-                                     [in] int32 bodySeqCount,
                                      [in] uint32 'flags',
                                      [in] uint32 implFlags,
-                                     [in] int32 symbolFileId) runtime managed internalcall
+                                     [in] int32 symbolFileId,
+                                     [in] int32 methodDef) runtime managed internalcall
   {
   } // end of method IReportReceiver::EnterMethod
 
@@ -657,11 +650,6 @@
   .field public int32 position
   .field public int32 blockLen
   .field public int32 visitCount
-  .field public int32 fileId
-  .field public int32 startLine
-  .field public int32 startColumn
-  .field public int32 endLine
-  .field public int32 endColumn
 } // end of class PartCover.Framework.BLOCK_DATA
 
 .class public sequential ansi sealed beforefieldinit PartCover.Framework.MEMORY_COUNTERS

@@ -84,6 +84,7 @@
       <HintPath>..\Interop\Interop.PartCover.dll</HintPath>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
+    <Reference Include="ISymWrapper" />
     <Reference Include="System">
       <Name>System</Name>
     </Reference>
@@ -116,6 +117,7 @@
     <Compile Include="Stuff\Methods.cs" />
     <Compile Include="Stuff\Types.cs" />
     <Compile Include="Data\TypedefEntry.cs" />
+    <Compile Include="SymbolReaderWapper.cs" />
     <Compile Include="Walkers\CoverageReport.cs">
       <SubType>Code</SubType>
     </Compile>

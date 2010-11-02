@@ -3,20 +3,7 @@
 #include "logging.h"
 #include "instrumented_results.h"
 
-
-void InstrumentResults::Assign(FileItems& results) 
-{
-	m_fileTable.swap(results); 
-}
-
 void InstrumentResults::GetReport(IReportReceiver& walker) {
-    for(FileItems::const_iterator fileIt = m_fileTable.begin(); fileIt != m_fileTable.end(); fileIt++) {
-        const FileItem& item = *fileIt;
-        CComBSTR fileName(item.fileUrl.c_str());
-		if(FAILED(walker.RegisterFile(item.fileId, fileName)))
-            return;
-    }
-
     for(SkippedItems::const_iterator itemIt = m_skippedItems.begin(); itemIt != m_skippedItems.end(); itemIt++) {
         const SkippedItem& item = *itemIt;
 		CComBSTR assemblyName(item.assemblyName.c_str());
@@ -49,8 +36,7 @@ void InstrumentResults::GetReport(IReportReceiver& walker) {
                 CComBSTR methodName(methodResult.name.c_str());
                 CComBSTR methodSig(methodResult.sig.c_str());
 				if(FAILED(walker.EnterMethod(methodName, methodSig, methodResult.bodySize, 
-                    methodResult.bodyLineCount, methodResult.bodySeqCount, methodResult.flags, 
-                    methodResult.implFlags, methodResult.symbolFileId)))
+                    methodResult.flags, methodResult.implFlags, methodResult.symbolFileId, methodResult.methodDef)))
                     return;
 
                 for(MethodBlocks::const_iterator blockIt = methodResult.blocks.begin(); blockIt != methodResult.blocks.end(); blockIt++) {
@@ -59,11 +45,6 @@ void InstrumentResults::GetReport(IReportReceiver& walker) {
 					data.position = block.position;
 					data.blockLen = block.blockLength;
 					data.visitCount = block.visitCount;
-					data.fileId = block.haveSource ? block.sourceFileId : -1;
-					data.startLine = block.startLine;
-					data.startColumn = block.startColumn;
-					data.endLine = block.endLine;
-					data.endColumn = block.endColumn;
 
 					if(FAILED(walker.AddCoverageBlock(data)))
 					{
