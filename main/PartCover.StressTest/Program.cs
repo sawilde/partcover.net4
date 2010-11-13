@@ -13,7 +13,6 @@ namespace PartCover.StressTest
             new GenericClass<int>(1).DoAction<string>("somedata");
             new Subclass().Method("data");
             new SubclassGeneric<int>().Method(1);
-
         }
     }
 }

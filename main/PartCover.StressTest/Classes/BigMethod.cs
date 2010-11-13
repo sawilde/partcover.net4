@@ -1,5 +1,6 @@
 namespace PartCover.StressTest.Classes
 {
+
     public static class BigMethodExtensions
     {
         public static void Foo1(this BigMethod method) { method.Foo(0); }
