@@ -5,6 +5,8 @@ using System.Text;
 using NUnit.Framework;
 using System.IO;
 using System.Reflection;
+using Moq;
+using System.Diagnostics.SymbolStore;
 
 namespace PartCover.Framework.UnitTests
 {
@@ -12,11 +14,13 @@ namespace PartCover.Framework.UnitTests
     public class ReportReceiverTests
     {
         ReportReceiver receiver;
+        Mock<ISymbolReaderFactory> _factory;
 
         [SetUp]
         public void SetUp()
         {
-            receiver = new ReportReceiver { Report = new Data.Report() };
+            _factory = new Mock<ISymbolReaderFactory>();
+            receiver = new ReportReceiver(_factory.Object) { Report = new Data.Report() };
         }
 
 
@@ -129,38 +133,91 @@ namespace PartCover.Framework.UnitTests
         }
 
         [Test]
-        public void EnterAssembly_Adds_FilesToReport_If_SymbolDataFound()
+        public void EnterAssembly_Adds_FilesToReport()
         {
             //arrange
-            
+            var reader = new Mock<ISymbolReader>();
+            var document = new Mock<ISymbolDocument>();
+
+            document.SetupGet(x => x.URL).Returns("FileName");
+
+            reader.Setup(x => x.GetDocuments()).Returns(new[] { document.Object });
+
+            _factory.Setup(x => x.GetSymbolReader("Test.exe")).Returns(reader.Object);
+
             //act
-            receiver.EnterAssembly(0, "DomainName", "AssemblyName", "PartCover.StressTest.exe");
+            receiver.EnterAssembly(0, "DomainName", "AssemblyName", "Test.exe");
             
             //assert
-            Assert.AreEqual(5, receiver.Report.Files.Count);
+            Assert.AreEqual(1, receiver.Report.Files.Count);
+        }
+
+        [Test]
+        public void EnterAssembly_Adds_FilesToReport_IgnoresEmptyFiles()
+        {
+            //arrange
+            var reader = new Mock<ISymbolReader>();
+            var document = new Mock<ISymbolDocument>();
+
+            document.SetupGet(x => x.URL).Returns("");
+
+            reader.Setup(x => x.GetDocuments()).Returns(new[] { document.Object });
+
+            _factory.Setup(x => x.GetSymbolReader("Test.exe")).Returns(reader.Object);
+
+            //act
+            receiver.EnterAssembly(0, "DomainName", "AssemblyName", "Test.exe");
+
+            //assert
+            Assert.AreEqual(0, receiver.Report.Files.Count);
         }
 
         [Test]
         public void EnterMethod_BuildsBlocks_If_SymbolDataFound()
         {
             //arrange
-            var location = Path.Combine(Environment.CurrentDirectory, "PartCover.StressTest.exe");
-            receiver.EnterAssembly(0, "DomainName", "AssemblyName", location);
+            var reader = new Mock<ISymbolReader>();
+            var method = new Mock<ISymbolMethod>();
+            var document = new Mock<ISymbolDocument>();
+
+            document.SetupGet(x => x.URL).Returns("FileName");
+
+            reader.Setup(x => x.GetMethod(new SymbolToken(1234))).Returns(method.Object);
+
+            method.SetupGet(x => x.SequencePointCount).Returns(1);
+
+            method
+                .Setup(x => x.GetSequencePoints(It.IsAny<int[]>(),
+                    It.IsAny<ISymbolDocument[]>(),
+                    It.IsAny<int[]>(),
+                    It.IsAny<int[]>(),
+                    It.IsAny<int[]>(),
+                    It.IsAny<int[]>()))
+                .Callback<int[], ISymbolDocument[], int[], int[], int[], int[]>((o, d, s1, s2, s3, s4) => 
+                    {
+                        o[0] = 1;
+                        d[0] = document.Object;
+                        s1[0] = 2;
+                        s2[0] = 3;
+                        s3[0] = 4;
+                        s4[0] = 5;
+                    }
+                );
+
+            _factory.Setup(x => x.GetSymbolReader(It.IsAny<string>())).Returns(reader.Object);
+
+            receiver.EnterAssembly(0, "DomainName", "AssemblyName", "Test.exe");
             receiver.EnterTypedef("TypedefName", 0);
 
-            var ass = Assembly.LoadFrom(location);
-            MethodInfo m = ass.GetType("PartCover.StressTest.Program")
-                .GetMethod("Main", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Instance);
-            
             //act
-            receiver.EnterMethod("MethodName", "MethodSig", 10, 119, 0, 0, m.MetadataToken);
+            receiver.EnterMethod("MethodName", "MethodSig", 10, 119, 0, 0, 1234);
 
             //assert
-            Assert.AreEqual(7, receiver.Report.Assemblies[0].Types[0].Methods[0].Blocks.Count);
+            Assert.AreEqual(1, receiver.Report.Assemblies[0].Types[0].Methods[0].Blocks.Count);
         }
 
         [Test]
-        public void AddCoverageVlock_UpdatesExistingBlocks_If_BlockDataFound()
+        public void AddCoverageBlock_UpdatesExistingBlocks_If_BlockDataFound()
         {
             //arrange
             receiver.EnterAssembly(0, "DomainName", "AssemblyName", "ModuleName");

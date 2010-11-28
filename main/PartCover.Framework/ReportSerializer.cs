@@ -75,7 +75,6 @@ namespace PartCover.Framework
                     AddAttribute(metNode, "methoddef").Value = m.MethodDef.ToString(CultureInfo.InvariantCulture);
                     AddAttribute(metNode, "name").Value = m.Name;
                     AddAttribute(metNode, "sig").Value = m.Signature;
-                    if (m.SymbolFileId > 0) AddAttribute(metNode, "fid").Value = m.SymbolFileId.ToString(CultureInfo.InvariantCulture);
                     AddAttribute(metNode, "bodysize").Value = m.BodySize.ToString(CultureInfo.InvariantCulture);
                     AddAttribute(metNode, "flags").Value = ((long)m.Flags).ToString(CultureInfo.InvariantCulture);
                     AddAttribute(metNode, "iflags").Value = ((long)m.ImplFlags).ToString(CultureInfo.InvariantCulture);
@@ -87,7 +86,7 @@ namespace PartCover.Framework
                         AddAttribute(blockNode, "pos").Value = b.Offset.ToString(CultureInfo.InvariantCulture);
                         AddAttribute(blockNode, "len").Value = b.Length.ToString(CultureInfo.InvariantCulture);
 
-                        if (b.File != 0)
+                        if (b.File > 0)
                         {
                             AddAttribute(blockNode, "fid").Value = b.File.ToString(CultureInfo.InvariantCulture);
                             AddAttribute(blockNode, "sl").Value = b.Start.Line.ToString(CultureInfo.InvariantCulture);

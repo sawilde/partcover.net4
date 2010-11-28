@@ -13,7 +13,6 @@ namespace PartCover.Framework.Data
         public string Name { get; set; }
         public string Signature { get; set; }
         public int BodySize { get; set; }
-        public int SymbolFileId { get; set; }
         public MethodAttributes Flags { get; set; }
         public MethodImplAttributes ImplFlags { get; set; }
 
@@ -32,7 +31,6 @@ namespace PartCover.Framework.Data
                 BodySize = this.BodySize,
                 ImplFlags = this.ImplFlags,
                 Signature = this.Signature,
-                SymbolFileId = this.SymbolFileId,
                 MethodDef = this.MethodDef,
                 Blocks = new List<MethodBlock>(Blocks.ConvertAll(x => x.Copy()))
             };

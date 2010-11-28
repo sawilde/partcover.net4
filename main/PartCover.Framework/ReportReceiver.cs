@@ -14,18 +14,19 @@ namespace PartCover.Framework
         private AssemblyEntry currentAssembly;
         private TypedefEntry currentTypedef;
         private MethodEntry currentMethod;
-        private SymBinder _symBinder;
         private ISymbolReader _symbolReader;
+        private ISymbolReaderFactory _symbolReaderFactory;
         public Report Report { get; set; }
 
-        public ReportReceiver()
+        public ReportReceiver(ISymbolReaderFactory symbolReaderFactory)
         {
-            _symBinder = new SymBinder();
+            _symbolReaderFactory = symbolReaderFactory;
+            
         }
 
         public void Dispose()
         {
-            _symBinder = null;
+            
         }
 
         /// <summary>
@@ -34,10 +35,11 @@ namespace PartCover.Framework
         /// <param name="fileUrl"></param>
         private void RegisterFile(string fileUrl)
         {
+            if (string.IsNullOrEmpty(fileUrl)) return;
             if (Report.Files.Exists(x => x.PathUri == fileUrl)) return;
             Report.Files.Add(new FileEntry
             {
-                Id = Report.Files.Count,
+                Id = Report.Files.Count + 1,
                 PathUri = fileUrl
             });
         }
@@ -77,7 +79,7 @@ namespace PartCover.Framework
         /// <param name="moduleName"></param>
         public void EnterAssembly(int domainIndex, string domainName, string assemblyName, string moduleName)
         {
-            _symbolReader = SymbolReaderWapper.GetSymbolReader(_symBinder, moduleName);
+            _symbolReader = _symbolReaderFactory.GetSymbolReader(moduleName);
             if (_symbolReader != null)
             {
                 var docs = _symbolReader.GetDocuments();
@@ -130,7 +132,6 @@ namespace PartCover.Framework
                 Name = methodName,
                 Signature = methodSig,
                 BodySize = bodySize,
-                SymbolFileId = symbolFileId,
                 MethodDef = methodDef,
                 Flags = (MethodAttributes)flags,
                 ImplFlags = (MethodImplAttributes)implFlags

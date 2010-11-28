@@ -7,7 +7,7 @@ namespace PartCover.Framework
     public partial class Connector
     {
         readonly PartCoverConnector2Class connector = new PartCoverConnector2Class();
-        readonly ReportReceiver receiver = new ReportReceiver();
+        readonly ReportReceiver receiver = new ReportReceiver(new SymbolReaderFactory());
         readonly ConnectorActionCallback actionCallback;
 
         EventHandler<StatusEventArgs> statusMessageReceived;

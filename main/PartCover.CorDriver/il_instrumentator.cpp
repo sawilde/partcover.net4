@@ -448,12 +448,12 @@ struct MethodResultsGatherer
 		methodResult.methodDef = method.methodDef;
 		if (method.bodyBlocks.size() == 0) {
 #ifdef DUMP_INSTRUMENT_RESULT
-            LOGINFO2(DUMP_RESULTS,"      Method %s : %s, no instrumented body", method.methodDefName.c_str(), method.methodSig.c_str());
+            LOGINFO3(DUMP_RESULTS,"      Method %s : %s, no instrumented body %d", method.methodName.c_str(), method.methodSig.c_str(), method.methodDef);
 #endif
         } else {
 			const InstrumentedBlocks& blocks = method.bodyBlocks;
 #ifdef DUMP_INSTRUMENT_RESULT
-            LOGINFO3(DUMP_RESULTS,"      Method %s : %s, %d instrumented blocks", method.methodDefName.c_str(), method.methodSig.c_str(), blocks.size());
+            LOGINFO4(DUMP_RESULTS,"      Method %s : %s, %d instrumented blocks %d", method.methodName.c_str(), method.methodSig.c_str(), blocks.size(), method.methodDef);
 #endif
             std::for_each(blocks.begin(), blocks.end(), 
 				MethodBlockResultGatherer(methodResult.blocks));
@@ -473,7 +473,7 @@ struct TypedefResultsGatherer {
     void operator() (const TypedefDescriptorMapPair& it) {
         const TypeDef& type = it.second;
 #ifdef DUMP_INSTRUMENT_RESULT
-        LOGINFO1(DUMP_RESULTS,"    Type %s", type.typeDefName.c_str());
+        LOGINFO1(DUMP_RESULTS,"    Type %s", type.fullName.c_str());
 #endif
 
         InstrumentResults::TypedefResult typedefResult;
@@ -494,11 +494,11 @@ struct AssemblyResultsGatherer {
 		: results(_results), info(_info) {}
 
     void operator() (ModuleDescriptor& module) {
-		//const String& assemblyName = CorHelper::GetAssemblyName(info, module.assembly);
-		//const String& moduleName = CorHelper::GetModuleName(info, module.module);
-
+		
 #ifdef DUMP_INSTRUMENT_RESULT
-		LOGINFO1(DUMP_RESULTS,"  Assembly %S (module %S)", assemblyName.c_str(), moduleName.c_str());
+		const String& moduleName = CorHelper::GetModuleName(info, module.module);
+		const String& assemblyName = CorHelper::GetAssemblyName(info, module.assembly);
+		LOGINFO2(DUMP_RESULTS,"  Assembly %S (module %S)", assemblyName.c_str(), moduleName.c_str());
 #endif
 
         InstrumentResults::AssemblyResult assemblyResult;
@@ -527,7 +527,7 @@ struct SkippedResultsGatherer
 
 	void operator() (const SkippedTypedef& skipped) {
 #ifdef DUMP_INSTRUMENT_RESULT
-        LOGINFO2(DUMP_RESULTS,"  Assembly %d, Typedef %s", skipped.assemblyItem.c_str(), skipped.typedefName.c_str());
+        LOGINFO2(DUMP_RESULTS,"  Assembly %d, Typedef %s", skipped.assemblyName.c_str(), skipped.typedefName.c_str());
 #endif
 		InstrumentResults::SkippedItem item;
 		item.assemblyName = skipped.assemblyName;
