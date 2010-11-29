@@ -2,3 +2,6 @@ private/
 release/
 
 /main/PartCover.opensdf
+/test/Example
+/libraries/nunit/Nunit-2.4.8.0/samples
+/libraries/nunit/Nunit-2.4.8.0/doc

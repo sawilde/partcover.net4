@@ -28,17 +28,6 @@ struct CompareNoCase {
     }
 };
 
-
-
-ULONG32 Instrumentator::GetFileUrlId(const String& url) {
-    FileUrlMap::iterator it = FileMap.find(url);
-    if (it != FileMap.end())
-        return it->second;
-    ULONG32 fileId = (ULONG32)(FileMap.size() + 1);
-    FileMap.insert(FileUrlMapPair(url, fileId));
-    return fileId;
-}
-
 bool Instrumentator::IsAssemblyAcceptable(const String& assemblyName) const
 {
 	return m_rules.IsAssemblyIncludedInRules(assemblyName);
@@ -230,56 +219,6 @@ void Instrumentator::InstrumentMethod(ModuleID module, TypeDef& typeDef, mdMetho
 	method.methodName = CorHelper::GetMethodName(helper.mdImport, method.methodDef, NULL, NULL);
 	method.bodySize = methodSize;
 
-    if (helper.module->symReader) 
-	{
-        CComPtr<ISymUnmanagedMethod> symMethod;
-        HRESULT hr;
-		if(SUCCEEDED(hr = helper.module->symReader->GetMethod( methodDef, &symMethod ))) 
-		{
-            ULONG32 points;
-            if(SUCCEEDED(hr = symMethod->GetSequencePointCount( &points ))) 
-			{
-                method.symbolFileId = -1;
-                method.bodySeqCount = points;
-                ULONG32 pointsInRes;
-                DynamicArray<ULONG32> lines(points);
-                DynamicArray<ULONG32> endLines(points);
-                DynamicArray<ISymUnmanagedDocument*> pDocuments(points);
-
-                if(SUCCEEDED(hr = symMethod->GetSequencePoints( points, &pointsInRes, NULL, pDocuments, lines, NULL, endLines, NULL ))) 
-				{
-                    std::list<ULONG32> actualLines;
-                    for(ULONG32 i=0; i < points; i++)
-                    {
-                        for(ULONG32 j = lines[i]; j <= endLines[i]; j++)
-                        {
-                            actualLines.push_back(j);
-                        }
-
-                        if (method.symbolFileId<0)
-                        {
-                            ULONG32 urlSize;
-                            if (SUCCEEDED(hr = pDocuments[i]->GetURL(0, &urlSize, NULL))) 
-						    {
-                                DynamicArray<TCHAR> url(urlSize);
-                                if (SUCCEEDED(hr = pDocuments[i]->GetURL(urlSize + 1, &urlSize, url))) 
-						        {
-                                    method.symbolFileId = (ULONG32) GetFileUrlId(String(url));
-                                }
-                            }
-                        }
-                        pDocuments[i]->Release();
-                    }
-                    actualLines.sort();
-                    actualLines.unique();
-
-                    method.bodyLineCount = (int)actualLines.size();
-                    LOGINFO3(METHOD_INSTRUMENT, "      >> %s %d %d", methodName.c_str(), method.bodyLineCount, method.bodySeqCount);
-                }
-            }
-        }
-    }
-
 	CorHelper::ParseMethodSig(helper.profilerInfo, helper.mdImport, method.methodDef, &method.methodSig);
 
     methods.insert(MethodDefMapPair(method.methodDef, method));
@@ -397,57 +336,14 @@ void Instrumentator::GenerateILCode(ModuleDescriptor& module, TypeDef& defDescri
 			{
                 ULONG32 pointsInRes;
                 DynamicArray<ULONG32> cPoints(points);
-                DynamicArray<ISymUnmanagedDocument*> pDocuments(points);
-                DynamicArray<ULONG32> lines(points);
-                DynamicArray<ULONG32> columns(points);
-                DynamicArray<ULONG32> endLines(points);
-                DynamicArray<ULONG32> endColumns(points);
 
-                if(SUCCEEDED(hr = symMethod->GetSequencePoints( points, &pointsInRes, cPoints, pDocuments, lines, columns, endLines, endColumns ))) 
+                if(SUCCEEDED(hr = symMethod->GetSequencePoints( points, &pointsInRes, cPoints, NULL, NULL, NULL, NULL, NULL ))) 
 				{
-#ifdef DUMP_SYM_SEQUENCE_POINTS
-                    DumpSymSequencePoints(pointsInRes, cPoints, lines, columns, endLines, endColumns);
-#endif
-                    //pointsInRes = pointsInRes <= 1 ? pointsInRes : pointsInRes - 1;
-
                     LOGINFO(METHOD_INNER, "Insert block counters from source code");
                     // here we may remove last seq point, because usually it points to exit point of method. do we really need it?
                     ilbody.CreateSequenceCounters(pointsInRes, cPoints);
 
                     InstrumentedBlocks& blocks = ilbody.GetInstrumentedBlocks();
-					ULONG32 loop = 0;
-					ULONG32 lastPoint = -1;
-                    for(ULONG32 i = 0; i < pointsInRes; ++i) 
-					{
-#ifdef CODE_CONTRACTS_FIX
-						if (lastPoint == cPoints[i]) continue;
-						lastPoint = cPoints[i];
-#endif
-                        InstrumentedBlock& block = blocks[loop++];
-						
-                        ULONG32 urlSize;
-                        if (FAILED(hr = pDocuments[i]->GetURL(0, &urlSize, NULL))) 
-						{
-                            continue;
-                        }
-
-                        DynamicArray<TCHAR> url(urlSize);
-                        if (FAILED(hr = pDocuments[i]->GetURL(urlSize + 1, &urlSize, url))) 
-						{
-                            continue;
-                        }
-
-                        block.fileId = (ULONG32) GetFileUrlId(String(url));
-                        block.startLine = lines[i];
-                        block.startColumn = columns[i];
-                        block.endLine = endLines[i];
-                        block.endColumn = endColumns[i];
-                    }
-
-                    for(ULONG32 i = 0; i < pointsInRes; ++i) 
-					{
-                        pDocuments[i]->Release();
-                    }
                 } 
 				else 
 				{
@@ -522,22 +418,6 @@ struct MethodBlockResultGatherer
         LOGINFO4(DUMP_RESULTS,"         [%5d] (%X) offset %4X, length %d", 
             blockResult.visitCount, block.counter, blockResult.position, blockResult.blockLength);
 #endif
-
-        if (block.fileId != 0 && block.startLine != 0xFEEFEE) {
-            blockResult.haveSource = true;
-            blockResult.sourceFileId = block.fileId;
-            blockResult.startLine = block.startLine;
-            blockResult.endLine = block.endLine;
-            blockResult.startColumn = block.startColumn;
-            blockResult.endColumn = block.endColumn;
-#ifdef DUMP_INSTRUMENT_RESULT
-            LOGINFO5(DUMP_RESULTS,"                 %d [ %d; %d ] - [ %d; %d ]", 
-                blockResult.sourceFileId, blockResult.startLine, blockResult.startColumn, blockResult.endLine, blockResult.endColumn);
-#endif
-        } else {
-            blockResult.haveSource = false;
-        }
-
         results.push_back(blockResult);
     }
 };
@@ -564,18 +444,16 @@ struct MethodResultsGatherer
 		methodResult.name = method.methodName;
 		methodResult.sig = method.methodSig;
 		methodResult.bodySize = method.bodySize;
-        methodResult.bodyLineCount = method.bodyLineCount;
-        methodResult.bodySeqCount = method.bodySeqCount;
         methodResult.symbolFileId = method.symbolFileId;
-
+		methodResult.methodDef = method.methodDef;
 		if (method.bodyBlocks.size() == 0) {
 #ifdef DUMP_INSTRUMENT_RESULT
-            LOGINFO2(DUMP_RESULTS,"      Method %s : %s, no instrumented body", method.methodDefName.c_str(), method.methodSig.c_str());
+            LOGINFO3(DUMP_RESULTS,"      Method %s : %s, no instrumented body %d", method.methodName.c_str(), method.methodSig.c_str(), method.methodDef);
 #endif
         } else {
 			const InstrumentedBlocks& blocks = method.bodyBlocks;
 #ifdef DUMP_INSTRUMENT_RESULT
-            LOGINFO3(DUMP_RESULTS,"      Method %s : %s, %d instrumented blocks", method.methodDefName.c_str(), method.methodSig.c_str(), blocks.size());
+            LOGINFO4(DUMP_RESULTS,"      Method %s : %s, %d instrumented blocks %d", method.methodName.c_str(), method.methodSig.c_str(), blocks.size(), method.methodDef);
 #endif
             std::for_each(blocks.begin(), blocks.end(), 
 				MethodBlockResultGatherer(methodResult.blocks));
@@ -595,7 +473,7 @@ struct TypedefResultsGatherer {
     void operator() (const TypedefDescriptorMapPair& it) {
         const TypeDef& type = it.second;
 #ifdef DUMP_INSTRUMENT_RESULT
-        LOGINFO1(DUMP_RESULTS,"    Type %s", type.typeDefName.c_str());
+        LOGINFO1(DUMP_RESULTS,"    Type %s", type.fullName.c_str());
 #endif
 
         InstrumentResults::TypedefResult typedefResult;
@@ -616,11 +494,11 @@ struct AssemblyResultsGatherer {
 		: results(_results), info(_info) {}
 
     void operator() (ModuleDescriptor& module) {
-		//const String& assemblyName = CorHelper::GetAssemblyName(info, module.assembly);
-		//const String& moduleName = CorHelper::GetModuleName(info, module.module);
-
+		
 #ifdef DUMP_INSTRUMENT_RESULT
-		LOGINFO1(DUMP_RESULTS,"  Assembly %S (module %S)", assemblyName.c_str(), moduleName.c_str());
+		const String& moduleName = CorHelper::GetModuleName(info, module.module);
+		const String& assemblyName = CorHelper::GetAssemblyName(info, module.assembly);
+		LOGINFO2(DUMP_RESULTS,"  Assembly %S (module %S)", assemblyName.c_str(), moduleName.c_str());
 #endif
 
         InstrumentResults::AssemblyResult assemblyResult;
@@ -642,21 +520,6 @@ struct AssemblyResultsGatherer {
     }
 };
 
-struct FileMapGatherer {
-    InstrumentResults::FileItems& results;
-    FileMapGatherer(InstrumentResults::FileItems& _results) : results(_results) {}
-
-    void operator() (const FileUrlMapPair& file) {
-#ifdef DUMP_INSTRUMENT_RESULT
-        LOGINFO2(DUMP_RESULTS,"  File %d, Url %s", file.second, file.first.c_str());
-#endif
-        InstrumentResults::FileItem item;
-        item.fileId = file.second;
-        item.fileUrl = file.first;
-        results.push_back(item);
-    }
-};
-
 struct SkippedResultsGatherer
 {
     InstrumentResults::SkippedItems& results;
@@ -664,7 +527,7 @@ struct SkippedResultsGatherer
 
 	void operator() (const SkippedTypedef& skipped) {
 #ifdef DUMP_INSTRUMENT_RESULT
-        LOGINFO2(DUMP_RESULTS,"  Assembly %d, Typedef %s", skipped.assemblyItem.c_str(), skipped.typedefName.c_str());
+        LOGINFO2(DUMP_RESULTS,"  Assembly %d, Typedef %s", skipped.assemblyName.c_str(), skipped.typedefName.c_str());
 #endif
 		InstrumentResults::SkippedItem item;
 		item.assemblyName = skipped.assemblyName;
@@ -676,7 +539,6 @@ struct SkippedResultsGatherer
 void Instrumentator::StoreResults(InstrumentResults& results, ICorProfilerInfo* info) 
 {
     InstrumentResults::AssemblyResults instrumentResults;
-    InstrumentResults::FileItems fileTable;
 	InstrumentResults::SkippedItems skippedResults;
 
 #ifdef DUMP_INSTRUMENT_RESULT
@@ -690,18 +552,12 @@ void Instrumentator::StoreResults(InstrumentResults& results, ICorProfilerInfo* 
 		AssemblyResultsGatherer(info, instrumentResults));
 
     std::for_each(
-		FileMap.begin(), 
-		FileMap.end(), 
-		FileMapGatherer(fileTable));
-
-    std::for_each(
 		m_skippedItems.begin(),
 		m_skippedItems.end(),
 		SkippedResultsGatherer(skippedResults));
 
     results.Assign( instrumentResults );
-    results.Assign( fileTable );
-	results.Assign( skippedResults );
+ 	results.Assign( skippedResults );
 }
 
 

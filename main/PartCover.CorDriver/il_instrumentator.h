@@ -24,7 +24,7 @@ struct LoadedClassInfo;
 class Rules;
 
 struct MethodDef {
-	MethodDef() : bodyBytes(0), bodySize(0), bodySeqCount(0), bodyLineCount(0), symbolFileId(-1)
+	MethodDef() : bodyBytes(0), bodySize(0), symbolFileId(-1)
 	{
         bodyUpdated = false;
         methodDef = 0;
@@ -34,8 +34,7 @@ struct MethodDef {
 
     bool                bodyUpdated;
 	int                 bodySize;
-    int                 bodySeqCount;
-    int                 bodyLineCount;
+
 	InstrumentedBlocks  bodyBlocks;
 	DynamicArray<BYTE>  bodyBytes;
     int                 symbolFileId;
@@ -115,9 +114,6 @@ struct LockGuard
 	}
 };
 
-typedef std::map<String, ULONG32> FileUrlMap;
-typedef std::pair<String, ULONG32> FileUrlMapPair;
-
 class Instrumentator
 {
 	ModuleAllocator m_allocator;
@@ -142,8 +138,6 @@ class Instrumentator
 
 	void ReplaceCode(ModuleDescriptor& module, TypeDef& defDescriptor, MethodDef& method, ICorProfilerInfo* profilerInfo);
 	void GenerateILCode(ModuleDescriptor& module, TypeDef& defDescriptor, MethodDef& method, ICorProfilerInfo* profilerInfo);
-
-	FileUrlMap FileMap;
 
 public:
     Instrumentator(Rules& rules);

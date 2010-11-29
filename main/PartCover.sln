@@ -31,6 +31,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PartCover.Registration", "PartCover.Registration\PartCover.Registration.csproj", "{A8D73ED3-654D-454B-BB58-AAD2E9A807D8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PartCover.Framework.UnitTests", "PartCover.Framework.UnitTests\PartCover.Framework.UnitTests.csproj", "{3B967BAE-7D8F-4EFD-9A62-761A37B25ADE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -142,6 +144,24 @@ Global
 		{A8D73ED3-654D-454B-BB58-AAD2E9A807D8}.Setup|x64.ActiveCfg = Release|x86
 		{A8D73ED3-654D-454B-BB58-AAD2E9A807D8}.Setup|x86.ActiveCfg = Release|x86
 		{A8D73ED3-654D-454B-BB58-AAD2E9A807D8}.Setup|x86.Build.0 = Release|x86
+		{3B967BAE-7D8F-4EFD-9A62-761A37B25ADE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3B967BAE-7D8F-4EFD-9A62-761A37B25ADE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3B967BAE-7D8F-4EFD-9A62-761A37B25ADE}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{3B967BAE-7D8F-4EFD-9A62-761A37B25ADE}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{3B967BAE-7D8F-4EFD-9A62-761A37B25ADE}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{3B967BAE-7D8F-4EFD-9A62-761A37B25ADE}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{3B967BAE-7D8F-4EFD-9A62-761A37B25ADE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3B967BAE-7D8F-4EFD-9A62-761A37B25ADE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3B967BAE-7D8F-4EFD-9A62-761A37B25ADE}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{3B967BAE-7D8F-4EFD-9A62-761A37B25ADE}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{3B967BAE-7D8F-4EFD-9A62-761A37B25ADE}.Release|Win32.ActiveCfg = Release|Any CPU
+		{3B967BAE-7D8F-4EFD-9A62-761A37B25ADE}.Release|x86.ActiveCfg = Release|Any CPU
+		{3B967BAE-7D8F-4EFD-9A62-761A37B25ADE}.Setup|Any CPU.ActiveCfg = Release|Any CPU
+		{3B967BAE-7D8F-4EFD-9A62-761A37B25ADE}.Setup|Any CPU.Build.0 = Release|Any CPU
+		{3B967BAE-7D8F-4EFD-9A62-761A37B25ADE}.Setup|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{3B967BAE-7D8F-4EFD-9A62-761A37B25ADE}.Setup|Mixed Platforms.Build.0 = Release|Any CPU
+		{3B967BAE-7D8F-4EFD-9A62-761A37B25ADE}.Setup|Win32.ActiveCfg = Release|Any CPU
+		{3B967BAE-7D8F-4EFD-9A62-761A37B25ADE}.Setup|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -89,34 +89,22 @@ namespace bidi
 		return ar;
 	}
 
-	NamedPipe& operator << (NamedPipe& ar, const InstrumentResults::FileItem &a) {
-		return ar << a.fileId << a.fileUrl;
-	}
-
-	NamedPipe& operator >> (NamedPipe& ar, InstrumentResults::FileItem &a) {
-		return ar >> a.fileId >> a.fileUrl;
-	}
-
 	NamedPipe& operator << (NamedPipe& ar, const InstrumentResults::MethodBlock &a) {
-		ar << a.haveSource << a.sourceFileId;
-		ar << a.startLine << a.startColumn << a.endLine << a.endColumn;
 		ar << a.position << a.blockLength << a.visitCount;
 		return ar;
 	}
 
 	NamedPipe& operator >> (NamedPipe& ar, InstrumentResults::MethodBlock &a) {
-		ar >> a.haveSource >> a.sourceFileId;
-		ar >> a.startLine >> a.startColumn >> a.endLine >> a.endColumn;
 		ar >> a.position >> a.blockLength >> a.visitCount;
 		return ar;
 	}
 
 	NamedPipe& operator << (NamedPipe& ar, const InstrumentResults::MethodResult &a) {
-		return ar << a.name << a.sig << a.flags << a.implFlags << a.blocks << a.bodySize << a.bodyLineCount << a.bodySeqCount << a.symbolFileId;
+		return ar << a.name << a.sig << a.flags << a.implFlags << a.blocks << a.bodySize << a.symbolFileId << a.methodDef;
 	}
 
 	NamedPipe& operator >> (NamedPipe& ar, InstrumentResults::MethodResult &a) {
-		return ar >> a.name >> a.sig >> a.flags >> a.implFlags >> a.blocks >> a.bodySize >> a.bodyLineCount >> a.bodySeqCount >> a.symbolFileId;
+		return ar >> a.name >> a.sig >> a.flags >> a.implFlags >> a.blocks >> a.bodySize >> a.symbolFileId >> a.methodDef;
 	}
 
 	NamedPipe& operator << (NamedPipe& ar, const InstrumentResults::SkippedItem &a) {
@@ -144,10 +132,10 @@ namespace bidi
 	}
 
 	NamedPipe& operator << (NamedPipe& ar, const InstrumentResults& a) {
-		return ar << a.m_results << a.m_fileTable << a.m_skippedItems;
+		return ar << a.m_results << a.m_skippedItems;
 	}
 
 	NamedPipe& operator >> (NamedPipe& ar, InstrumentResults &a) {
-		return ar >> a.m_results >> a.m_fileTable >> a.m_skippedItems;
+		return ar >> a.m_results >> a.m_skippedItems;
 	}
 }

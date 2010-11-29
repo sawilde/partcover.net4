@@ -84,6 +84,7 @@
       <HintPath>..\Interop\Interop.PartCover.dll</HintPath>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
+    <Reference Include="ISymWrapper" />
     <Reference Include="System">
       <Name>System</Name>
     </Reference>
@@ -101,6 +102,7 @@
     <Compile Include="Data\LogEntry.cs" />
     <Compile Include="Data\MethodBlock.cs" />
     <Compile Include="Data\MethodEntry.cs" />
+    <Compile Include="ISymbolReaderFactory.cs" />
     <Compile Include="Logging.cs" />
     <Compile Include="ProcessCallback.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
@@ -116,6 +118,8 @@
     <Compile Include="Stuff\Methods.cs" />
     <Compile Include="Stuff\Types.cs" />
     <Compile Include="Data\TypedefEntry.cs" />
+    <Compile Include="SymbolReaderFactory.cs" />
+    <Compile Include="SymbolReaderWapper.cs" />
     <Compile Include="Walkers\CoverageReport.cs">
       <SubType>Code</SubType>
     </Compile>

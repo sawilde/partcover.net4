@@ -11,18 +11,11 @@ struct InstrumentedBlock {
     DWORD position;
     ULONG length;
 
-    ULONG32 fileId;
-    ULONG32 startLine;
-    ULONG32 startColumn;
-    ULONG32 endLine;
-    ULONG32 endColumn;
-
     InstrumentedBlock() {
         LPDWORD counter = 0;
         DWORD maxCounter = 0;
         DWORD position = 0;
         ULONG length = 0;
-        fileId = startLine = startColumn = endLine = endColumn = 0;
     }
 };
 
