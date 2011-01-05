@@ -7,7 +7,21 @@ Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "PartCover.TestTarget.VB", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PartCover.TestTarget.CS", "PartCover.TestTarget.CS\PartCover.TestTarget.CS.csproj", "{B95239F6-C3B5-4ADD-892F-0C4693AA3DE2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PartCover.TestTarget.MSTest", "PartCover.TestTarget.MSTest\PartCover.TestTarget.MSTest.csproj", "{4A11AE06-68CC-4FB8-BA55-1315BBC69A4E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{412C8010-AC62-4910-8325-5A2228343CC2}"
+	ProjectSection(SolutionItems) = preProject
+		Local.testsettings = Local.testsettings
+		PartCover.Tests.vsmdi = PartCover.Tests.vsmdi
+		TraceAndTestImpact.testsettings = TraceAndTestImpact.testsettings
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PartCover.Target", "PartCover.Target\PartCover.Target.csproj", "{78496486-2488-436E-B091-81D43AF8A64A}"
+EndProject
 Global
+	GlobalSection(TestCaseManagementSettings) = postSolution
+		CategoryFile = PartCover.Tests.vsmdi
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
@@ -25,6 +39,14 @@ Global
 		{B95239F6-C3B5-4ADD-892F-0C4693AA3DE2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B95239F6-C3B5-4ADD-892F-0C4693AA3DE2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B95239F6-C3B5-4ADD-892F-0C4693AA3DE2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4A11AE06-68CC-4FB8-BA55-1315BBC69A4E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4A11AE06-68CC-4FB8-BA55-1315BBC69A4E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4A11AE06-68CC-4FB8-BA55-1315BBC69A4E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4A11AE06-68CC-4FB8-BA55-1315BBC69A4E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{78496486-2488-436E-B091-81D43AF8A64A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{78496486-2488-436E-B091-81D43AF8A64A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{78496486-2488-436E-B091-81D43AF8A64A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{78496486-2488-436E-B091-81D43AF8A64A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
