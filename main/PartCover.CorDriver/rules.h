@@ -1,5 +1,7 @@
 #pragma once
 
+#include "interface.h"
+
 typedef std::list<String> StringArray;
 typedef CAtlRegExp<RegExpCharTraits> *RegexPtr;
 typedef std::map<String, RegexPtr> RegexMap;

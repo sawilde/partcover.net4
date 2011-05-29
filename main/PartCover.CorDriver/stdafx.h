@@ -100,3 +100,13 @@ template<> struct StaticAssert<true> {};
 
 //#define TRACK_MEMORY_ALLOCATION
 #include "allocator.h"
+
+#pragma pack(push)
+#pragma pack(4)
+
+#include "cor.h"
+#include "corsym.h"
+#include "corprof.h"
+#include "corhlpr.h"
+
+#pragma pack(pop)

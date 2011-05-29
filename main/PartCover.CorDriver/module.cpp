@@ -2,6 +2,8 @@
 #include "stdafx.h"
 #include "resource.h"
 
+#include "CorProfiler.h"
+
 [module(
         type=dll
         ,name="PartCover"
@@ -12,4 +14,31 @@
         )]
 class CPartCoverCorDriverModule
 {
+public:
+    BOOL WINAPI DllMain(DWORD dwReason, LPVOID lpReserved )
+    {    
+        // save off the instance handle for later use
+        switch ( dwReason )
+        {
+            case DLL_PROCESS_ATTACH:
+                //DisableThreadLibraryCalls( hInstance );
+                break;
+        
+        
+            case DLL_PROCESS_DETACH:
+                // lpReserved == NULL means that we called FreeLibrary()
+                // in that case do nothing
+                if ( (lpReserved != NULL) && (CorProfiler::m_currentInstance != NULL) )
+                    CorProfiler::m_currentInstance->Shutdown();
+
+                break;  
+        
+            default:
+                break;      
+        }
+   
+        
+        return TRUE;
+
+    } // DllMain};
 };

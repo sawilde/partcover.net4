@@ -3,14 +3,6 @@
 #include "interface.h"
 #include "environment.h"
 #include "logging.h"
-#include "interface.h"
-#include "protocol.h"
-#include "corprofiler_options.h"
-#include "function_map.h"
-#include "il_instrumentedbody.h"
-#include "il_instrumentator.h"
-#include "instrumented_results.h"
-#include "rules.h"
 #include "corprofiler.h"
 #include "helpers.h"
 #include "corhelper.h"
@@ -100,7 +92,9 @@ STDMETHODIMP CorProfiler::Initialize( /* [in] */ IUnknown *pICorProfilerInfoUnk 
 
 STDMETHODIMP CorProfiler::Shutdown( void )
 {
-	ATLTRACE("CorProfiler::Shutdown - set DriverState::Stopping");
+    m_currentInstance = NULL;
+
+    ATLTRACE("CorProfiler::Shutdown - set DriverState::Stopping");
 	m_communication.SetDriverState(DriverState::Stopping);
 
 	ATLTRACE("CorProfiler::Shutdown - get the results");
@@ -119,8 +113,6 @@ STDMETHODIMP CorProfiler::Shutdown( void )
 	m_communication.SetDriverState(DriverState::Stopped);
 
 	m_communication.Disconnect();
-
-    m_currentInstance = 0;
 
 	print_memory_usage();
 

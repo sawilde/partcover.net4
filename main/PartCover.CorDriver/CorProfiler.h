@@ -1,5 +1,13 @@
 #pragma once
 
+#include "protocol.h"
+#include "function_map.h"
+#include "il_instrumentedbody.h"
+#include "il_instrumentator.h"
+#include "rules.h"
+#include "corprofiler_options.h"
+#include "instrumented_results.h"
+
 [   
     coclass,
     uuid(DRIVER_CORPROFILER4_GUID),
@@ -12,6 +20,7 @@
 class CorProfiler 
 	: public ICorProfilerCallback3
 {
+public:
     static CorProfiler* m_currentInstance;
 
 public:
