@@ -7,3 +7,4 @@ release/
 /libraries/nunit/Nunit-2.4.8.0/doc
 /main/_ReSharper.PartCover
 /test/_ReSharper.PartCover.Tests
+/libraries/Gallio
