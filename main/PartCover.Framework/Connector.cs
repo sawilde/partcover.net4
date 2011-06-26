@@ -44,7 +44,8 @@ namespace PartCover.Framework
             connector.EnableOption(ProfilerMode.COUNT_COVERAGE);
 
             ExcludeItem("[mscorlib]*");
-            ExcludeItem("[System*]*");
+            ExcludeItem("[System]*");
+            ExcludeItem("[System.*]*");
 
             if (options.TargetDirectory != null)
             {
