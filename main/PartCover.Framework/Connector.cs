@@ -73,7 +73,9 @@ namespace PartCover.Framework
 
             // wait results
             //ProcessCallback.writeStatus("Wait results");
-            connector.WaitForResults(options.DelayClose);
+            System.Threading.Thread.Sleep(1000);
+			connector.WaitForResults(options.DelayClose);
+			System.Threading.Thread.Sleep(1000);
 
             // walk results
             //ProcessCallback.writeStatus("Walk results");
