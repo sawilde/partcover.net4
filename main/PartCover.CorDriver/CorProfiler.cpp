@@ -25,13 +25,13 @@ int CorProfiler::m_initialized = 0;
 
 STDMETHODIMP CorProfiler::Initialize( /* [in] */ IUnknown *pICorProfilerInfoUnk )
 {
-	//DebugBreak();
+    //DebugBreak();
 
-	if (m_initialized==1) return E_FAIL;
-	m_initialized=1;
+    if (m_initialized==1) return E_FAIL;
+    m_initialized=1;
 
-	CComQIPtr<ICorProfilerInfo2> v2Minimum = pICorProfilerInfoUnk;
-	if (v2Minimum==NULL) return E_FAIL;
+    CComQIPtr<ICorProfilerInfo2> v2Minimum = pICorProfilerInfoUnk;
+    if (v2Minimum==NULL) return E_FAIL;
 
     HRESULT hr;
 
@@ -40,40 +40,43 @@ STDMETHODIMP CorProfiler::Initialize( /* [in] */ IUnknown *pICorProfilerInfoUnk 
     m_currentInstance = this;
     m_options.InitializeFromEnvironment();
 
-	DWORD dwSize;
+    DWORD dwSize;
     LPCTSTR messageCenterOption = Environment::GetEnvironmentStringOption(OPTION_MESSOPT, &dwSize);
-	if(!m_communication.Connect(messageCenterOption)) {
+    if(!m_communication.Connect(messageCenterOption)) {
         Environment::FreeStringResource(messageCenterOption);
-		return E_FAIL;
-	}
+        return E_FAIL;
+    }
     Environment::FreeStringResource(messageCenterOption);
 
-	if (m_options.UsePipeLogging()) {
-		DriverLog::get().SetPipe(&m_communication);
-	}
+    if (m_options.UsePipeLogging()) {
+        DriverLog::get().SetPipe(&m_communication);
+    }
 
-	ATLTRACE("CorProfiler::Initialize - set DriverState::Starting");
-	m_communication.SetDriverState(DriverState::Starting);
+    ATLTRACE("CorProfiler::Initialize - set DriverState::Starting");
+    m_communication.SetDriverState(DriverState::Starting);
 
     ATLTRACE("CorProfiler::Initialize - wait for C_EndOfInputs");
-	m_communication.GetRules(&m_rules);
+    m_communication.GetRules(&m_rules);
 
     m_profilerInfo = pICorProfilerInfoUnk;
 
     DWORD dwMask = 0;
     if (m_rules.IsEnabledMode(COUNT_COVERAGE)) {
         dwMask |= 
-			COR_PRF_MONITOR_CLASS_LOADS|
-			COR_PRF_MONITOR_MODULE_LOADS|
-			COR_PRF_MONITOR_ASSEMBLY_LOADS|
-			COR_PRF_MONITOR_APPDOMAIN_LOADS|
-			COR_PRF_MONITOR_JIT_COMPILATION|
-			COR_PRF_DISABLE_INLINING|
-			COR_PRF_DISABLE_OPTIMIZATIONS;
+            COR_PRF_MONITOR_CLASS_LOADS|
+            COR_PRF_MONITOR_MODULE_LOADS|
+            COR_PRF_MONITOR_ASSEMBLY_LOADS|
+            COR_PRF_MONITOR_APPDOMAIN_LOADS|
+            COR_PRF_MONITOR_JIT_COMPILATION|
+            COR_PRF_DISABLE_INLINING|
+            COR_PRF_DISABLE_OPTIMIZATIONS;
 
         if (FAILED(hr = CoCreateInstanceWithoutModel(CLSID_CorSymBinder_SxS, IID_ISymUnmanagedBinder2, (void**) &m_binder))) {
             LOGINFO(PROFILER_CALL_METHOD, "Cannot create symbol binder. Work as usual");
         }
+
+        CComQIPtr<ICorProfilerInfo3> v4 = pICorProfilerInfoUnk;
+        if (v4 != NULL)  dwMask |= COR_PRF_DISABLE_TRANSPARENCY_CHECKS_UNDER_FULL_TRUST;
     }
     
     ATLTRACE("CorProfiler::Initialize - set event mask");
@@ -81,13 +84,13 @@ STDMETHODIMP CorProfiler::Initialize( /* [in] */ IUnknown *pICorProfilerInfoUnk 
 
     LOGINFO(PROFILER_CALL_METHOD, "CorProfiler was successfully turning on with:");
     m_options.DumpOptions();
-	m_rules.PrepareItemRules();
+    m_rules.PrepareItemRules();
     m_rules.Dump();
 
-	ATLTRACE("CorProfiler::Initialize - set DriverState::Running");
-	m_communication.SetDriverState(DriverState::Running);
-    	
-	return S_OK;   
+    ATLTRACE("CorProfiler::Initialize - set DriverState::Running");
+    m_communication.SetDriverState(DriverState::Running);
+        
+    return S_OK;   
 }
 
 STDMETHODIMP CorProfiler::Shutdown( void )
@@ -95,26 +98,26 @@ STDMETHODIMP CorProfiler::Shutdown( void )
     m_currentInstance = NULL;
 
     ATLTRACE("CorProfiler::Shutdown - set DriverState::Stopping");
-	m_communication.SetDriverState(DriverState::Stopping);
+    m_communication.SetDriverState(DriverState::Stopping);
 
-	ATLTRACE("CorProfiler::Shutdown - get the results");
-	m_instrumentator.StoreResults(m_instrumentResults, m_profilerInfo);
+    ATLTRACE("CorProfiler::Shutdown - get the results");
+    m_instrumentator.StoreResults(m_instrumentResults, m_profilerInfo);
 
-	ATLTRACE("CorProfiler::Shutdown - send function map");
-	m_communication.StoreResultFunctionMap(m_functions);
+    ATLTRACE("CorProfiler::Shutdown - send function map");
+    m_communication.StoreResultFunctionMap(m_functions);
 
-	ATLTRACE("CorProfiler::Shutdown - send instrumentations");
-	m_communication.StoreResultInstrumentation(m_instrumentResults);
+    ATLTRACE("CorProfiler::Shutdown - send instrumentations");
+    m_communication.StoreResultInstrumentation(m_instrumentResults);
 
-	ATLTRACE("CorProfiler is turned off");
+    ATLTRACE("CorProfiler is turned off");
     DriverLog::get().WriteLine(_T("CorProfiler is turned off"));
 
-	ATLTRACE("CorProfiler::Shutdown - set DriverState::Stopped");
-	m_communication.SetDriverState(DriverState::Stopped);
+    ATLTRACE("CorProfiler::Shutdown - set DriverState::Stopped");
+    m_communication.SetDriverState(DriverState::Stopped);
 
-	m_communication.Disconnect();
+    m_communication.Disconnect();
 
-	print_memory_usage();
+    print_memory_usage();
 
     return S_OK; 
 }
@@ -131,7 +134,7 @@ HRESULT CoCreateInstanceWithoutModel( REFCLSID rclsid, REFIID riid, void **ppv )
     HRESULT hr = S_OK;
     OLECHAR guidString[128];
 
-	TCHAR keyString[1024];
+    TCHAR keyString[1024];
     TCHAR dllName[MAX_PATH];
 
     StringFromGUID2( rclsid, guidString, NumItems( guidString ) );
@@ -205,9 +208,9 @@ HRESULT CoCreateInstanceWithoutModel( REFCLSID rclsid, REFIID riid, void **ppv )
 }
 
 STDMETHODIMP CorProfiler::AssemblyLoadFinished(AssemblyID assemblyId, HRESULT hrStatus) {
-	String asmName = CorHelper::GetAssemblyName(m_profilerInfo, assemblyId);
-	LOGINFO2(PROFILER_CALL_METHOD, "Assembly %X loaded (%s)", assemblyId, asmName.length() == 0 ? _T("noname") : asmName.c_str());
-	return S_OK;
+    String asmName = CorHelper::GetAssemblyName(m_profilerInfo, assemblyId);
+    LOGINFO2(PROFILER_CALL_METHOD, "Assembly %X loaded (%s)", assemblyId, asmName.length() == 0 ? _T("noname") : asmName.c_str());
+    return S_OK;
 }
 
 STDMETHODIMP CorProfiler::AssemblyUnloadStarted(AssemblyID assemblyId) {
@@ -223,15 +226,15 @@ STDMETHODIMP CorProfiler::ClassLoadFinished(ClassID classId, HRESULT hrStatus) {
 }
 
 STDMETHODIMP CorProfiler::JITCompilationStarted(FunctionID functionId, BOOL fIsSafeToBlock) {
-	String methodName = CorHelper::GetMethodPath(m_profilerInfo, functionId);
-	LOGINFO2(PROFILER_CALL_METHOD, "Method %X jit started (%s)", functionId, methodName.length() == 0 ? _T("noname") : methodName.c_str());
-	m_instrumentator.UpdateFunctionCode(functionId, m_profilerInfo, m_binder);
-	return S_OK;
+    String methodName = CorHelper::GetMethodPath(m_profilerInfo, functionId);
+    LOGINFO2(PROFILER_CALL_METHOD, "Method %X jit started (%s)", functionId, methodName.length() == 0 ? _T("noname") : methodName.c_str());
+    m_instrumentator.UpdateFunctionCode(functionId, m_profilerInfo, m_binder);
+    return S_OK;
 }
 
 STDMETHODIMP CorProfiler::ClassUnloadStarted(ClassID classId) {
     String className = CorHelper::GetClassName(m_profilerInfo, classId);
-	LOGINFO2(PROFILER_CALL_METHOD, "Class %X unloaded (%s)", classId, className.length() == 0 ? _T("noname") : className.c_str());
+    LOGINFO2(PROFILER_CALL_METHOD, "Class %X unloaded (%s)", classId, className.length() == 0 ? _T("noname") : className.c_str());
     return S_OK;
 }
 
@@ -255,15 +258,15 @@ STDMETHODIMP CorProfiler::ModuleAttachedToAssembly(ModuleID module, AssemblyID a
         module, moduleName.length() == 0 ? _T("noname") : moduleName.c_str(),
         assembly, assemblyName.length() == 0 ? _T("noname") : assemblyName.c_str());
 
-	if (!m_instrumentator.IsAssemblyAcceptable(assemblyName))
-	{
-		m_instrumentator.AddSkippedAssembly(assemblyName);
+    if (!m_instrumentator.IsAssemblyAcceptable(assemblyName))
+    {
+        m_instrumentator.AddSkippedAssembly(assemblyName);
 
-		LOGINFO2(SKIP_BY_RULES, " module '%s' was skipped, because no include rule was specified for this assembly '%s'", 
-			moduleName.length() == 0 ? _T("noname") : moduleName.c_str(),
-			assemblyName.length() == 0 ? _T("noname") : assemblyName.c_str());
-		return S_OK;
-	}
+        LOGINFO2(SKIP_BY_RULES, " module '%s' was skipped, because no include rule was specified for this assembly '%s'", 
+            moduleName.length() == 0 ? _T("noname") : moduleName.c_str(),
+            assemblyName.length() == 0 ? _T("noname") : assemblyName.c_str());
+        return S_OK;
+    }
 
     m_instrumentator.InstrumentModule(module, moduleName.c_str(), m_profilerInfo, m_binder);
     return S_OK;   
@@ -271,16 +274,16 @@ STDMETHODIMP CorProfiler::ModuleAttachedToAssembly(ModuleID module, AssemblyID a
 
 STDMETHODIMP CorProfiler::AppDomainCreationFinished(AppDomainID appDomainId, HRESULT hrStatus)
 {
-	if (FAILED(hrStatus)) return S_OK;
+    if (FAILED(hrStatus)) return S_OK;
 
-	m_instrumentator.ActivateAppDomain(appDomainId);
-	return S_OK; 
+    m_instrumentator.ActivateAppDomain(appDomainId);
+    return S_OK; 
 }
 
 STDMETHODIMP CorProfiler::AppDomainShutdownFinished(AppDomainID appDomainId, HRESULT hrStatus)
 {
-	if (FAILED(hrStatus)) return S_OK;
+    if (FAILED(hrStatus)) return S_OK;
 
-	m_instrumentator.DeactivateAppDomain(appDomainId);
-	return S_OK; 
+    m_instrumentator.DeactivateAppDomain(appDomainId);
+    return S_OK; 
 }
