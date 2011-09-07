@@ -115,7 +115,7 @@ namespace PartCover.Framework
 
         private static void readOutput(WorkSettings settings, string value)
         {
-            if (value.Length > 0) settings.FileNameForReport = value;
+            if (value.Length > 0) settings.FileNameForReport = Path.GetFullPath(value);
         }
 
         private static void readExclude(WorkSettings settings, string value)
@@ -413,22 +413,23 @@ namespace PartCover.Framework
 
         public void ReadSettingsFile()
         {
-            var xmlDoc = new XmlDocument();
             try
             {
+                var xmlDoc = new XmlDocument();
+                var settingsFolder = Path.GetDirectoryName(settingsFile) ?? string.Empty;
                 xmlDoc.Load(settingsFile);
                 logLevel = 0;
 
                 var node = xmlDoc.SelectSingleNode("/PartCoverSettings/Target/text()");
-                if (node != null && node.Value != null) TargetPath = node.Value;
+                if (node != null && node.Value != null) TargetPath = Path.GetFullPath(Path.Combine(settingsFolder, node.Value));
                 node = xmlDoc.SelectSingleNode("/PartCoverSettings/TargetWorkDir/text()");
-                if (node != null && node.Value != null) TargetWorkingDir = node.Value;
+                if (node != null && node.Value != null) TargetWorkingDir = Path.GetFullPath(Path.Combine(settingsFolder, node.Value));
                 node = xmlDoc.SelectSingleNode("/PartCoverSettings/TargetArgs/text()");
                 if (node != null && node.Value != null) TargetArgs = node.Value;
                 node = xmlDoc.SelectSingleNode("/PartCoverSettings/LogLevel/text()");
                 if (node != null && node.Value != null) logLevel = int.Parse(node.Value);
                 node = xmlDoc.SelectSingleNode("/PartCoverSettings/Output/text()");
-                if (node != null && node.Value != null) FileNameForReport = node.Value;
+                if (node != null && node.Value != null) FileNameForReport =  Path.GetFullPath(Path.Combine(settingsFolder, node.Value));
                 node = xmlDoc.SelectSingleNode("/PartCoverSettings/ShowHelp/text()");
                 if (node != null && node.Value != null) printLongHelp = bool.Parse(node.Value);
                 node = xmlDoc.SelectSingleNode("/PartCoverSettings/DisableFlattenDomains/text()");

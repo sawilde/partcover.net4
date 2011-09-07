@@ -55,12 +55,21 @@
     <Compile Include="ReportReceiverTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SymbolReaderWrapperTests.cs" />
+    <Compile Include="WorkSettingsTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\PartCover.Framework\PartCover.Framework.csproj">
       <Project>{18D29461-7890-4EB6-8A8C-DAC5E6AB4B57}</Project>
       <Name>PartCover.Framework</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="RelPath.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="FullPath.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
