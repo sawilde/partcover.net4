@@ -15,8 +15,20 @@
     {
         "Entry"
         {
-        "MsmKey" = "8:_43B4D128AC54D7FE43337F448DF3023E"
+        "MsmKey" = "8:_5A17DAF5BFC5DF6EFE452D670EB34CFE"
+        "OwnerKey" = "8:_A087B20E5391409797A4A90B1E246738"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_5A17DAF5BFC5DF6EFE452D670EB34CFE"
         "OwnerKey" = "8:_AEA562FFC94E48979BC37448B19A77C1"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_5A17DAF5BFC5DF6EFE452D670EB34CFE"
+        "OwnerKey" = "8:_CD5B7E8AFFFC22F16CA6E4FF1409DB4E"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -33,12 +45,6 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_8064662546A6C080AAABC62EA7604701"
-        "OwnerKey" = "8:_B69856ADD3EBF85143682ACB7DDFF1E7"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_80931A57A56A4E48A18C19026171F6FB"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -47,12 +53,6 @@
         {
         "MsmKey" = "8:_86EA1750B4BE4C49AA43908EF7B7F799"
         "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_877AC4A0FBB1BFCF7FD5A4421E677325"
-        "OwnerKey" = "8:_AEA562FFC94E48979BC37448B19A77C1"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -87,24 +87,6 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_B69856ADD3EBF85143682ACB7DDFF1E7"
-        "OwnerKey" = "8:_A087B20E5391409797A4A90B1E246738"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_B69856ADD3EBF85143682ACB7DDFF1E7"
-        "OwnerKey" = "8:_AEA562FFC94E48979BC37448B19A77C1"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_B69856ADD3EBF85143682ACB7DDFF1E7"
-        "OwnerKey" = "8:_E76815E09DAB4AD86842E1760DA957B8"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_BB7C3AEB75664B958E889DCBC01D9696"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -113,6 +95,12 @@
         {
         "MsmKey" = "8:_C7F2DD0FBCB141FB8E69DBE76B0591AE"
         "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_CD5B7E8AFFFC22F16CA6E4FF1409DB4E"
+        "OwnerKey" = "8:_AEA562FFC94E48979BC37448B19A77C1"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -129,20 +117,26 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_E76815E09DAB4AD86842E1760DA957B8"
+        "MsmKey" = "8:_E22BA8E475AC3A447F689D4409AC1556"
         "OwnerKey" = "8:_A087B20E5391409797A4A90B1E246738"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_E76815E09DAB4AD86842E1760DA957B8"
+        "MsmKey" = "8:_E22BA8E475AC3A447F689D4409AC1556"
         "OwnerKey" = "8:_AEA562FFC94E48979BC37448B19A77C1"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_E76815E09DAB4AD86842E1760DA957B8"
-        "OwnerKey" = "8:_43B4D128AC54D7FE43337F448DF3023E"
+        "MsmKey" = "8:_E22BA8E475AC3A447F689D4409AC1556"
+        "OwnerKey" = "8:_5A17DAF5BFC5DF6EFE452D670EB34CFE"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_F0519F10EE6DB6E9D615CDC2E3E90367"
+        "OwnerKey" = "8:_AEA562FFC94E48979BC37448B19A77C1"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -154,7 +148,7 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_877AC4A0FBB1BFCF7FD5A4421E677325"
+        "OwnerKey" = "8:_F0519F10EE6DB6E9D615CDC2E3E90367"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -166,7 +160,7 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_43B4D128AC54D7FE43337F448DF3023E"
+        "OwnerKey" = "8:_CD5B7E8AFFFC22F16CA6E4FF1409DB4E"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -178,13 +172,13 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_E76815E09DAB4AD86842E1760DA957B8"
+        "OwnerKey" = "8:_5A17DAF5BFC5DF6EFE452D670EB34CFE"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_B69856ADD3EBF85143682ACB7DDFF1E7"
+        "OwnerKey" = "8:_E22BA8E475AC3A447F689D4409AC1556"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -287,7 +281,7 @@
                 {
                 "Name" = "8:.NET Framework"
                 "Message" = "8:[VSDNETMSG]"
-                "FrameworkVersion" = "8:2.0.50727  "
+                "FrameworkVersion" = "8:2.0.50727   "
                 "AllowLaterVersions" = "11:TRUE"
                 "InstallUrl" = "8:http://go.microsoft.com/fwlink/?LinkId=9832"
                 }
@@ -295,20 +289,20 @@
         }
         "File"
         {
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_43B4D128AC54D7FE43337F448DF3023E"
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_5A17DAF5BFC5DF6EFE452D670EB34CFE"
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:PartCover.Browser.Api, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:PartCover.Framework, Version=1.0.0.0, Culture=neutral, PublicKeyToken=ce32817471b40621, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_43B4D128AC54D7FE43337F448DF3023E"
+                    "_5A17DAF5BFC5DF6EFE452D670EB34CFE"
                     {
-                    "Name" = "8:PartCover.Browser.Api.dll"
+                    "Name" = "8:PartCover.Framework.dll"
                     "Attributes" = "3:512"
                     }
                 }
-            "SourcePath" = "8:PartCover.Browser.Api.dll"
+            "SourcePath" = "8:PartCover.Framework.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_A6B20546387E4D1487E0C50E81F5C43A"
@@ -357,26 +351,6 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_8064662546A6C080AAABC62EA7604701"
-            {
-            "SourcePath" = "8:PartCover.dll"
-            "TargetName" = "8:PartCover.dll"
-            "Tag" = "8:"
-            "Folder" = "8:_A6B20546387E4D1487E0C50E81F5C43A"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:TRUE"
-            "IsolateTo" = "8:"
-            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_86EA1750B4BE4C49AA43908EF7B7F799"
             {
             "SourcePath" = "8:..\\PartCover.Browser\\resources\\app.ico"
@@ -395,37 +369,6 @@
             "Register" = "3:1"
             "Exclude" = "11:FALSE"
             "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_877AC4A0FBB1BFCF7FD5A4421E677325"
-            {
-            "AssemblyRegister" = "3:1"
-            "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:PartViewer, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL"
-                "ScatterAssemblies"
-                {
-                    "_877AC4A0FBB1BFCF7FD5A4421E677325"
-                    {
-                    "Name" = "8:PartViewer.dll"
-                    "Attributes" = "3:512"
-                    }
-                }
-            "SourcePath" = "8:PartViewer.dll"
-            "TargetName" = "8:"
-            "Tag" = "8:"
-            "Folder" = "8:_A6B20546387E4D1487E0C50E81F5C43A"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_A6C9921F624C4A71AC191F45D180515A"
@@ -468,37 +411,6 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_B69856ADD3EBF85143682ACB7DDFF1E7"
-            {
-            "AssemblyRegister" = "3:1"
-            "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:Interop.PartCover, Version=4.0.0.0, Culture=neutral, PublicKeyToken=ce32817471b40621, processorArchitecture=MSIL"
-                "ScatterAssemblies"
-                {
-                    "_B69856ADD3EBF85143682ACB7DDFF1E7"
-                    {
-                    "Name" = "8:Interop.PartCover.dll"
-                    "Attributes" = "3:512"
-                    }
-                }
-            "SourcePath" = "8:Interop.PartCover.dll"
-            "TargetName" = "8:"
-            "Tag" = "8:"
-            "Folder" = "8:_A6B20546387E4D1487E0C50E81F5C43A"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:TRUE"
-            "IsolateTo" = "8:"
-            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_BB7C3AEB75664B958E889DCBC01D9696"
             {
             "SourcePath" = "8:xslt\\Report By Assembly.xslt"
@@ -517,6 +429,37 @@
             "Register" = "3:1"
             "Exclude" = "11:FALSE"
             "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_CD5B7E8AFFFC22F16CA6E4FF1409DB4E"
+            {
+            "AssemblyRegister" = "3:1"
+            "AssemblyIsInGAC" = "11:FALSE"
+            "AssemblyAsmDisplayName" = "8:PartCover.Browser.Api, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL"
+                "ScatterAssemblies"
+                {
+                    "_CD5B7E8AFFFC22F16CA6E4FF1409DB4E"
+                    {
+                    "Name" = "8:PartCover.Browser.Api.dll"
+                    "Attributes" = "3:512"
+                    }
+                }
+            "SourcePath" = "8:PartCover.Browser.Api.dll"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_A6B20546387E4D1487E0C50E81F5C43A"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_CF289788D1AB4CC7A5A7B9BFD70ECCF8"
@@ -559,20 +502,51 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_E76815E09DAB4AD86842E1760DA957B8"
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_E22BA8E475AC3A447F689D4409AC1556"
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:PartCover.Framework, Version=1.0.0.0, Culture=neutral, PublicKeyToken=ce32817471b40621, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:Interop.PartCover, Version=4.0.0.0, Culture=neutral, PublicKeyToken=ce32817471b40621, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_E76815E09DAB4AD86842E1760DA957B8"
+                    "_E22BA8E475AC3A447F689D4409AC1556"
                     {
-                    "Name" = "8:PartCover.Framework.dll"
+                    "Name" = "8:Interop.PartCover.dll"
                     "Attributes" = "3:512"
                     }
                 }
-            "SourcePath" = "8:PartCover.Framework.dll"
+            "SourcePath" = "8:Interop.PartCover.dll"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_A6B20546387E4D1487E0C50E81F5C43A"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:TRUE"
+            "IsolateTo" = "8:"
+            }
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_F0519F10EE6DB6E9D615CDC2E3E90367"
+            {
+            "AssemblyRegister" = "3:1"
+            "AssemblyIsInGAC" = "11:FALSE"
+            "AssemblyAsmDisplayName" = "8:PartViewer, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL"
+                "ScatterAssemblies"
+                {
+                    "_F0519F10EE6DB6E9D615CDC2E3E90367"
+                    {
+                    "Name" = "8:PartViewer.dll"
+                    "Attributes" = "3:512"
+                    }
+                }
+            "SourcePath" = "8:PartViewer.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_A6B20546387E4D1487E0C50E81F5C43A"
@@ -679,15 +653,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:PartCover .NET 4.0"
-        "ProductCode" = "8:{215113EC-0BA7-45F5-8657-FC4C54B4BEE4}"
-        "PackageCode" = "8:{78C89D81-51A9-4E0C-AAD1-6F9D55B4E328}"
+        "ProductCode" = "8:{C2CEDF28-0A83-4252-A799-6EB6F56294D0}"
+        "PackageCode" = "8:{218B9C76-17B7-4D32-B127-9CC05FEF8B9B}"
         "UpgradeCode" = "8:{EF0BEDF5-C9A7-41AD-A62D-B03FC0451645}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:FALSE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:4.0.1"
+        "ProductVersion" = "8:4.0.2"
         "Manufacturer" = "8:PartCover"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"

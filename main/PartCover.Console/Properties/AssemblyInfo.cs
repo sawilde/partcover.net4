@@ -7,10 +7,6 @@ using System.Runtime.CompilerServices;
 // associated with an assembly.
 //
 [assembly: AssemblyTitle("PartCover.Console")]
-[assembly: AssemblyDescription("Console wraper for PartCover.Framework")]
-[assembly: AssemblyCompany("Gubka Bob")]
-[assembly: AssemblyProduct("PartCover Console")]
+[assembly: AssemblyDescription("Console wrapper for PartCover.Framework")]
 
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
 [assembly: AssemblyDelaySign(false)]

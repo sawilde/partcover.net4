@@ -101,6 +101,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Version\CommonAssemblyVersion.cs">
+      <Link>Properties\CommonAssemblyVersion.cs</Link>
+    </Compile>
     <Compile Include="ApplicationHost.cs" />
     <Compile Include="Features\Controls\ItemDetails.cs">
       <SubType>UserControl</SubType>

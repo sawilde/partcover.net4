@@ -41,6 +41,9 @@
     <Compile Include="..\PartCover.Framework\Registration.cs">
       <Link>Registration.cs</Link>
     </Compile>
+    <Compile Include="..\Version\CommonAssemblyVersion.cs">
+      <Link>Properties\CommonAssemblyVersion.cs</Link>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

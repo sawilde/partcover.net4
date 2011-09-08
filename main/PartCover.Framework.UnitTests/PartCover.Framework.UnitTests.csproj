@@ -52,6 +52,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Version\CommonAssemblyVersion.cs">
+      <Link>Properties\CommonAssemblyVersion.cs</Link>
+    </Compile>
     <Compile Include="ReportReceiverTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SymbolReaderWrapperTests.cs" />

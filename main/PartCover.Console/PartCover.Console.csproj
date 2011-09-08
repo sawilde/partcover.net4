@@ -83,6 +83,9 @@
     <None Include="app.config" />
     <None Include="manual\PartCover Console Manual.rtf" />
     <None Include="PartCover.Console.snk" />
+    <Compile Include="..\Version\CommonAssemblyVersion.cs">
+      <Link>Properties\CommonAssemblyVersion.cs</Link>
+    </Compile>
     <Compile Include="ApplicationEntry.cs">
       <SubType>Code</SubType>
     </Compile>

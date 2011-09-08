@@ -96,6 +96,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Version\CommonAssemblyVersion.cs">
+      <Link>Properties\CommonAssemblyVersion.cs</Link>
+    </Compile>
     <Compile Include="ConnectorActionCallback.cs" />
     <Compile Include="Data\AssemblyEntry.cs" />
     <Compile Include="Data\FileEntry.cs" />

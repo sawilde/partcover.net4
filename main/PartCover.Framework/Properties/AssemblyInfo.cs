@@ -7,9 +7,4 @@ using System.Runtime.CompilerServices;
 // associated with an assembly.
 //
 [assembly: AssemblyTitle("PartCover.Framework")]
-[assembly: AssemblyDescription("Wraper for PartCover.CorDriver")]
-[assembly: AssemblyCompany("Gubka Bob")]
-[assembly: AssemblyProduct("PartCover Framework")]
-
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: AssemblyDescription("Wrapper for PartCover.CorDriver")]
