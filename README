@@ -1,3 +1,5 @@
+NOTE: PartCover is now in Maintainence mode (fixes only) all new development is being done on OpenCover which now has 32/64 bit support and also supports branch as well as sequence coverage.
+
 In order to allow those of us who use github and sourceforge to develop against partcover please follow the instructions at http://github.com/sawilde/partcover.net4/wiki/Building-The-Project before cloning this repository.
 
 partcover - originally forked from SourceForge - now modified to handle .NET CLRv4
