@@ -11,4 +11,4 @@ to
 
 
 
-ilasm.exe Interop\Interop.PartCover.il /dll /output=Interop\Interop.PartCover.dll /key=PartCover.Framework\PartCover.Framework.snk /mdv=2.0.50727
+ilasm.exe Interop\Interop.PartCover.il /dll /output=Interop\Interop.PartCover.dll /key=PartCover.Framework\PartCover.Framework.snk /mdv=2.0.50727 /resource=Interop\Interop.PartCover.res
